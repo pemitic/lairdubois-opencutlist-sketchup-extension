@@ -20,13 +20,30 @@ module Ladb::OpenCutList
 
       return { :errors => [ 'tab.materials.error.material_not_found' ] } unless material
 
-      dir, filename = File.split(model.path)
-      path = UI.savepanel(Plugin.instance.get_i18n_string('tab.materials.export_to_skm.title'), dir, @display_name + '.skm')
+      # Try to use SU Materials dir
+      materials_dir = Sketchup.find_support_file('Materials')
+      if File.directory?(materials_dir)
+
+        # Join with OpenCutList subdir and create it if it dosen't exist
+        dir = File.join(materials_dir, 'OpenCutList')
+        unless File.directory?(dir)
+          FileUtils.mkdir_p(dir)
+        end
+
+      else
+        dir = File.dirname(model.path)
+      end
+
+      # Open save panel
+      path = UI.savepanel(Plugin.instance.get_i18n_string('tab.materials.export_to_skm.title'), URI::escape(dir), @display_name + '.skm')
       if path
+
+        # Force "skm" file extension
+        unless path.end_with?('.skm')
+          path = path + '.skm'
+        end
+
         begin
-          unless File.directory?(dir)
-            FileUtils.mkdir_p(dir)
-          end
           success = material.save_as(path)
           return { :errors => [ 'tab.materials.error.failed_export_skm_file', { :error => '' } ] } unless success
           return { :export_path => path }

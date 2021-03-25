@@ -34,6 +34,16 @@
 
       }
 
+      &.ladb-highlighted-bug-report {
+        background-color: @ladb-brand-warning;
+        color: #000 !important;
+
+        & > a {
+          color: #000;
+        }
+
+      }
+
       & > a {
         color: #3e3b33;
         display: inline-block;
@@ -57,7 +67,7 @@
 }
 
 .ladb-leftbar {
-  z-index: 1040;
+  z-index: 1031;
   position: fixed;
   top: 0;
   left: 0;
@@ -67,6 +77,11 @@
   padding: 0;
   background: @ladb-brand-dark;
   width: @ladb-leftbar-width;
+
+  > .ladb-leftbar-bottom {
+    position: absolute;
+    bottom: 0;
+  }
 
   a, .ladb-toggle-handle {
     display: block;
@@ -79,9 +94,28 @@
     height: @ladb-leftbar-height;
     z-index: 1;
 
+    &.ladb-separator {
+      border-left: 1px solid #d6d4cd;
+    }
+
     &.ladb-highlighted-sponsor {
       background-color: @ladb-brand-sponsor;
-      color: #fff !important;
+      color: #fff;
+    }
+
+    &.ladb-sponsored {
+      border-style: dashed;
+      border-color: @ladb-brand-sponsor;
+      border-width: 2px;
+      border-radius: 5px;
+      margin: 3px;
+      width: @ladb-leftbar-width - 6px;
+      height: @ladb-leftbar-height - 6px;
+
+      &:hover {
+        border-color: darken(@ladb-brand-sponsor, 5%);
+      }
+
     }
 
     &:hover {
@@ -89,7 +123,7 @@
       color: @ladb-brand-dark;
 
       &.ladb-highlighted-sponsor {
-        color: @ladb-brand-sponsor !important;
+        color: @ladb-brand-sponsor;
       }
 
     }
@@ -97,6 +131,12 @@
     &.ladb-active {
       background-color: @ladb-brand-primary;
       color: #fff;
+
+      &.ladb-highlighted-sponsor {
+        background-color: @ladb-brand-primary;
+        color: #fff;
+      }
+
     }
 
     i {
@@ -112,6 +152,10 @@
       border-bottom-left-radius: 0;
       padding: 3px 5px;
       font-weight: normal;
+
+      &.badge-notification-muted {
+        background-color: @ladb-brand-null;
+      }
     }
 
   }
@@ -135,6 +179,12 @@
     }
     &.ladb-leftbar-subbar-6:hover {
       width: @ladb-leftbar-width + 10px + @ladb-leftbar-width * 6;
+    }
+    &.ladb-leftbar-subbar-7:hover {
+      width: @ladb-leftbar-width + 10px + @ladb-leftbar-width * 7;
+    }
+    &.ladb-leftbar-subbar-8:hover {
+      width: @ladb-leftbar-width + 10px + @ladb-leftbar-width * 8;
     }
 
     &:hover {
@@ -202,4 +252,3 @@
   }
 
 }
-

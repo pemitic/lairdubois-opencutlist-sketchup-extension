@@ -9,10 +9,6 @@ module Ladb::OpenCutList
     LOAD_OPTION_COL_SEP_COMMA = 1
     LOAD_OPTION_COL_SEP_SEMICOLON = 2
 
-    LOAD_OPTION_ENCODING_UTF8 = 0
-    LOAD_OPTION_ENCODING_UTF16LE = 1
-    LOAD_OPTION_ENCODING_UTF16BE = 2
-
     DATA_TYPE_STRING = 0
     DATA_TYPE_INTEGER = 1
     DATA_TYPE_LENGTH = 2
@@ -43,7 +39,7 @@ module Ladb::OpenCutList
             :align => 'left',
             :data_type => DATA_TYPE_STRING
         },
-        :labels => {
+        :tags => {
             :align => 'left',
             :data_type => DATA_TYPE_STRING_ARRAY
         },
@@ -52,8 +48,8 @@ module Ladb::OpenCutList
     def initialize(settings)
       @path = settings['path']
       @filename = settings['filename']
-      @first_line_headers = settings['first_line_headers']
       @col_sep = settings['col_sep']
+      @first_line_headers = settings['first_line_headers']
       @column_mapping = settings['column_mapping']   # { :field_name => COLUMN_INDEX, ... }
     end
 
@@ -98,12 +94,14 @@ module Ladb::OpenCutList
           # Try to detect file encoding with rchardet lib
           cd = CharDet.detect(File.read(@path))
           encoding = cd['encoding']
-
-          rows = CSV.read(@path, {
+          options = {
               :encoding => encoding + ':utf-8',
               :headers => @first_line_headers,
-              :col_sep => @col_sep
-          })
+              :col_sep => @col_sep,
+              :quote_char => '"'
+          }
+
+          rows = CSV.read(@path, **options)
 
           # Extract headers
           headers = @first_line_headers ? rows.headers : nil
@@ -134,7 +132,7 @@ module Ladb::OpenCutList
                 :width => nil,
                 :thickness => nil,
                 :material => nil,
-                :labels => nil,
+                :tags => nil,
                 :errors => [],
                 :warnings => [],
                 :raw_values => []
@@ -163,7 +161,7 @@ module Ladb::OpenCutList
                     end
                   when DATA_TYPE_LENGTH
                     begin
-                      length_value = DimensionUtils.instance.dd_to_ifloats(value).to_l
+                      length_value = DimensionUtils.instance.d_to_ifloats(value).to_l
                       valid = !value.empty? && length_value > 0
                       value = length_value if valid
                     rescue => e

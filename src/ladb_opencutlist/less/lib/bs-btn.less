@@ -10,6 +10,17 @@
   overflow-x: hidden;
   text-overflow: ellipsis;
 
+  &.btn-danger {
+    color: @ladb-brand-danger;
+    background-color: #fff;
+
+    &:hover {
+      color: #fff;
+      background-color: @ladb-brand-danger;
+    }
+
+  }
+
   &.btn-checkbox {
     width: 30px;
     height: 30px;
@@ -38,6 +49,35 @@
       background-color: darken(@ladb-brand-sponsor, 5%);
     }
 
+  }
+
+  &.btn-sponsored {
+    border-style: dashed;
+    border-color: @ladb-brand-sponsor;
+    border-width: 2px;
+
+    &:hover {
+      border-color: darken(@ladb-brand-sponsor, 5%);
+    }
+
+  }
+
+}
+
+.btn-infield {
+  border: none;
+  background-color: #eee;
+  border-radius: 3px;
+
+  &:hover,
+  &:focus {
+    color: #555;
+    background-color: #ddd;
+  }
+
+  &:active,
+  &.active {
+    background-color: #ddd;
   }
 
 }

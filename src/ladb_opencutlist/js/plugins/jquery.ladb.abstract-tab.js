@@ -1,9 +1,11 @@
 'use strict';
 
-function LadbAbstractTab(element, options, opencutlist) {
+function LadbAbstractTab(element, options, dialog) {
     this.options = options;
     this.$element = $(element);
-    this.opencutlist = opencutlist;
+    this.dialog = dialog;
+
+    this.defaultInitializedCallbackCalled = false;
 
     this._commands = {};
 
@@ -14,6 +16,60 @@ function LadbAbstractTab(element, options, opencutlist) {
 
     this._obsolete = false;
 }
+
+// Init /////
+
+LadbAbstractTab.prototype.init = function (initializedCallback) {
+
+    // Register commands
+    this.registerCommands();
+
+    // Bind element
+    this.bind();
+
+    // Callback
+    this.processInitializedCallback(initializedCallback);
+
+};
+
+LadbAbstractTab.prototype.registerCommands = function () {
+    // Override to implements
+};
+
+LadbAbstractTab.prototype.bind = function () {
+    var that = this;
+
+    var fnComputeStuckSlideHeadersWidth = function (event) {
+
+        // Recompute stuck slides header width
+        $('.ladb-slide:visible', that.$element).each(function (index) {
+            that.computeStuckSlideHeaderWidth($(this));
+        });
+
+    };
+
+    // Bind window resize event
+    $(window).on('resize', fnComputeStuckSlideHeadersWidth);
+
+    // Bind dialog maximized and minimized events
+    this.dialog.$element.on('maximized.ladb.dialog', fnComputeStuckSlideHeadersWidth);
+
+    // Bind tab shown events
+    this.$element.on('shown.ladb.tab', fnComputeStuckSlideHeadersWidth);
+
+};
+
+LadbAbstractTab.prototype.processInitializedCallback = function (initializedCallback) {
+    if (initializedCallback && typeof(initializedCallback) === 'function') {
+        initializedCallback(this.$element);
+    } else {
+        this.defaultInitializedCallback();
+    }
+};
+
+LadbAbstractTab.prototype.defaultInitializedCallback = function () {
+    this.defaultInitializedCallbackCalled = true;
+};
 
 // Slide /////
 
@@ -63,7 +119,7 @@ LadbAbstractTab.prototype.pushSlide = function ($slide, callback) {
                     that.removeSlide($topSlide);
                 }
             }
-            if (typeof(callback) == 'function') {
+            if (typeof callback === 'function') {
                 callback();
             }
         }
@@ -72,7 +128,18 @@ LadbAbstractTab.prototype.pushSlide = function ($slide, callback) {
     return $slide;
 };
 
-LadbAbstractTab.prototype.popSlide = function () {
+LadbAbstractTab.prototype.popToRootSlide = function () {
+    if (this._$slides.length > 2) {
+        // Remove hidden slides
+        var $removedSlides = this._$slides.splice(1, this._$slides.length - 2);
+        for (var i = 0; i < $removedSlides.length; i++) {
+            $removedSlides[i].remove(); // Remove from DOM
+        }
+    }
+    this.popSlide(true);
+};
+
+LadbAbstractTab.prototype.popSlide = function (noAnimation) {
     if (this._$slides.length > 1) {
         var $poppedSlide = this._$slides.pop();
         var $topSlide = this.topSlide();
@@ -80,15 +147,19 @@ LadbAbstractTab.prototype.popSlide = function () {
             $topSlide.show();
             this.computeStuckSlideHeaderWidth($topSlide);
         }
-        this.unstickSlideHeader($poppedSlide);
-        $poppedSlide.addClass('animated');
-        $poppedSlide.switchClass('in', 'out', {
-            duration: 300,
-            complete: function () {
-                $poppedSlide.removeClass('animated');
-                $poppedSlide.remove();
-            }
-        });
+        if (noAnimation) {
+            $poppedSlide.remove();
+        } else {
+            this.unstickSlideHeader($poppedSlide);
+            $poppedSlide.addClass('animated');
+            $poppedSlide.switchClass('in', 'out', {
+                duration: 300,
+                complete: function () {
+                    $poppedSlide.removeClass('animated');
+                    $poppedSlide.remove();
+                }
+            });
+        }
     }
 };
 
@@ -211,7 +282,7 @@ LadbAbstractTab.prototype.appendModalInside = function (id, twigFile, renderPara
 // Action /////
 
 LadbAbstractTab.prototype.registerCommand = function (command, block) {
-    if (typeof(block) == 'function') {
+    if (typeof block === 'function') {
         this._commands[command] = block;
     } else {
         alert('Action\'s block must be a function');
@@ -228,56 +299,13 @@ LadbAbstractTab.prototype.executeCommand = function (command, parameters, callba
         block(parameters);
 
         // Invoke the callback
-        if (typeof(callback) == 'function') {
+        if (typeof callback === 'function') {
             callback();
         }
 
     } else {
         alert('Command ' + command + ' not found');
     }
-};
-
-// Helper /////
-
-LadbAbstractTab.prototype.tokenfieldValidatorFn_d = function (e) {
-    var re = /^([\d.,]+\s*(mm|cm|m|'|"|)|[\d.,]*\s*[\d]+\/[\d]+\s*('|"|))$/;
-    var valid = re.test(e.attrs.value);
-    if (!valid) {
-        $(e.relatedTarget).addClass('invalid')
-    }
-};
-
-LadbAbstractTab.prototype.tokenfieldValidatorFn_dxd = function (e) {
-    var re = /^([\d.,]+\s*(mm|cm|m|'|"|)|[\d.,]*\s*[\d]+\/[\d]+\s*('|"|))\s*x\s*([\d.,]+\s*(mm|cm|m|'|"|)|[\d.,]*\s*[\d]+\/[\d]+\s*('|"|))$/;
-    var valid = re.test(e.attrs.value);
-    if (!valid) {
-        $(e.relatedTarget).addClass('invalid')
-    }
-};
-
-// Bind /////
-
-LadbAbstractTab.prototype.bind = function () {
-    var that = this;
-
-    var fnComputeStuckSlideHeadersWidth = function (event) {
-
-        // Recompute stuck slides header width
-        $('.ladb-slide:visible', that.$element).each(function (index) {
-            that.computeStuckSlideHeaderWidth($(this));
-        });
-
-    };
-
-    // Bind window resize event
-    $(window).on('resize', fnComputeStuckSlideHeadersWidth);
-
-    // Bind dialog maximized and minimized events
-    this.opencutlist.$element.on('maximized.ladb.dialog', fnComputeStuckSlideHeadersWidth);
-
-    // Bind tab shown events
-    this.$element.on('shown.ladb.tab', fnComputeStuckSlideHeadersWidth);
-
 };
 
 // Obsolete /////

@@ -1,0 +1,114 @@
+{% extends 'tabs/base-slide.twig' %}
+
+{% set id = 'ladb_cutlist_slide_labels' %}
+{% set out = true %}
+{% set slideClasses = 'print-full-page print-no-header' %}
+
+{% block headerInner %}
+    {{ parent() }}
+    <div class="ladb-header-extra">
+        {% include 'tabs/cutlist/_header-extra.twig' with { 'generatedAt':'000' } %}
+    </div>
+{% endblock %}
+
+{% block headerHeadingInner %}
+    {{ 'tab.cutlist.labels.title'|i18next}} <small>| {{ group.material_name|escape('html') }} / <strong>{{ group.std_dimension}}</strong></small>
+{% endblock %}
+
+{% block headerToolsInner %}
+    <button id="ladb_btn_labels" class="btn btn-primary"><i class="ladb-opencutlist-icon-refresh"></i> {{ 'tab.cutlist.labels.title'|i18next }}...</button>
+    <button id="ladb_btn_print" class="btn btn-default"><i class="ladb-opencutlist-icon-print"></i> {{ 'default.print'|i18next }}</button>
+    &nbsp;
+    <button id="ladb_btn_close" class="btn btn-default"><i class="ladb-opencutlist-icon-close"></i> {{ 'default.close'|i18next }}</button>
+{% endblock %}
+
+{% set labelWidth = (page_width - margin_left - margin_right - spacing_v * (col_count - 1)) / col_count %}
+{% set labelHeight = (page_height - margin_top - margin_bottom - spacing_h * (row_count - 1)) / row_count %}
+{% set minDimension = min(labelWidth, labelHeight) %}
+{% set xUnit = labelWidth / 12 %}
+{% set yUnit = labelHeight / 12 %}
+{% set minUnit = min(xUnit, yUnit) %}
+{% set strokeWidth = 0.01 %}
+{% set cuttingMarkSize = strokeWidth * 10 %}
+
+{% block containerInner %}
+    {{ parent() }}
+    <div class="ladb-page">
+
+        {% include 'core/_alert-errors.twig' %}
+
+        {% for page in pages %}
+            <table id="ladb_cuttingdiagram_group_label_page_{{ loop.index }}" data-page-index="{{ loop.index }}" class="table table-bordered ladb-cutlist-group ladb-cuttingdiagram-labels-group">
+                <thead class="no-print">
+                <tr class="table-heading">
+                    <td>
+                        <button class="no-print btn btn-default btn-sm ladb-btn-toggle-no-print pull-left"><i class="ladb-opencutlist-icon-eye-close"></i></button>
+                        <div class="ladb-heading pull-right" style="margin-right: 10px;"><strong>{{ loop.index }} / {{ pages|length }}</strong></div>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="text-center">
+
+                        {% set partCount = page.part_infos|length %}
+
+                        <svg viewBox="0 0 {{ page_width }} {{ page_height }}" {% if compatible_with('svg.height-auto') %}width="80%"{% else %}width="{{ page_width * 72 }}" height="{{ page_height * 72 }}"{% endif %}>
+
+                            <g transform="translate({{ margin_left }} {{ margin_top }})">
+
+                                {% for row in 0..row_count-1 %}
+                                    {% set labelY = row * (labelHeight + spacing_h) %}
+                                    {% for col in 0..col_count-1 %}
+                                        {% set labelX = col * (labelWidth + spacing_v) %}
+                                        {% set partIndex = row * col_count + col %}
+                                        {% if partIndex < partCount %}
+                                            {% set part_info = page.part_infos[partIndex] %}
+                                            <g transform="translate({{ labelX + labelWidth / 2 }} {{ labelY + labelHeight / 2 }})">
+                                                {% for elementDef in layout %}
+                                                    <g transform="translate({{ elementDef.x * labelWidth }} {{ elementDef.y * labelHeight }}){% if elementDef.rotation %} rotate({{ elementDef.rotation }}){% endif %}">
+                                                        {% include 'tabs/cutlist/_label-element.twig' %}
+                                                    </g>
+                                                {% endfor %}
+                                            </g>
+                                        {% endif %}
+
+                                        {% if margin_top > 0 or row > 0 %}
+                                            <line class="grid-line no-print" x1="{{ labelX }}" y1="{{ labelY }}" x2="{{ labelX + labelWidth }}" y2="{{ labelY }}" stroke-width="{{ strokeWidth }}" stroke-dasharray="{{ strokeWidth }}" />
+                                            {% if cutting_marks %}
+                                                <line class="grid-line" x1="{{ labelX }}" y1="{{ labelY }}" x2="{{ labelX + labelWidth }}" y2="{{ labelY }}" stroke-width="{{ strokeWidth }}" stroke-dasharray="{{ cuttingMarkSize }},{{ labelWidth - 2 * cuttingMarkSize }}" />
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if margin_bottom > 0 and row == row_count - 1 or spacing_h > 0 and row < row_count - 1 %}
+                                            <line class="grid-line no-print" x1="{{ labelX + labelWidth }}" y1="{{ labelY + labelHeight }}" x2="{{ labelX }}" y2="{{ labelY + labelHeight }}" stroke-width="{{ strokeWidth }}" stroke-dasharray="{{ strokeWidth }}" />
+                                            {% if cutting_marks %}
+                                                <line class="grid-line" x1="{{ labelX + labelWidth }}" y1="{{ labelY + labelHeight }}" x2="{{ labelX }}" y2="{{ labelY + labelHeight }}" stroke-width="{{ strokeWidth }}" stroke-dasharray="{{ cuttingMarkSize }},{{ labelWidth - 2 * cuttingMarkSize }}" />
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if margin_left > 0 or col > 0 %}
+                                            <line class="grid-line no-print" x1="{{ labelX }}" y1="{{ labelY + labelHeight }}" x2="{{ labelX }}" y2="{{ labelY }}" stroke-width="{{ strokeWidth }}" stroke-dasharray="{{ strokeWidth }}" />
+                                            {% if cutting_marks %}
+                                                <line class="grid-line" x1="{{ labelX }}" y1="{{ labelY + labelHeight }}" x2="{{ labelX }}" y2="{{ labelY }}" stroke-width="{{ strokeWidth }}" stroke-dasharray="{{ cuttingMarkSize }},{{ labelHeight - 2 * cuttingMarkSize }}" />
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if margin_right > 0 and col == col_count - 1 or spacing_v > 0 and col < col_count - 1 %}
+                                            <line class="grid-line no-print" x1="{{ labelX + labelWidth }}" y1="{{ labelY }}" x2="{{ labelX + labelWidth }}" y2="{{ labelY + labelHeight }}" stroke-width="{{ strokeWidth }}" stroke-dasharray="{{ strokeWidth }}" />
+                                            {% if cutting_marks %}
+                                                <line class="grid-line" x1="{{ labelX + labelWidth }}" y1="{{ labelY }}" x2="{{ labelX + labelWidth }}" y2="{{ labelY + labelHeight }}" stroke-width="{{ strokeWidth }}" stroke-dasharray="{{ cuttingMarkSize }},{{ labelHeight - 2 * cuttingMarkSize }}" />
+                                            {% endif %}
+                                        {% endif %}
+
+                                    {% endfor %}
+                                {% endfor %}
+
+                            </g>
+
+                        </svg>
+
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        {% endfor %}
+    </div>
+{% endblock %}

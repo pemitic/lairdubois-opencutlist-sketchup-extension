@@ -24,6 +24,14 @@ module Ladb::OpenCutList
         export_command(settings)
       end
 
+      Plugin.instance.register_command("cutlist_report_start") do |settings|
+        report_start_command(settings)
+      end
+
+      Plugin.instance.register_command("cutlist_report_advance") do |settings|
+        report_advance_command
+      end
+
       Plugin.instance.register_command("cutlist_numbers_save") do |settings|
         numbers_command(settings, false)
       end
@@ -42,6 +50,10 @@ module Ladb::OpenCutList
 
       Plugin.instance.register_command("cutlist_part_update") do |settings|
         part_update_command(settings)
+      end
+
+      Plugin.instance.register_command("cutlist_part_export_to_skp") do |settings|
+        part_export_to_skp_command(settings)
       end
 
       Plugin.instance.register_command("cutlist_part_toggle_front") do |part_data|
@@ -106,6 +118,21 @@ module Ladb::OpenCutList
       worker.run
     end
 
+    def report_start_command(settings)
+      require_relative '../worker/cutlist/cutlist_report_worker'
+
+      # Setup worker
+      @report_worker = CutlistReportWorker.new(settings, @cutlist)
+
+      # Run !
+      @report_worker.run
+    end
+
+    def report_advance_command
+      # Run !
+      @report_worker.run
+    end
+
     def numbers_command(settings, reset)
       require_relative '../worker/cutlist/cutlist_numbers_worker'
 
@@ -146,6 +173,16 @@ module Ladb::OpenCutList
       worker.run
     end
 
+    def part_export_to_skp_command(settings)
+      require_relative '../worker/cutlist/cutlist_part_export_to_skp_worker'
+
+      # Setup worker
+      worker = CutlistPartExportToSkpWorker.new(settings)
+
+      # Run !
+      worker.run
+    end
+
     def group_cuttingdiagram_1d_command(settings)
       require_relative '../worker/cutlist/cutlist_cuttingdiagram_1d_worker'
 
@@ -153,7 +190,9 @@ module Ladb::OpenCutList
       worker = CutlistCuttingdiagram1dWorker.new(settings, @cutlist)
 
       # Run !
-      worker.run
+      cuttingdiagram1d = worker.run
+
+      cuttingdiagram1d.to_hash
     end
 
     def group_cuttingdiagram_2d_command(settings)
@@ -163,7 +202,9 @@ module Ladb::OpenCutList
       worker = CutlistCuttingdiagram2dWorker.new(settings, @cutlist)
 
       # Run !
-      worker.run
+      cuttingdiagram2d = worker.run
+
+      cuttingdiagram2d.to_hash
     end
 
   end

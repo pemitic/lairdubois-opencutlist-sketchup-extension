@@ -28,8 +28,8 @@ module Ladb::OpenCutList
       materials = model.materials
       active_entities = model.active_entities
 
-      # Start an operation
-      model.start_operation('Importing Parts', true)
+      # Start model modification operation
+      model.start_operation('OpenCutList - Importing Parts', true)
 
       # Remove all instances, definitions and materials if needed
       if @remove_all
@@ -46,6 +46,10 @@ module Ladb::OpenCutList
       imported_part_count = 0
       imported_definition_names = {}
       material_palette_index = 0
+
+      # Add a new group of entities to keep imported objects together
+      imported_group = active_entities.add_group
+
       @parts.each do |part|
 
         next unless part[:errors].empty?
@@ -100,7 +104,7 @@ module Ladb::OpenCutList
         # Create definition instance(s)
         count = part[:count].nil? ? 1 : part[:count]
         for i in 0..count-1
-          instance = active_entities.add_instance(definition, Geom::Transformation.new(Geom::Point3d.new(0, offset_y, i * part[:thickness])))
+          instance = imported_group.entities.add_instance(definition, Geom::Transformation.new(Geom::Point3d.new(0, offset_y, i * part[:thickness])))
           instance.material = material if material
           imported_part_count += 1
         end
@@ -108,7 +112,7 @@ module Ladb::OpenCutList
         # Set part attributes
         definition_attributes = DefinitionAttributes.new(definition)
         definition_attributes.orientation_locked_on_axis = true                 # Force part to be locked on its axis
-        definition_attributes.labels = part[:labels] unless part[:labels].nil?  # Add labels if defined
+        definition_attributes.tags = part[:tags] unless part[:tags].nil?  # Add labels if defined
         definition_attributes.write_to_attributes
 
         offset_y += part[:width]

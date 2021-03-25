@@ -2,13 +2,113 @@ CHANGELOG
 =========
 
 This changelog references the relevant changes (bug and security fixes) done
-in 1.x and 0.x versions.
+in 2.x, 1.x and 0.x versions.
 
-* 1.9.0
+* 2.0.0 (2021-03-23)
 
-  * Added **russian** language (thanks to Vladimir Badulya for joining the translators team)
+  * Added printable **Labels** feature
+  * Added printable **Reports** feature
+  * Added **Polish** language (thanks to Jarek Ostaszewski and Greg Gregosky)
+  * Added **Czech** language (thanks to Radek Rýznar for joining the translators team)
+  * Added **Hebrew** language, experimental without RTL interface (thanks to Sergey Isupov for joining the translators team)
+  * Added **Arabic** language, experimental without RTL interface (thanks to Soul Issam for joining the translators team)
+  * Added **Dutch** language (thanks to Dany Dhondt and Eric Lugtigheid for joining the translators team)
+  * Added Hardware material type
+  * Added part set for hardware
+  * Added part unit price and weight fields for hardware
+  * Added part export to skp
+  * Added bars and sheets waste's cross display / hide in cutting diagram options
+  * Added new 2D bin packing library
+  * Added cutting diagram 1D/2D option to render full width diagrams
+  * Added cutting diagram 1D/2D option to define the origin corner
+  * Added cutting diagram 2D primary cuts
+  * Added cutting diagram 2D edge banding infos in part tooltips
+  * Added SketchUp 2021 Tag folders compatibility
+  * Added custom proposal list of tags in cutlist options
+  * Added _tags_ sorter in cutlist options
+  * Added _Disable mirrored part detection on this part_ part's property
+  * Added comments display on news
+  * Added dump and reset global and model presets for debugging
+  * Improved import by putting new instances into a group
+  * **Inverted** front and back face detection. Front face is not the _Top_ face
+
+* 1.9.10 (2020-12-17)
+
+  * Changed OCL length dimension precision from 0.000000 to 0.000 and adapt it if model length precision is higher
+  * Added **Spanish** language (thanks to Leonardo Romero Giménez for joining the translators team)
+  * Fixed a bug in 1D packing pertaining to offcuts
+  * Fixed a bug highlight part tool when part drawing was in sub group
+
+* 1.9.9 (2020-11-19)
+
+  * Added "News" tab
+  * Added "Forum" tab
+  * Fixed "Highlight part" tool
+  * Improved material attributes default according to unit system
+  * Improved thickness and section precision display
+  * Improved readability of square feet area dimensions
+  * Changed ft³ to FBM (foot, board measure) for Material Solid Wood
+
+* 1.9.8 (2020-10-28)
+
+  * Improved "self-updater" workflow
+
+* 1.9.7 (2020-10-21)
+
+  * Added embedded tutorial's videos
+  * Improved "undo" management for a better User Experience :P
+  * Minor Fixes and Improvements
+
+* 1.9.6 (2020-10-17)
+
+  * Fixed Ruby 2.7.0 deprecated calls
+  * Fixed Layer0 visibility detection
+  * Fixed Dimension regex for *X' X X/X'* input format
+  * Improved ComponentDefinition and Material uuids management
+
+* 1.9.5 (2020-10-01)
+
+  * Fixed cumulative length or width on folded parts
+  * Added **Portuguese** language (thanks to Nayton Sanches Barbosa for joining the translators team)
+  * Added sponsor objective display
+  * Added cutting diagram (1d and 2d) capability to compute only for selected (in part list) parts
+  * Added possibility to add a quantity in cutting diagram 1d and 2d "offcut" field
+  * Added public message of backers in sponsor list
+  * Added link to tutorials list on GitHub in "More" tab
+  * Improved dimension token field input
+
+* 1.9.4 (2020-09-11)
+
+  * Fixed cutting diagrams 2D rotated part dimensions display bug
+  * Fixed cutting diagrams crash when using non letter part numbers
+
+* 1.9.3 (2020-08-27)
+
+  * Fixed cutting diagrams 1D bug introduced in 1.9.2
+
+* 1.9.2 (2020-08-27)
+
+  * Fixed cutting size with edge reduction in cutting diagrams
+  * Added **Italian** language (thanks to Pierluigi Colombo for joining the translators team)
+  * Added part oversize view
+  * Added edit part tab memory
+  * Added cutting diagram 1d / 2d options tab memory
+  * Added textinput reset button
+  * Improved russian translation
+
+* 1.9.1 (2020-07-05)
+
+  * Fixed impossible final area
+  * Fixed material unique name
+  * Fixed IE limitations on url parameter size
+  * Improved cutlist part number storage
+  * Rollback twig to 1.13.3 for IE compatibility
+
+* 1.9.0 (2020-06-04)
+
+  * Added **Russian** language (thanks to Vladimir Badulya for joining the translators team)
   * Added **self-updater**
-  * Added **dimensional cutting diagram** feature
+  * Added **dimensional cutting diagram** feature (thanks to Kai Schröder, CyberBLN, for code review and fixes)
   * Added flipped part detection  
   * Added 'hit enter' behavior to validate forms in modal dialogs
   * Added part oversize parameters

@@ -1,66 +1,27 @@
 +function ($) {
     'use strict';
 
-    // CONSTANTS
-    // ======================
-
-    // Options keys
-
-    var SETTING_KEY_OPTION_PREFIX = 'materials.option.';
-    var SETTING_KEY_OPTION_PREFIX_TYPE = SETTING_KEY_OPTION_PREFIX + 'type_';
-
-    var SETTING_KEY_OPTION_MATERIAL_ORDER_STRATEGY = SETTING_KEY_OPTION_PREFIX + 'material_order_strategy';
-
-    var SETTING_KEY_OPTION_SUFFIX_THICKNESS = '_thickness';
-    var SETTING_KEY_OPTION_SUFFIX_LENGTH_INCREASE = '_length_increase';
-    var SETTING_KEY_OPTION_SUFFIX_WIDTH_INCREASE = '_width_increase';
-    var SETTING_KEY_OPTION_SUFFIX_THICKNESS_INCREASE = '_thickness_increase';
-    var SETTING_KEY_OPTION_SUFFIX_STD_LENGTHS = '_std_lengths';
-    var SETTING_KEY_OPTION_SUFFIX_STD_WIDTHS = '_std_widths';
-    var SETTING_KEY_OPTION_SUFFIX_STD_THICKNESSES = '_std_thicknesses';
-    var SETTING_KEY_OPTION_SUFFIX_STD_SECTIONS = '_std_sections';
-    var SETTING_KEY_OPTION_SUFFIX_STD_SIZES = '_std_sizes';
-    var SETTING_KEY_OPTION_SUFFIX_GRAINED = '_grained';
-    var SETTING_KEY_OPTION_SUFFIX_EDGE_DECREMENTED = '_edge_decremented';
-
-    // Options defaults
-
-    var OPTION_DEFAULT_MATERIAL_ORDER_STRATEGY = 'name>type';
-
-    // Select picker options
-
-    var SELECT_PICKER_OPTIONS = {
-        size: 10,
-        iconBase: 'ladb-opencutlist-icon',
-        tickIcon: 'ladb-opencutlist-icon-tick',
-        showTick: true
-    };
-
-    // Tokenfield options
-
-    var TOKENFIELD_OPTIONS = {
-        delimiter: ';',
-        createTokensOnBlur: true
-    };
-
     // CLASS DEFINITION
     // ======================
 
     var LadbTabMaterials = function (element, options, opencutlist) {
         LadbAbstractTab.call(this, element, options, opencutlist);
 
-        this.materials = [];
+        this.currency_symbol = '';
+        this.massUnitStrippedname = '';
+        this.lengthUnitStrippedname = '';
         this.currentMaterial = null;
         this.editedMaterial = null;
         this.ignoreNextMaterialEvents = false;
+        this.lastMaterialPropertiesTab = null;
 
         this.$header = $('.ladb-header', this.$element);
         this.$fileTabs = $('.ladb-file-tabs', this.$header);
         this.$btnList = $('#ladb_btn_list', this.$header);
         this.$btnNew = $('#ladb_btn_new', this.$header);
+        this.$btnOptions = $('#ladb_btn_options', this.$header);
         this.$itemImportFromSkm = $('#ladb_item_import_from_skm', this.$header);
         this.$itemPurgeUnused = $('#ladb_item_purge_unused', this.$header);
-        this.$itemOptions = $('#ladb_item_options', this.$header);
 
         this.$page = $('.ladb-page', this.$element);
 
@@ -84,16 +45,21 @@
             var errors = response.errors;
             var warnings = response.warnings;
             var filename = response.filename;
+            var modelName = response.model_name;
             var materials = response.materials;
             var currentMaterialName = response.current_material_name;
 
             // Keep useful data
+            that.lengthUnitStrippedname = response.length_unit_strippedname;
+            that.massUnitStrippedname = response.mass_unit_strippedname;
+            that.currencySymbol = response.currency_symbol;
             that.materials = materials;
 
             // Update filename
             that.$fileTabs.empty();
             that.$fileTabs.append(Twig.twig({ ref: "tabs/materials/_file-tab.twig" }).render({
-                filename: filename
+                filename: filename,
+                modelName: modelName
             }));
 
             // Update items state
@@ -109,7 +75,7 @@
             }));
 
             // Setup tooltips
-            that.opencutlist.setupTooltips();
+            that.dialog.setupTooltips();
 
             // Bind rows
             $('.ladb-material-box', that.$page).each(function (index) {
@@ -135,7 +101,7 @@
                 })
                 .on('dblclick', function () {
                     $(this).blur();
-                    that.opencutlist.minimize();
+                    that.dialog.minimize();
                     return false;
                 });
 
@@ -146,7 +112,7 @@
             that.stickSlideHeader(that.$rootSlide);
 
             // Callback
-            if (callback && typeof callback == 'function') {
+            if (typeof callback === 'function') {
                 callback();
             }
 
@@ -168,6 +134,8 @@
         };
 
         var $modal = this.appendModalInside('ladb_materials_modal_new', 'tabs/materials/_modal-new.twig', {
+            mass_unit_strippedname: that.massUnitStrippedname,
+            length_unit_strippedname: that.lengthUnitStrippedname,
             material: material
         }, true);
 
@@ -186,11 +154,6 @@
         $inputs.inputName.on('keyup change', fnUpdateBtnCreateStatus);
         $inputs.inputColor.on('keyup change', fnUpdateBtnCreateStatus);
 
-        // Create color picker
-        $inputs.hueb.on('change', function() {
-            fnUpdateBtnCreateStatus();
-        });
-
         // Bind buttons
         $btnCreate.on('click', function () {
 
@@ -201,28 +164,28 @@
                 name: $inputs.inputName.val().trim(),
                 color: $inputs.inputColor.val(),
                 attributes: {
-                    type: $inputs.selectType.val(),
+                    type: parseInt($inputs.selectType.val()),
                     thickness: $inputs.inputThickness.val(),
                     length_increase: $inputs.inputLengthIncrease.val(),
                     width_increase: $inputs.inputWidthIncrease.val(),
                     thickness_increase: $inputs.inputThicknessIncrease.val(),
-                    std_lengths: $inputs.inputStdLengths.val(),
-                    std_widths: $inputs.inputStdWidths.val(),
-                    std_thicknesses: $inputs.inputStdThicknesses.val(),
-                    std_sections: $inputs.inputStdSections.val(),
-                    std_sizes: $inputs.inputStdSizes.val(),
+                    std_lengths: $inputs.inputStdLengths.ladbTextinputTokenfield('getValidTokensList'),
+                    std_widths: $inputs.inputStdWidths.ladbTextinputTokenfield('getValidTokensList'),
+                    std_thicknesses: $inputs.inputStdThicknesses.ladbTextinputTokenfield('getValidTokensList'),
+                    std_sections: $inputs.inputStdSections.ladbTextinputTokenfield('getValidTokensList'),
+                    std_sizes: $inputs.inputStdSizes.ladbTextinputTokenfield('getValidTokensList'),
                     grained: $inputs.selectGrained.val() === '1',
-                    edge_decremented: $inputs.selectEdgeDecremented.val() === '1'
+                    edge_decremented: $inputs.selectEdgeDecremented.val() === '1',
+                    volumic_mass: $inputs.inputVolumicMass.ladbTextinputNumberWithUnit('val'),
+                    std_prices: $inputs.editorStdPrices.ladbEditorStdPrices('getStdPrices')
                 }
             }, function (response) {
-
-                var materialId = response.id;
 
                 // Flag to stop ignoring next material change event
                 that.ignoreNextMaterialEvents = false;
 
                 if (response.errors && response.errors.length > 0) {
-                    that.opencutlist.notifyErrors(response.errors);
+                    that.dialog.notifyErrors(response.errors);
                 } else {
                     that.loadList();
                 }
@@ -238,26 +201,37 @@
         $modal.modal('show');
 
         // Setup tooltips & popovers
-        this.opencutlist.setupTooltips();
-        this.opencutlist.setupPopovers();
+        this.dialog.setupTooltips();
+        this.dialog.setupPopovers();
 
         // Focus
         $inputs.inputName.focus();
 
     };
 
-    LadbTabMaterials.prototype.editMaterial = function (id, callback) {
+    LadbTabMaterials.prototype.editMaterial = function (id, propertiesTab, callback, updatedCallback) {
         var that = this;
 
         var material = this.findMaterialById(id);
         if (material) {
 
+            if (propertiesTab === undefined) {
+                propertiesTab = this.lastMaterialPropertiesTab;
+            }
+            if (propertiesTab === null || propertiesTab.length === 0) {
+                propertiesTab = 'cut_options';
+            }
+            this.lastMaterialPropertiesTab = propertiesTab;
+
             // Keep the edited material
             this.editedMaterial = material;
 
             var $modal = this.appendModalInside('ladb_materials_modal_edit', 'tabs/materials/_modal-edit.twig', {
-                capabilities: that.opencutlist.capabilities,
-                material: material
+                capabilities: that.dialog.capabilities,
+                mass_unit_strippedname: that.massUnitStrippedname,
+                length_unit_strippedname: that.lengthUnitStrippedname,
+                material: material,
+                properties_tab: propertiesTab
             }, true);
 
             // Fetch UI elements
@@ -274,9 +248,27 @@
             var $btnExportToSkm = $('#ladb_materials_export_to_skm', $modal);
             var $btnUpdate = $('#ladb_materials_update', $modal);
 
-            // Define usefull functions
-            var fnDisableBtnExport = function () {
+            // Bind form
+            var $inputs = this.bindMaterialPropertiesForm($modal, material, false, function () {
                 $btnExportToSkm.prop('disabled', true);
+            });
+
+            // Define usefull functions
+            var fnFetchAttributes = function (attributes) {
+                attributes.type = parseInt($inputs.selectType.val());
+                attributes.thickness = $inputs.inputThickness.val();
+                attributes.length_increase = $inputs.inputLengthIncrease.val();
+                attributes.width_increase = $inputs.inputWidthIncrease.val();
+                attributes.thickness_increase = $inputs.inputThicknessIncrease.val();
+                attributes.std_lengths = $inputs.inputStdLengths.ladbTextinputTokenfield('getValidTokensList');
+                attributes.std_widths = $inputs.inputStdWidths.ladbTextinputTokenfield('getValidTokensList');
+                attributes.std_thicknesses = $inputs.inputStdThicknesses.ladbTextinputTokenfield('getValidTokensList');
+                attributes.std_sections = $inputs.inputStdSections.ladbTextinputTokenfield('getValidTokensList');
+                attributes.std_sizes = $inputs.inputStdSizes.ladbTextinputTokenfield('getValidTokensList');
+                attributes.grained = $inputs.selectGrained.val() === '1';
+                attributes.edge_decremented = $inputs.selectEdgeDecremented.val() === '1';
+                attributes.volumic_mass = $inputs.inputVolumicMass.ladbTextinputNumberWithUnit('val');
+                attributes.std_prices = $inputs.editorStdPrices.ladbEditorStdPrices('getStdPrices');
             };
             var fnRotateTexture = function (angle) {
                 var rotation = parseInt($inputTextureRotation.val());
@@ -315,7 +307,7 @@
             };
             var fnComputeSizeAspectRatio = function (isWidthMaster) {
                 if ($btnTextureSizeLock.data('locked')) {
-                    rubyCallCommand('core_compute_size_aspect_ratio_command', {
+                    rubyCallCommand('core_compute_size_aspect_ratio', {
                         width: $inputTextureWidth.val(),
                         height: $inputTextureHeight.val(),
                         ratio: material.texture_ratio,
@@ -330,9 +322,6 @@
                 $btnUpdate.prop('disabled', $inputs.inputName.data('ladb-invalid') || $inputs.inputColor.data('ladb-invalid'))
             };
 
-            // Bind form
-            var $inputs = this.bindMaterialPropertiesForm($modal, material);
-
             // Bind inputs
             $inputs.inputName.on('keyup change', fnUpdateBtnUpdateStatus);
             $inputs.inputColor.on('keyup change', fnUpdateBtnUpdateStatus);
@@ -344,11 +333,6 @@
 
                 // Unbind event
                 $btnTabTexture.off('shown.bs.tab');
-            });
-
-            // Bind change
-            $('input', $modal).on('change', function () {
-                fnDisableBtnExport();
             });
 
             // Bind buttons
@@ -383,6 +367,7 @@
                 this.blur();
             });
             $btnRemove.on('click', function () {
+                $modal.modal('hide');   // Hide modal
                 that.removeMaterial(that.editedMaterial);
                 this.blur();
             });
@@ -398,18 +383,7 @@
                 that.editedMaterial.texture_width = $inputTextureWidth.val();
                 that.editedMaterial.texture_height = $inputTextureHeight.val();
                 that.editedMaterial.texture_colorized = $btnTextureColorized.hasClass('active');
-                that.editedMaterial.attributes.type = $inputs.selectType.val();
-                that.editedMaterial.attributes.thickness = $inputs.inputThickness.val();
-                that.editedMaterial.attributes.length_increase = $inputs.inputLengthIncrease.val();
-                that.editedMaterial.attributes.width_increase = $inputs.inputWidthIncrease.val();
-                that.editedMaterial.attributes.thickness_increase = $inputs.inputThicknessIncrease.val();
-                that.editedMaterial.attributes.std_lengths = $inputs.inputStdLengths.val();
-                that.editedMaterial.attributes.std_widths = $inputs.inputStdWidths.val();
-                that.editedMaterial.attributes.std_thicknesses = $inputs.inputStdThicknesses.val();
-                that.editedMaterial.attributes.std_sections = $inputs.inputStdSections.val();
-                that.editedMaterial.attributes.std_sizes = $inputs.inputStdSizes.val();
-                that.editedMaterial.attributes.grained = $inputs.selectGrained.val() === '1';
-                that.editedMaterial.attributes.edge_decremented = $inputs.selectEdgeDecremented.val() === '1';
+                fnFetchAttributes(that.editedMaterial.attributes);
 
                 // Flag to ignore next material change event
                 that.ignoreNextMaterialEvents = true;
@@ -420,14 +394,20 @@
                     that.ignoreNextMaterialEvents = false;
 
                     if (response['errors']) {
-                        that.opencutlist.notifyErrors(response['errors']);
+                        that.dialog.notifyErrors(response['errors']);
                     } else {
 
-                        // Reload the list
-                        var material_id = that.editedMaterial.id;
-                        that.loadList(function() {
-                            that.scrollSlideToTarget(null, $('#ladb_material_' + material_id, that.$page), false, true);
-                        });
+                        if (typeof updatedCallback === 'function') {
+                            updatedCallback();
+                        } else {
+
+                            // Reload the list
+                            var material_id = that.editedMaterial.id;
+                            that.loadList(function() {
+                                that.scrollSlideToTarget(null, $('#ladb_material_' + material_id, that.$page), false, true);
+                            });
+
+                        }
 
                         // Reset edited material
                         that.editedMaterial = null;
@@ -456,11 +436,11 @@
             $inputs.inputName.focus();
 
             // Setup tooltips & popovers
-            this.opencutlist.setupTooltips();
-            this.opencutlist.setupPopovers();
+            this.dialog.setupTooltips();
+            this.dialog.setupPopovers();
 
             // Callback
-            if (typeof(callback) === 'function') {
+            if (typeof callback === 'function') {
                 callback($modal);
             }
 
@@ -472,15 +452,7 @@
     LadbTabMaterials.prototype.removeMaterial = function (material) {
         var that = this;
 
-        var $modal = this.appendModalInside('ladb_materials_modal_remove', 'tabs/materials/_modal-remove.twig', {
-            material: material
-        });
-
-        // Fetch UI elements
-        var $btnRemove = $('#ladb_materials_remove', $modal);
-
-        // Bind buttons
-        $btnRemove.on('click', function () {
+        this.dialog.confirm(i18next.t('default.caution'), i18next.t('tab.materials.remove.message', { material_name: material.display_name }), function () {
 
             // Flag to ignore next material change event
             that.ignoreNextMaterialEvents = true;
@@ -494,23 +466,20 @@
                 that.ignoreNextMaterialEvents = false;
 
                 if (response.errors && response.errors.length > 0) {
-                    that.opencutlist.notifyErrors(response.errors);
+                    that.dialog.notifyErrors(response.errors);
                 } else {
 
                     // Reload the list
                     that.loadList();
 
-                    // Hide modal
-                    $modal.modal('hide');
-
                 }
 
             });
 
+        }, {
+            confirmBtnType: 'danger',
+            confirmBtnLabel: i18next.t('default.remove')
         });
-
-        // Show modal
-        $modal.modal('show');
 
     };
 
@@ -526,7 +495,7 @@
             that.ignoreNextMaterialEvents = false;
 
             if (response.errors && response.errors.length > 0) {
-                that.opencutlist.notifyErrors(response.errors);
+                that.dialog.notifyErrors(response.errors);
             } else {
                 that.loadList(function() {
                     var $material = $('#ladb_material_' + response.material_id, that.$page);
@@ -545,13 +514,11 @@
             display_name: material.display_name
         }, function (response) {
 
-            var i;
-
             if (response.errors) {
-                that.opencutlist.notifyErrors(response.errors);
+                that.dialog.notifyErrors(response.errors);
             }
             if (response.export_path) {
-                that.opencutlist.notify(i18next.t('tab.materials.success.exported_to', { export_path: response.export_path }), 'success');
+                that.dialog.notify(i18next.t('tab.materials.success.exported_to', { export_path: response.export_path }), 'success');
             }
 
         });
@@ -578,7 +545,7 @@
             that.ignoreNextMaterialEvents = false;
 
             if (response.errors && response.errors.length > 0) {
-                that.opencutlist.notifyErrors(response.errors);
+                that.dialog.notifyErrors(response.errors);
             } else {
                 that.loadList();
             }
@@ -591,24 +558,16 @@
     LadbTabMaterials.prototype.loadOptions = function (callback) {
         var that = this;
 
-        this.opencutlist.pullSettings([
+        rubyCallCommand('core_get_model_preset', { dictionary: 'materials_options' }, function (response) {
 
-                SETTING_KEY_OPTION_MATERIAL_ORDER_STRATEGY
+            that.generateOptions = response.preset;
 
-            ],
-            3 /* SETTINGS_RW_STRATEGY_MODEL_GLOBAL */,
-            function () {
+            // Callback
+            if (typeof callback === 'function') {
+                callback();
+            }
 
-                that.generateOptions = {
-                    material_order_strategy: that.opencutlist.getSetting(SETTING_KEY_OPTION_MATERIAL_ORDER_STRATEGY, OPTION_DEFAULT_MATERIAL_ORDER_STRATEGY)
-                };
-
-                // Callback
-                if (callback && typeof(callback) === 'function') {
-                    callback();
-                }
-
-            });
+        });
 
     };
 
@@ -618,12 +577,21 @@
         var $modal = that.appendModalInside('ladb_materials_modal_options', 'tabs/materials/_modal-options.twig');
 
         // Fetch UI elements
+        var $widgetPreset = $('.ladb-widget-preset', $modal);
         var $sortableMaterialOrderStrategy = $('#ladb_sortable_material_order_strategy', $modal);
-        var $btnReset = $('#ladb_materials_options_reset', $modal);
         var $btnUpdate = $('#ladb_materials_options_update', $modal);
 
         // Define useful functions
-        var populateOptionsInputs = function (options) {
+        var fnFetchOptions = function (options) {
+
+            var properties = [];
+            $sortableMaterialOrderStrategy.children('li').each(function () {
+                properties.push($(this).data('property'));
+            });
+            options.material_order_strategy = properties.join('>');
+
+        };
+        var fnFillInputs = function (options) {
 
             // Sortables
 
@@ -662,29 +630,22 @@
 
         };
 
-        // Bind buttons
-        $btnReset.on('click', function () {
-            $(this).blur();
+        $widgetPreset.ladbWidgetPreset({
+            dialog: that.dialog,
+            dictionary: 'materials_options',
+            fnFetchOptions: fnFetchOptions,
+            fnFillInputs: fnFillInputs
 
-            var options = $.extend($.extend({}, that.generateOptions), {
-                material_order_strategy: OPTION_DEFAULT_MATERIAL_ORDER_STRATEGY,
-            });
-            populateOptionsInputs(options);
         });
+
+        // Bind buttons
         $btnUpdate.on('click', function () {
 
             // Fetch options
-
-            var properties = [];
-            $sortableMaterialOrderStrategy.children('li').each(function () {
-                properties.push($(this).data('property'));
-            });
-            that.generateOptions.material_order_strategy = properties.join('>');
+            fnFetchOptions(that.generateOptions);
 
             // Store options
-            that.opencutlist.setSettings([
-                { key:SETTING_KEY_OPTION_MATERIAL_ORDER_STRATEGY, value:that.generateOptions.material_order_strategy },
-            ], 3 /* SETTINGS_RW_STRATEGY_MODEL_GLOBAL */);
+            rubyCallCommand('core_set_model_preset', { dictionary: 'materials_options', values: that.generateOptions });
 
             // Hide modal
             $modal.modal('hide');
@@ -695,13 +656,13 @@
         });
 
         // Populate inputs
-        populateOptionsInputs(that.generateOptions);
+        fnFillInputs(that.generateOptions);
 
         // Show modal
         $modal.modal('show');
 
         // Setup popovers
-        this.opencutlist.setupPopovers();
+        this.dialog.setupPopovers();
 
     };
 
@@ -745,10 +706,13 @@
         }
     };
 
-    LadbTabMaterials.prototype.bindMaterialPropertiesForm = function ($modal, material, setAttributeToDefaults) {
+    LadbTabMaterials.prototype.bindMaterialPropertiesForm = function ($modal, material, setAttributeToDefaults, inputChangeCallback) {
         var that = this;
 
         // Fetch UI elements
+        var $tabs = $('a[data-toggle="tab"]', $modal);
+        var $widgetPreset = $('.ladb-widget-preset', $modal);
+        var $btnTabAttributes = $('#ladb_materials_btn_tab_general_attributes', $modal);
         var $inputName = $('#ladb_materials_input_name', $modal);
         var $inputNameWarning = $('#ladb_materials_input_name_warning', $modal);
         var $inputColor = $('#ladb_materials_input_color', $modal);
@@ -765,22 +729,75 @@
         var $inputStdSizes = $('#ladb_materials_input_std_sizes', $modal);
         var $selectGrained = $('#ladb_materials_select_grained', $modal);
         var $selectEdgeDecremented = $('#ladb_materials_select_edge_decremented', $modal);
-        var $spanCutOptionsDefaultsType1 = $('#ladb_materials_span_cut_options_defaults_type_1', $modal);
-        var $spanCutOptionsDefaultsType2 = $('#ladb_materials_span_cut_options_defaults_type_2', $modal);
-        var $spanCutOptionsDefaultsType3 = $('#ladb_materials_span_cut_options_defaults_type_3', $modal);
-        var $spanCutOptionsDefaultsType4 = $('#ladb_materials_span_cut_options_defaults_type_4', $modal);
-        var $btnCutOptionsDefaultsSave = $('#ladb_materials_btn_cut_options_defaults_save', $modal);
-        var $btnCutOptionsDefaultsReset = $('#ladb_materials_btn_cut_options_defaults_reset', $modal);
+        var $inputVolumicMass = $('#ladb_materials_input_volumic_mass', $modal);
+        var $editorStdPrices = $('#ladb_materials_editor_std_prices', $modal);
 
         // Define usefull functions
+        var fnFetchType = function (options) {
+            options.type = parseInt($selectType.val());
+        };
+        var fnFetchStds = function (options) {
+            options.std_lengths = $inputStdLengths.ladbTextinputTokenfield('getValidTokensList');
+            options.std_widths = $inputStdWidths.ladbTextinputTokenfield('getValidTokensList');
+            options.std_thicknesses = $inputStdThicknesses.ladbTextinputTokenfield('getValidTokensList');
+            options.std_sections = $inputStdSections.ladbTextinputTokenfield('getValidTokensList');
+            options.std_sizes = $inputStdSizes.ladbTextinputTokenfield('getValidTokensList');
+        };
+        var fnFetchOptions = function (options) {
+            fnFetchType(options);
+            options.thickness = $inputThickness.val();
+            options.length_increase = $inputLengthIncrease.val();
+            options.width_increase = $inputWidthIncrease.val();
+            options.thickness_increase = $inputThicknessIncrease.val();
+            fnFetchStds(options);
+            options.grained = $selectGrained.val() === '1';
+            options.edge_decremented = $selectEdgeDecremented.val() === '1';
+            options.volumic_mass = $inputVolumicMass.ladbTextinputNumberWithUnit('val');
+            options.std_prices = $editorStdPrices.ladbEditorStdPrices('getStdPrices');
+        };
+        var fnFillInputs = function (options) {
+            var fnSetTokens = function ($input, tokens) {
+                // Workaround for empty string tokens
+                $input.tokenfield('setTokens', tokens === '' ? ' ' : tokens);
+            };
+            $inputThickness.val(options.thickness);
+            $inputLengthIncrease.val(options.length_increase);
+            $inputWidthIncrease.val(options.width_increase);
+            $inputThicknessIncrease.val(options.thickness_increase);
+            fnSetTokens($inputStdLengths, options.std_lengths);
+            fnSetTokens($inputStdWidths, options.std_widths);
+            fnSetTokens($inputStdThicknesses, options.std_thicknesses);
+            fnSetTokens($inputStdSections, options.std_sections);
+            fnSetTokens($inputStdSizes, options.std_sizes);
+            $selectGrained.selectpicker('val', options.grained ? '1' : '0');
+            $selectEdgeDecremented.selectpicker('val', options.edge_decremented ? '1' : '0');
+            $inputVolumicMass.ladbTextinputNumberWithUnit('val', options.volumic_mass);
+            fnSetStdPricesTypeAndStds();
+            $editorStdPrices.ladbEditorStdPrices('setStdPrices', [ options.std_prices ]);
+        };
+        var fnSetStdPricesTypeAndStds = function () {
+            var options = {};
+            fnFetchType(options);
+            fnFetchStds(options);
+            $editorStdPrices.ladbEditorStdPrices('setTypeAndStds', [
+                options.type,
+                {
+                    stdLengths: options.std_lengths ? options.std_lengths.split(';') : [],
+                    stdWidths: options.std_widths ? options.std_widths.split(';') : [],
+                    stdThicknesses: options.std_thicknesses ? options.std_thicknesses.split(';') : [],
+                    stdSections: options.std_sections ? options.std_sections.split(';') : [],
+                    stdSizes: options.std_sizes ? options.std_sizes.split(';') : [],
+                }
+            ]);
+        };
         var fnComputeFieldsVisibility = function (type) {
             switch (type) {
-                case 0:   // TYPE_UNKNOW
-                    $inputLengthIncrease.closest('section').hide();
+                case 0:   // TYPE_UNKNOWN
+                    $inputThickness.closest('section').hide();
                     break;
                 case 1:   // TYPE_SOLID_WOOD
+                    $inputThickness.closest('section').show();
                     $inputThickness.closest('.form-group').hide();
-                    $inputLengthIncrease.closest('section').show();
                     $inputLengthIncrease.closest('.form-group').show();
                     $inputWidthIncrease.closest('.form-group').show();
                     $inputThicknessIncrease.closest('.form-group').show();
@@ -791,14 +808,12 @@
                     $inputStdSizes.closest('.form-group').hide();
                     $selectGrained.closest('.form-group').hide();
                     $selectEdgeDecremented.closest('.form-group').hide();
-                    $spanCutOptionsDefaultsType1.show();
-                    $spanCutOptionsDefaultsType2.hide();
-                    $spanCutOptionsDefaultsType3.hide();
-                    $spanCutOptionsDefaultsType4.hide();
+                    $inputVolumicMass.closest('.form-group').show();
+                    $editorStdPrices.closest('.form-group').show();
                     break;
                 case 2:   // TYPE_SHEET_GOOD
+                    $inputThickness.closest('section').show();
                     $inputThickness.closest('.form-group').hide();
-                    $inputLengthIncrease.closest('section').show();
                     $inputLengthIncrease.closest('.form-group').show();
                     $inputWidthIncrease.closest('.form-group').show();
                     $inputThicknessIncrease.closest('.form-group').hide();
@@ -809,14 +824,12 @@
                     $inputStdSizes.closest('.form-group').show();
                     $selectGrained.closest('.form-group').show();
                     $selectEdgeDecremented.closest('.form-group').hide();
-                    $spanCutOptionsDefaultsType1.hide();
-                    $spanCutOptionsDefaultsType2.show();
-                    $spanCutOptionsDefaultsType3.hide();
-                    $spanCutOptionsDefaultsType4.hide();
+                    $inputVolumicMass.closest('.form-group').show();
+                    $editorStdPrices.closest('.form-group').show();
                     break;
                 case 3:   // TYPE_DIMENSIONAL
+                    $inputThickness.closest('section').show();
                     $inputThickness.closest('.form-group').hide();
-                    $inputLengthIncrease.closest('section').show();
                     $inputLengthIncrease.closest('.form-group').show();
                     $inputWidthIncrease.closest('.form-group').hide();
                     $inputThicknessIncrease.closest('.form-group').hide();
@@ -827,14 +840,12 @@
                     $inputStdSizes.closest('.form-group').hide();
                     $selectGrained.closest('.form-group').hide();
                     $selectEdgeDecremented.closest('.form-group').hide();
-                    $spanCutOptionsDefaultsType1.hide();
-                    $spanCutOptionsDefaultsType2.hide();
-                    $spanCutOptionsDefaultsType3.show();
-                    $spanCutOptionsDefaultsType4.hide();
+                    $inputVolumicMass.closest('.form-group').show();
+                    $editorStdPrices.closest('.form-group').show();
                     break;
                 case 4:   // TYPE_EDGE
+                    $inputThickness.closest('section').show();
                     $inputThickness.closest('.form-group').show();
-                    $inputLengthIncrease.closest('section').show();
                     $inputLengthIncrease.closest('.form-group').show();
                     $inputWidthIncrease.closest('.form-group').hide();
                     $inputThicknessIncrease.closest('.form-group').hide();
@@ -845,111 +856,16 @@
                     $inputStdSizes.closest('.form-group').hide();
                     $selectGrained.closest('.form-group').hide();
                     $selectEdgeDecremented.closest('.form-group').show();
-                    $spanCutOptionsDefaultsType1.hide();
-                    $spanCutOptionsDefaultsType2.hide();
-                    $spanCutOptionsDefaultsType3.hide();
-                    $spanCutOptionsDefaultsType4.show();
+                    $inputVolumicMass.closest('.form-group').show();
+                    $editorStdPrices.closest('.form-group').show();
                     break;
+                case 5:   // TYPE_HARDWARE
+                    $inputThickness.closest('section').hide();
+                    break;
+                default:
+                    $inputThickness.closest('section').hide();
             }
         };
-        fnComputeFieldsVisibility(material.attributes.type);
-
-        var fnSetFieldValuesToDefaults = function (type) {
-            var defaultThickness,
-                defaultLengthIncrease,
-                defaultWidthIncrease,
-                defaultThicknessIncrease,
-                defaultStdLengths,
-                defaultStdWidths,
-                defaultStdThicknesses,
-                defaultStdSections,
-                defaultStdSizes,
-                defaultGrained,
-                defaultEdgeDecremented;
-            switch (type) {
-                case 0:   // TYPE_UNKNOW
-                    defaultThickness = '0';
-                    defaultLengthIncrease = '0';
-                    defaultWidthIncrease = '0';
-                    defaultThicknessIncrease = '0';
-                    defaultStdLengths = '';
-                    defaultStdWidths = '';
-                    defaultStdThicknesses = '';
-                    defaultStdSections = '';
-                    defaultStdSizes = '';
-                    defaultGrained = false;
-                    defaultEdgeDecremented = false;
-                    break;
-                case 1:   // TYPE_SOLID_WOOD
-                    defaultThickness = '0';
-                    defaultLengthIncrease = '50mm';
-                    defaultWidthIncrease = '5mm';
-                    defaultThicknessIncrease = '5mm';
-                    defaultStdLengths = '';
-                    defaultStdWidths = '';
-                    defaultStdThicknesses = '18mm;27mm;35mm;45mm;54mm;65mm;80mm;100mm';
-                    defaultStdSections = '';
-                    defaultStdSizes = '';
-                    defaultGrained = true;
-                    defaultEdgeDecremented = true;
-                    break;
-                case 2:   // TYPE_SHEET_GOOD
-                    defaultThickness = '0';
-                    defaultLengthIncrease = '0';
-                    defaultWidthIncrease = '0';
-                    defaultThicknessIncrease = '0';
-                    defaultStdLengths = '';
-                    defaultStdWidths = '';
-                    defaultStdThicknesses = '5mm;8mm;10mm;15mm;18mm;22mm';
-                    defaultStdSections = '';
-                    defaultStdSizes = '';
-                    defaultGrained = false;
-                    defaultEdgeDecremented = false;
-                    break;
-                case 3:   // TYPE_DIMENSIONAL
-                    defaultThickness = '0';
-                    defaultLengthIncrease = '0';
-                    defaultWidthIncrease = '0';
-                    defaultThicknessIncrease = '0';
-                    defaultStdLengths = '3000mm';
-                    defaultStdWidths = '';
-                    defaultStdThicknesses = '';
-                    defaultStdSections = '40mm x 30mm;50mm x 40mm';
-                    defaultStdSizes = '';
-                    defaultGrained = false;
-                    defaultEdgeDecremented = false;
-                    break;
-                case 4:   // TYPE_EDGE
-                    defaultThickness = '2mm';
-                    defaultLengthIncrease = '50mm';
-                    defaultWidthIncrease = '0';
-                    defaultThicknessIncrease = '0';
-                    defaultStdLengths = '';
-                    defaultStdWidths = '23mm;33mm;43mm';
-                    defaultStdThicknesses = '';
-                    defaultStdSections = '';
-                    defaultStdSizes = '';
-                    defaultGrained = false;
-                    defaultEdgeDecremented = true;
-                    break;
-            }
-            var setTokens = function ($input, tokens) {
-                // Workaround for empty string tokens
-                $input.tokenfield('setTokens', tokens === ''  ? ' ' : tokens);
-            };
-            $inputThickness.val(that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_THICKNESS, defaultThickness));
-            $inputLengthIncrease.val(that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_LENGTH_INCREASE, defaultLengthIncrease));
-            $inputWidthIncrease.val(that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_WIDTH_INCREASE, defaultWidthIncrease));
-            $inputThicknessIncrease.val(that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_THICKNESS_INCREASE, defaultThicknessIncrease));
-            setTokens($inputStdLengths, that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_LENGTHS, defaultStdLengths));
-            setTokens($inputStdWidths, that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_WIDTHS, defaultStdWidths));
-            setTokens($inputStdThicknesses, that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_THICKNESSES, defaultStdThicknesses));
-            setTokens($inputStdSections, that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_SECTIONS, defaultStdSections));
-            setTokens($inputStdSizes, that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_SIZES, defaultStdSizes));
-            $selectGrained.selectpicker('val', that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_GRAINED, defaultGrained) ? '1' : '0');
-            $selectEdgeDecremented.selectpicker('val', that.opencutlist.getSetting(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_EDGE_DECREMENTED, defaultEdgeDecremented) ? '1' : '0');
-        };
-
         var fnCheckInputNameValue = function(verbose) {
             if ($inputName.val().length > 0) {
                 $inputName.data('ladb-invalid', false);
@@ -977,95 +893,99 @@
             }
         };
 
+        $widgetPreset.ladbWidgetPreset({
+            dialog: that.dialog,
+            dictionary: 'materials_material_attributes',
+            section: material.attributes.type,
+            fnFetchOptions: fnFetchOptions,
+            fnFillInputs: fnFillInputs
+        });
+        $inputVolumicMass.ladbTextinputNumberWithUnit({
+            defaultUnit: that.massUnitStrippedname + '_' + that.lengthUnitStrippedname + '3',
+            units: [
+                {
+                    kg_m3: 'kg / m³',
+                    kg_ft3: 'kg / ft³'
+                },
+                {
+                    lb_ft3: 'lb / ft³',
+                    lb_m3: 'lb / m³'
+                },
+            ]
+        });
+        $editorStdPrices.ladbEditorStdPrices({
+            currencySymbol: that.currencySymbol,
+            lengthUnitStrippedname: that.lengthUnitStrippedname,
+            inputChangeCallback: inputChangeCallback
+        });
+
+        // Bind tab
+        $tabs.on('shown.bs.tab', function (e) {
+            that.lastMaterialPropertiesTab = $(e.target).attr('href').substring('#tab_edit_material_general_'.length);
+        })
+
+        $btnTabAttributes.on('shown.bs.tab', function () {
+            fnSetStdPricesTypeAndStds();
+        });
+
         // Bind select
         $selectType.on('change', function () {
-            var type = parseInt($(this).val());
+            var options = {};
+            fnFetchType(options);
 
-            // fnDisableBtnExport();
-            fnComputeFieldsVisibility(type);
-            fnSetFieldValuesToDefaults(type);
+            fnComputeFieldsVisibility(options.type);
+
+            // Update section on preset widget
+            $widgetPreset.ladbWidgetPreset('setSection', options.type);
+
+            // Reset fields to defaults
+            $widgetPreset.ladbWidgetPreset('restoreFromPreset', [ null, true ]);
 
         });
         $selectType.selectpicker(SELECT_PICKER_OPTIONS);
         $selectGrained.selectpicker(SELECT_PICKER_OPTIONS);
         $selectEdgeDecremented.selectpicker(SELECT_PICKER_OPTIONS);
 
-        // Create color picker
-        var hueb = new Huebee($inputColor.get(0) , {
-            notation: 'hex',
-            saturations: 2,
-            shades: 7,
-            customColors: [ '#4F78A7', '#EF8E2C', '#DE545A', '#79B8B2', '#5CA34D', '#ECCA48', '#AE78A2', '#FC9CA8', '#9B755F', '#BAB0AC' ]
-        });
-        hueb.on('change', function() {
-            hueb.close();
-            $inputColor.trigger('change');
-        });
-
         // Bind inputs
         $inputName.on('keyup change', function() { fnCheckInputNameValue(true); });
         $inputColor.on('keyup change', function() { fnCheckInputColorValue(true); });
-
-        // Initial input checks
-        fnCheckInputNameValue(false);
-        fnCheckInputColorValue(false);
-
-        // Bind buttons
-        $btnCutOptionsDefaultsSave.on('click', function () {
-
-            var type = parseInt($selectType.val());
-            var thickness = $inputThickness.val();
-            var length_increase = $inputLengthIncrease.val();
-            var width_increase = $inputWidthIncrease.val();
-            var thickness_increase = $inputThicknessIncrease.val();
-            var std_lengths = $inputStdLengths.val();
-            var std_widths = $inputStdWidths.val();
-            var std_thicknesses = $inputStdThicknesses.val();
-            var std_sections = $inputStdSections.val();
-            var std_sizes = $inputStdSizes.val();
-            var grained = $selectGrained.val() === '1';
-            var edgeDecrement = $selectEdgeDecremented.val() === '1';
-
-            // Update default cut options for specific type to last used
-            that.opencutlist.setSettings([
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_THICKNESS, value:thickness, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_LENGTH_INCREASE, value:length_increase, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_WIDTH_INCREASE, value:width_increase, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_THICKNESS_INCREASE, value:thickness_increase, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_LENGTHS, value:std_lengths, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_WIDTHS, value:std_widths, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_THICKNESSES, value:std_thicknesses, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_SECTIONS, value:std_sections, preprocessor:2 /* SETTINGS_PREPROCESSOR_DXD */ },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_SIZES, value:std_sizes, preprocessor:2 /* SETTINGS_PREPROCESSOR_DXD */ },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_GRAINED, value:grained },
-                { key:SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_EDGE_DECREMENTED, value:edgeDecrement }
-            ], 0 /* SETTINGS_RW_STRATEGY_GLOBAL */);
-
-            that.opencutlist.notify(i18next.t('tab.materials.edit_material.cut_options_defaults.save_success', { type_name: i18next.t('tab.materials.type_' + type) }), 'success');
-
-            this.blur();
-        });
-        $btnCutOptionsDefaultsReset.on('click', function () {
-            var type = parseInt($selectType.val());
-            fnSetFieldValuesToDefaults(type);
-            this.blur();
-        });
+        $inputColor.ladbTextinputColor();
 
         // Bind modal event
         $modal.on('shown.bs.modal', function() {
 
+            // Init textinputs
+            $inputThickness.ladbTextinputDimension();
+            $inputLengthIncrease.ladbTextinputDimension();
+            $inputWidthIncrease.ladbTextinputDimension();
+            $inputThicknessIncrease.ladbTextinputDimension();
+
             // Init tokenfields (this must done after modal shown for correct token label max width measurement)
-            $inputStdLengths.tokenfield(TOKENFIELD_OPTIONS).on('tokenfield:createdtoken', that.tokenfieldValidatorFn_d);
-            $inputStdWidths.tokenfield(TOKENFIELD_OPTIONS).on('tokenfield:createdtoken', that.tokenfieldValidatorFn_d);
-            $inputStdThicknesses.tokenfield(TOKENFIELD_OPTIONS).on('tokenfield:createdtoken', that.tokenfieldValidatorFn_d);
-            $inputStdSections.tokenfield(TOKENFIELD_OPTIONS).on('tokenfield:createdtoken', that.tokenfieldValidatorFn_dxd);
-            $inputStdSizes.tokenfield(TOKENFIELD_OPTIONS).on('tokenfield:createdtoken', that.tokenfieldValidatorFn_dxd);
+            $inputStdLengths.ladbTextinputTokenfield({ format: 'd' });
+            $inputStdWidths.ladbTextinputTokenfield({ format: 'd' });
+            $inputStdThicknesses.ladbTextinputTokenfield({ format: 'd' });
+            $inputStdSections.ladbTextinputTokenfield({ format: 'dxd' });
+            $inputStdSizes.ladbTextinputTokenfield({ format: 'dxd' });
 
             if (setAttributeToDefaults) {
-                fnSetFieldValuesToDefaults(material.attributes.type);
+                $widgetPreset.ladbWidgetPreset('restoreFromPreset', [ null, true ]);
+            } else {
+                fnFillInputs(material.attributes);
+            }
+
+            if (inputChangeCallback) {
+                // Bind change
+                $('input', $modal).on('change', function () {
+                    inputChangeCallback();
+                });
             }
 
         });
+
+        // Initials
+        fnComputeFieldsVisibility(material.attributes.type);
+        fnCheckInputNameValue(false);
+        fnCheckInputColorValue(false);
 
         return {
             inputName: $inputName,
@@ -1082,8 +1002,37 @@
             inputStdSizes: $inputStdSizes,
             selectGrained: $selectGrained,
             selectEdgeDecremented: $selectEdgeDecremented,
-            hueb: hueb
+            inputVolumicMass: $inputVolumicMass,
+            editorStdPrices: $editorStdPrices,
         }
+    };
+
+    // Init ///
+
+    LadbTabMaterials.prototype.registerCommands = function () {
+        LadbAbstractTab.prototype.registerCommands.call(this);
+
+        var that = this;
+
+        this.registerCommand('new_material', function (parameters) {
+            setTimeout(function () {     // Use setTimeout to give time to UI to refresh
+                var name = parameters.name;
+                var color = parameters.color;
+                var type = parameters.type;
+                that.newMaterial(name, color, type);
+            }, 1);
+        });
+        this.registerCommand('edit_material', function (parameters) {
+            var materialId = parameters.materialId;
+            var propertiesTab = parameters.propertiesTab;
+            var callback = parameters.callback;
+            var updatedCallback = parameters.updatedCallback;
+            setTimeout(function () {     // Use setTimeout to give time to UI to refresh
+                that.loadList(function () {
+                    that.editMaterial(materialId, propertiesTab, callback, updatedCallback);
+                });
+            }, 1);
+        });
     };
 
     LadbTabMaterials.prototype.bind = function () {
@@ -1100,6 +1049,10 @@
             that.newMaterial();
             this.blur();
         });
+        this.$btnOptions.on('click', function () {
+            that.editOptions();
+            this.blur();
+        });
         this.$itemImportFromSkm.on('click', function () {
             that.importFromSkm();
             this.blur();
@@ -1108,15 +1061,19 @@
             that.purgeUnused();
             this.blur();
         });
-        this.$itemOptions.on('click', function () {
-            that.editOptions();
-            this.blur();
-        });
 
         // Events
 
         addEventCallback([ 'on_new_model', 'on_open_model', 'on_activate_model' ], function (params) {
             that.showObsolete('core.event.model_change', true);
+        });
+        addEventCallback('on_options_provider_changed', function () {
+            that.showObsolete('core.event.options_change', true);
+        });
+        addEventCallback('on_model_preset_changed', function (params) {
+            if (params.dictionary === 'settings_model') {
+                that.showObsolete('core.event.options_change', true);
+            }
         });
         addEventCallback([ 'on_material_add', 'on_material_remove', 'on_material_change' ], function () {
             if (!that.ignoreNextMaterialEvents) {
@@ -1138,62 +1095,20 @@
 
     };
 
-    LadbTabMaterials.prototype.init = function (initializedCallback) {
+    LadbTabMaterials.prototype.processInitializedCallback = function (initializedCallback) {
         var that = this;
 
-        // Register commands
-        this.registerCommand('new_material', function (parameters) {
-            setTimeout(function () {     // Use setTimer to give time tu UI to refresh
-                var name = parameters.name;
-                var color = parameters.color;
-                var type = parameters.type;
-                that.newMaterial(name, color, type);
-            }, 1);
-        });
-        this.registerCommand('edit_material', function (parameters) {
-            var materialId = parameters.material_id;
-            var callback = parameters.callback;
-            setTimeout(function () {     // Use setTimer to give time tu UI to refresh
-                that.loadList(function () {
-                    that.editMaterial(materialId, callback);
-                });
-            }, 1);
+        // Load Options
+        that.loadOptions(function () {
+            LadbAbstractTab.prototype.processInitializedCallback.call(that, initializedCallback);
         });
 
-        // Load settings
-        var settingsKeys = [];
-        for (var type = 0; type <= 4; type++) {     // 4 = TYPE_EDGE_BAND
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_THICKNESS);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_LENGTH_INCREASE);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_WIDTH_INCREASE);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_THICKNESS_INCREASE);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_LENGTHS);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_WIDTHS);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_THICKNESSES);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_SECTIONS);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_STD_SIZES);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_GRAINED);
-            settingsKeys.push(SETTING_KEY_OPTION_PREFIX_TYPE + type + SETTING_KEY_OPTION_SUFFIX_EDGE_DECREMENTED);
-        }
+    };
 
-        this.opencutlist.pullSettings(settingsKeys, 0 /* SETTINGS_RW_STRATEGY_GLOBAL */, function () {
+    LadbTabMaterials.prototype.defaultInitializedCallback = function () {
+        LadbAbstractTab.prototype.defaultInitializedCallback.call(this);
 
-            // Load Options
-            that.loadOptions(function () {
-
-                that.bind();
-
-                if (initializedCallback && typeof(initializedCallback) == 'function') {
-                    initializedCallback(that.$element);
-                } else {
-                    setTimeout(function () {     // Use setTimer to give time tu UI to refresh
-                        that.loadList();
-                    }, 1);
-                }
-
-            });
-
-        });
+        this.loadList();
 
     };
 
@@ -1204,16 +1119,16 @@
     function Plugin(option, params) {
         return this.each(function () {
             var $this = $(this);
-            var data = $this.data('ladb.tabMaterials');
-            var options = $.extend({}, LadbTabMaterials.DEFAULTS, $this.data(), typeof option == 'object' && option);
+            var data = $this.data('ladb.tab.plugin');
+            var options = $.extend({}, LadbTabMaterials.DEFAULTS, $this.data(), typeof option === 'object' && option);
 
             if (!data) {
-                if (undefined === options.opencutlist) {
-                    throw 'opencutlist option is mandatory.';
+                if (undefined === options.dialog) {
+                    throw 'dialog option is mandatory.';
                 }
-                $this.data('ladb.tabMaterials', (data = new LadbTabMaterials(this, options, options.opencutlist)));
+                $this.data('ladb.tab.plugin', (data = new LadbTabMaterials(this, options, options.dialog)));
             }
-            if (typeof option == 'string') {
+            if (typeof option === 'string') {
                 data[option].apply(data, Array.isArray(params) ? params : [ params ])
             } else {
                 data.init(option.initializedCallback);

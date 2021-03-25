@@ -9,18 +9,19 @@
 {% block containerInner %}
     <div class="panel panel-default">
         <div class="panel-body">
-        <div class="media">
-            <div class="media-left"><img src="../img/icon-114x114.png" width="114" height="114"></div>
-            <div class="media-body ladb-sponsor-panel-body">
-                {{ 'tab.sponsor.description'|i18next }}
-            </div>
-        </div>
-        </div>
-        <div class="panel-footer">
-            <div class="text-center">
-                <a href="https://opencollective.com/lairdubois-opencutlist-sketchup-extension#section-contribute" class="btn btn-sponsor btn-lg" target="_blank"><i class="ladb-opencutlist-icon-sponsor"></i> {{ 'tab.sponsor.contribute'|i18next }}...</a>
+            <div class="media">
+                <div class="media-left"><img src="../img/icon-114x114.png" width="114" height="114"></div>
+                <div class="media-body ladb-sponsor-panel-body">
+                    {{ 'tab.sponsor.description'|i18next }}
+                </div>
             </div>
         </div>
     </div>
-    {% include 'core/_loading.twig' with { 'noHidden':true } %}
+    {% include 'tabs/sponsor/_objective-widget.twig' %}
+    <p class="text-center">
+        <a href="https://opencollective.com/lairdubois-opencutlist-sketchup-extension#section-contribute" class="btn btn-sponsor btn-lg" target="_blank"><i class="ladb-opencutlist-icon-sponsor"></i> {{ 'tab.sponsor.contribute'|i18next }}...</a>
+    </p>
+    <div id="ladb_sponsor_backers_widget">
+        {% include 'core/_loading.twig' with { 'noHidden':true } %}
+    </div>
 {% endblock %}

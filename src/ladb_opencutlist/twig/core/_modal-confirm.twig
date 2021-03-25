@@ -1,0 +1,14 @@
+{% extends 'core/_modal.twig' %}
+
+{% set id = 'ladb_core_modal_confirm' %}
+{% set noDefaultClose = true %}
+{% set noHeader = title is null %}
+
+{% block bodyInner %}
+    <p>{{ text }}</p>
+{% endblock %}
+
+{% block footerInner %}
+    <button type="button" class="btn btn-default" data-dismiss="modal">{{ options.cancelBtnLabel|default('default.cancel'|i18next) }}</button>
+    <button type="button" id="ladb_confirm_btn_confirm" class="btn btn-{{ options.confirmBtnType|default('primary') }}" data-dismiss="modal">{% if options.confirmBtnIcon is defined %}<i class="ladb-opencutlist-icon-{{ options.confirmBtnIcon }}"></i> {% endif %}{{ options.confirmBtnLabel|default('default.confirm'|i18next) }}</button>
+{% endblock %}

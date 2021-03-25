@@ -1,0 +1,27 @@
+{% extends 'core/_modal.twig' %}
+
+{% set id = 'ladb_tutorial_play' %}
+{% set title = tutorial.title %}
+
+{% block headerInner %}
+    <div class="media">
+        <div class="media-left">
+            {% include 'tabs/tutorials/_language.twig' %}
+        </div>
+        <div class="media-body">
+            {{ parent() }}
+            {% include 'tabs/tutorials/_author.twig' %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block bodyInner %}
+    <div class="text-center">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ tutorial.video_id }}?autoplay=1&cc_load_policy=1" frameborder="0" allowfullscreen></iframe>
+    </div>
+{% endblock %}
+
+{% block footerInner %}
+    <a href="https://www.youtube.com/channel/{{ tutorial.channel_id }}" target="_blank" class="btn btn-default pull-left"><i class="ladb-opencutlist-icon-tutorials" style="color:red;"></i> {{ tutorial.author }} ...</a>
+    <button type="button" class="btn btn-default" data-dismiss="modal">{{ 'default.close'|i18next }}</button>
+{% endblock %}

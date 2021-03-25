@@ -6,23 +6,14 @@ module Ladb::OpenCutList
   class HighlightPartTool < CutlistObserver
 
     COLOR_FACE = Sketchup::Color.new(255, 0, 0, 128).freeze
-    COLOR_FACE_HOVER = Sketchup::Color.new(247, 127, 0, 255).freeze
-    COLOR_FACE_HOVER_SMILAR = Sketchup::Color.new(247, 127, 0, 128).freeze
+    COLOR_FACE_HOVER = Sketchup::Color.new(0, 62, 255, 200).freeze
+    COLOR_FACE_HOVER_SMILAR = Sketchup::Color.new(0, 62, 255, 128).freeze
     COLOR_TEXT_BG = Sketchup::Color.new(255, 255, 255, 191).freeze
     COLOR_TEXT = Sketchup::Color.new(0, 0, 0, 255).freeze
     COLOR_DRAWING = Sketchup::Color.new(255, 255, 255, 255).freeze
     COLOR_DRAWING_AUTO_ORIENTED = Sketchup::Color.new(123, 213, 239, 255).freeze
 
     PATH_OFFSETS_FRONT_ARROW = [
-        [ false ,     0 , 1/3.0 , 0 ],
-        [ true  , 1/2.0 , 1/3.0 , 0 ],
-        [ true  , 1/2.0 ,     0 , 0 ],
-        [ true  ,     1 , 1/2.0 , 0 ],
-        [ true  , 1/2.0 ,     1 , 0 ],
-        [ true  , 1/2.0 , 2/3.0 , 0 ],
-        [ true  ,     0 , 2/3.0 , 0 ],
-    ]
-    PATH_OFFSETS_BACK_ARROW = [
         [ false ,     0 , 1/3.0 , 1 ],
         [ true  , 1/2.0 , 1/3.0 , 1 ],
         [ true  , 1/2.0 ,     0 , 1 ],
@@ -31,14 +22,23 @@ module Ladb::OpenCutList
         [ true  , 1/2.0 , 2/3.0 , 1 ],
         [ true  ,     0 , 2/3.0 , 1 ],
     ]
+    PATH_OFFSETS_BACK_ARROW = [
+        [ false ,     0 , 1/3.0 , 0 ],
+        [ true  , 1/2.0 , 1/3.0 , 0 ],
+        [ true  , 1/2.0 ,     0 , 0 ],
+        [ true  ,     1 , 1/2.0 , 0 ],
+        [ true  , 1/2.0 ,     1 , 0 ],
+        [ true  , 1/2.0 , 2/3.0 , 0 ],
+        [ true  ,     0 , 2/3.0 , 0 ],
+    ]
 
     FONT_TEXT = 'Verdana'
 
-    def initialize(cutlist, group, parts, part_count, maximize_on_quit)
+    def initialize(cutlist, group, parts, instance_count, maximize_on_quit)
       @cutlist = cutlist
       @group = group
       @parts = parts
-      @part_count = part_count
+      @instance_count = instance_count
       @maximize_on_quit = maximize_on_quit
 
       # Add tool as observer of the cutlist
@@ -77,6 +77,7 @@ module Ladb::OpenCutList
       @initial_model_transparency = false
       @buttons = []
       @hover_part = nil
+      @hover_pick_path = nil
 
       model = Sketchup.active_model
       if model
@@ -106,7 +107,7 @@ module Ladb::OpenCutList
             draw_def[:face_triangles].concat(_compute_children_faces_tirangles(view, instance_info.entity.definition.entities, instance_info.transformation))
 
             # Compute back and front face arrows
-            if group.material_type != MaterialAttributes::TYPE_UNKNOW
+            if group.material_type != MaterialAttributes::TYPE_HARDWARE && group.material_type != MaterialAttributes::TYPE_UNKNOWN
 
               order = [ 1, 2, 3 ]
               if part.auto_oriented
@@ -194,7 +195,7 @@ module Ladb::OpenCutList
         draw_def[:front_arrow_points].each { |points|
           view.draw(GL_LINES, points)
         }
-        view.line_stipple = '_'
+        view.line_stipple = '-'
         draw_def[:back_arrow_points].each { |points|
           view.draw(GL_LINES, points)
         }
@@ -217,6 +218,7 @@ module Ladb::OpenCutList
         @buttons.each { |button|
           button.draw(view)
         }
+
       end
 
     end
@@ -231,14 +233,49 @@ module Ladb::OpenCutList
     else
       # Only works with SketchUp 2015 and newer:
       def getMenu(menu, flags, x, y, view)
-        build_menu(menu)
+        _pick_hover_part(x, y, view) unless view.nil?
+        build_menu(menu, view)
       end
     end
 
-    def build_menu(menu)
+    def build_menu(menu, view = nil)
       if @hover_part
-        menu.add_item('Hello') {
-          UI.messagebox('Please sponsor this project and you will be able to see cool features here in the next release :)')
+        hover_part_id = @hover_part.id
+        hover_part_material_type = @hover_part.group.material_type
+        item = menu.add_item("[#{@hover_part.number}] #{@hover_part.name}") {}
+        menu.set_validation_proc(item) { MF_GRAYED }
+        menu.add_separator
+        menu.add_item(Plugin.instance.get_i18n_string('tab.cutlist.edit_part_properties')) {
+          Plugin.instance.execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: '#{hover_part_id}', tab: 'general', dontGenerate: true }")
+        }
+        menu.add_item(Plugin.instance.get_i18n_string('tab.cutlist.edit_part_axes_properties')) {
+          Plugin.instance.execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: '#{hover_part_id}', tab: 'axes', dontGenerate: true }")
+        }
+        item = menu.add_item(Plugin.instance.get_i18n_string('tab.cutlist.edit_part_size_increase_properties')) {
+          Plugin.instance.execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: '#{hover_part_id}', tab: 'size_increase', dontGenerate: true }")
+        }
+        menu.set_validation_proc(item) {
+          if hover_part_material_type == MaterialAttributes::TYPE_SOLID_WOOD ||
+              hover_part_material_type == MaterialAttributes::TYPE_SHEET_GOOD ||
+              hover_part_material_type == MaterialAttributes::TYPE_DIMENSIONAL
+            MF_ENABLED
+          else
+            MF_GRAYED
+          end
+        }
+        item = menu.add_item(Plugin.instance.get_i18n_string('tab.cutlist.edit_part_edges_properties')) {
+          Plugin.instance.execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: '#{hover_part_id}', tab: 'edges', dontGenerate: true }")
+        }
+        menu.set_validation_proc(item) {
+          if hover_part_material_type == MaterialAttributes::TYPE_SHEET_GOOD
+            MF_ENABLED
+          else
+            MF_GRAYED
+          end
+        }
+      elsif view
+        menu.add_item(Plugin.instance.get_i18n_string('default.close')) {
+          _quit(view)
         }
       end
     end
@@ -259,6 +296,7 @@ module Ladb::OpenCutList
           return
         end
       }
+      _pick_hover_part(x, y, view)
       if @hover_part
         UI.beep
         return
@@ -273,30 +311,7 @@ module Ladb::OpenCutList
         end
       }
 
-      # Try to pick a part
-      @pick_helper.do_pick(x, y)
-      @pick_helper.count.times { |pick_path_index|
-
-        path = @pick_helper.path_at(pick_path_index)
-        if path
-          path.reverse.each { |entity|
-            if entity.is_a? Sketchup::ComponentInstance
-              @parts.each do |part|
-                part.entity_ids.each { |entity_id|
-                  if entity.entityID == entity_id
-                    @hover_part = part
-                    _update_text_lines
-                    view.invalidate
-                    return
-                  end
-                }
-              end
-            end
-          }
-        end
-
-      }
-      _reset(view)
+      _pick_hover_part(x, y, view)
 
     end
 
@@ -333,24 +348,26 @@ module Ladb::OpenCutList
       part = @hover_part ? @hover_part : (@parts.length == 1 ? @parts.first : nil)
       if part
 
+        instance_count = part.instance_count_by_part * part.count - part.unused_instance_count
+
         @text_line_1 = "[#{part.number}] #{part.name}"
-        @text_line_2 = part.labels.join(' | ')
+        @text_line_2 = part.tags.join(' | ')
         @text_line_3 = "#{ part.length_increased ? '*' : '' }#{part.length.to_s} x #{ part.width_increased ? '*' : '' }#{part.width.to_s} x #{ part.thickness_increased ? '*' : '' }#{part.thickness.to_s}" +
             (part.final_area.nil? ? '' : " (#{part.final_area})") +
-            " | #{part.count.to_s} #{Plugin.instance.get_i18n_string(part.count > 1 ? 'default.part_plural' : 'default.part_single')}" +
+            " | #{instance_count.to_s} #{Plugin.instance.get_i18n_string(instance_count > 1 ? 'default.instance_plural' : 'default.instance_single')}" +
             " | #{(part.material_name.empty? ? Plugin.instance.get_i18n_string('tab.cutlist.material_undefined') : part.material_name)}"
 
       elsif @group
 
         @text_line_1 = (@group.material_name.empty? ? Plugin.instance.get_i18n_string('tab.cutlist.material_undefined') : @group.material_name + (@group.std_dimension.empty? ? '' : ' / ' + @group.std_dimension))
         @text_line_2 = ''
-        @text_line_3 = @part_count.to_s + ' ' + Plugin.instance.get_i18n_string(@part_count > 1 ? 'default.part_plural' : 'default.part_single')
+        @text_line_3 = @instance_count.to_s + ' ' + Plugin.instance.get_i18n_string(@instance_count > 1 ? 'default.instance_plural' : 'default.instance_single')
 
       else
 
         @text_line_1 = ''
         @text_line_2 = ''
-        @text_line_3 = @part_count.to_s + ' ' + Plugin.instance.get_i18n_string(@part_count > 1 ? 'default.part_plural' : 'default.part_single')
+        @text_line_3 = @instance_count.to_s + ' ' + Plugin.instance.get_i18n_string(@instance_count > 1 ? 'default.instance_plural' : 'default.instance_single')
 
       end
 
@@ -359,6 +376,8 @@ module Ladb::OpenCutList
     def _reset(view)
       if @hover_part
         @hover_part = nil
+        @hover_pick_path = nil
+        _update_text_lines
         view.invalidate
       end
     end
@@ -465,6 +484,48 @@ module Ladb::OpenCutList
       ]
       view.drawing_color = color
       view.draw2d(GL_QUADS, @points)
+    end
+
+    def _pick_hover_part(x, y, view)
+      if @pick_helper.do_pick(x, y) > 0
+
+        active_path = Sketchup.active_model.active_path.nil? ? [] : Sketchup.active_model.active_path
+
+        @pick_helper.count.times { |pick_path_index|
+
+          pick_path = @pick_helper.path_at(pick_path_index)
+          if pick_path == @hover_pick_path
+            return  # Previously detected path, stop process to optimize.
+          end
+          if pick_path
+
+            # Cleanup pick path to keep only ComponentInstances and Groups
+            path = active_path
+            pick_path.each { |entity|
+              if entity.is_a?(Sketchup::ComponentInstance) || entity.is_a?(Sketchup::Group)
+                path.push(entity);
+              end
+            }
+
+            serialized_path = PathUtils.serialize_path(path)
+
+            @parts.each do |part|
+              part.def.entity_serialized_paths.each { |sp|
+                if serialized_path.start_with?(sp)
+                  @hover_part = part
+                  @hover_pick_path = pick_path
+                  _update_text_lines
+                  view.invalidate
+                  return
+                end
+              }
+            end
+
+          end
+
+        }
+      end
+      _reset(view)
     end
 
   end

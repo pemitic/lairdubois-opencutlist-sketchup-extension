@@ -12,7 +12,7 @@
       display: none;
     }
 
-    tbody {
+    thead tr.table-column-heading, tbody {
       display: none;
     }
 
@@ -34,27 +34,33 @@
     border-left: 3px solid @ladb-material-type-4;
   }
 
+  &.ladb-material-type-5 {
+    border-left: 3px solid @ladb-material-type-5;
+  }
+
   &.table-danger {
 
-    thead tr {
+    thead tr.table-heading {
       background-color: #f2dede;
     }
 
   }
 
   &.ladb-cutlist-group-dark {
-    thead tr {
+
+    thead tr.table-heading {
       background-color: #555;
       color: #fff;
     }
+
   }
 
-  thead tr {
-    background-color: #eee;
+  thead tr td {
+    border-bottom: 0;
+  }
 
-    td {
-      border-bottom: 0;
-    }
+  thead tr.table-heading {
+    background-color: #eee;
 
     .ladb-material-type-icon {
       margin: 2px 8px 2px 0;
@@ -77,15 +83,25 @@
 
   }
 
-  tbody tr.ladb-cutlist-heading-row {
+  thead tr.table-column-heading {
+
     .ladb-minitools a {
       font-size: 16px;
     }
+
   }
 
   tbody tr.ladb-cutlist-row {
     font-size: 16px;
     cursor: pointer;
+
+    &.ladb-cutlist-row-separator {
+
+      > td {
+        border-top-width: 3px;
+      }
+
+    }
 
     &.ladb-cutlist-row-total {
       cursor: initial;
@@ -115,6 +131,17 @@
 
       .ladb-cutlist-part-name {
         padding-left: 10px;
+      }
+
+    }
+
+    &.ladb-cutlist-row-error {
+      color: #a94442;
+
+      > td {
+        border-top: 1px solid darken(spin(#f2dede, -10), 5%);
+        border-bottom: 1px solid darken(spin(#f2dede, -10), 5%);
+        background-color: #f2dede;
       }
 
     }
@@ -149,7 +176,7 @@
       font-size: 70%;
     }
 
-    .ladb-cutlist-part-labels {
+    .ladb-cutlist-part-tags {
       list-style: none;
       padding: 0;
       margin: 0;
@@ -177,6 +204,7 @@
         }
 
       }
+
     }
 
     .ladb-cutlist-edge {
@@ -206,7 +234,7 @@
     margin-right: 10px;
   }
 
-  .ladb-cutlist-labels-filters-printable {
+  .ladb-cutlist-tags-filters-printable {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -221,6 +249,7 @@
       font-size: 120%;
       border: 1px solid #000;
     }
+
   }
 
 }
@@ -253,10 +282,35 @@
       font-size: 80%;
     }
 
-    a {
+    .ladb-minitools > a {
       float: right;
       color: #000;
       cursor: pointer;
+      margin-left: 5px;
+
+      &:focus {
+        color: inherit;
+      }
+
+      &.ladb-active {
+        background-color: #333;
+        color: #fff;
+        border-radius: 4px;
+
+        &:hover {
+          background-color: lighten(#333, 30%);
+        }
+
+      }
+
+    }
+
+    &.ladb-inactive {
+      opacity: 0.5;
+    }
+
+    .ladb-cutlist-export-col-formula {
+      margin: 10px 0 5px 10px;
     }
 
   }
@@ -276,12 +330,25 @@
 
 }
 
+#ladb_cutlist_modal_labels {
+
+  section {
+
+    h4 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+  }
+
+}
+
 // SVG
 
 // Workaround for IE bug on height auto with SVG
-body.no-ie, body.ie-gt10 {
+body.no-ie, body.ie-gt11 {
 
-  .ladb-cuttingdiagram-group svg {
+  .ladb-cuttingdiagram-group svg, .ladb-cuttingdiagram-labels-group svg {
     height: auto;
   }
 
@@ -335,7 +402,7 @@ body.no-ie, body.ie-gt10 {
       }
 
       .part-outer {
-        fill: #555;
+        fill: #fff;
       }
       .part-inner {
         fill: #eee;
@@ -384,16 +451,65 @@ body.no-ie, body.ie-gt10 {
       &:hover {
         .cut-outer, .cut-inner {
           fill: @ladb-brand-primary;
+          fill-opacity: 1.0;
+        }
+      }
+
+      &.cut-through {
+        &.cut-highlighted {
+          .cut-outer, .cut-inner {
+            fill: #2DB84D;
+          }
+          .cut-outer {
+            fill-opacity: 0.5;
+          }
+        }
+        &:hover {
+          .cut-outer, .cut-inner {
+            fill: #2DB84D;
+          }
+        }
+      }
+
+      &.cut-final {
+        &.cut-highlighted {
+          .cut-outer, .cut-inner {
+            fill: #F5486E;
+          }
+          .cut-outer {
+            fill-opacity: 0.5;
+          }
+        }
+        &:hover {
+          .cut-outer, .cut-inner {
+            fill: #F5486E;
+          }
         }
       }
 
       .cut-outer {
-        fill: rgba(0, 0, 0, 0.01);
+        fill: #ffffff;
+        fill-opacity: 0.01;
       }
       .cut-inner {
-        fill: #5fc0dd;
+        fill: #555;
       }
 
+    }
+
+  }
+
+}
+
+.ladb-cuttingdiagram-labels-group svg {
+  border: 1px solid #ddd;
+  box-shadow: 3px 3px 10px #999;
+
+  .grid-line {
+    stroke: #000;
+
+    &.no-print {
+      stroke: #ddd;
     }
 
   }
@@ -474,6 +590,35 @@ body.no-ie, body.ie-gt10 {
 
   }
 
+  .arrow {
+    fill: #fff;
+    stroke: #eee;
+  }
+
+  .axis {
+
+    &.axis-bg {
+      fill: rgba(0, 0, 0, 0.01);
+    }
+
+    &.axis-origin {
+      fill: #aaaaaa;
+    }
+
+    &.axis-x {
+      fill: #FF2A1A;
+    }
+
+    &.axis-y {
+      fill: #00F72C;
+    }
+
+    &.axis-z {
+      fill: #103FFB;
+    }
+
+  }
+
   .edge {
     cursor: pointer;
 
@@ -501,46 +646,100 @@ body.no-ie, body.ie-gt10 {
 
   }
 
-  .axis {
+  .increase {
+    cursor: pointer;
 
-    &.axis-bg {
-      fill: rgba(0, 0, 0, 0.01);
+    .increase-area {
+      fill: url(#diagonalHatch);
     }
 
-    &.axis-origin {
-      fill: #aaaaaa;
+    &:hover {
+      .increase-area {
+        fill: url(#diagonalHatchOver) !important;
+      }
+      .edge-inner {
+        fill: @ladb-brand-primary !important;
+      }
     }
 
-    &.axis-x {
-      fill: #FF2A1A;
+    &.ladb-active {
+      .increase-area {
+        fill: url(#diagonalHatchActive);
+      }
+      .edge-inner {
+        fill: #5bc0de;
+      }
     }
 
-    &.axis-y {
-      fill: #00F72C;
-    }
-
-    &.axis-z {
-      fill: #103FFB;
-    }
+    fill: rgba(0, 0, 0, 0.01);
 
   }
 
+}
+
+// Tooltips
+
+.tt-header {
+  text-align: left;
+  padding: 3px 0;
+
+  .tt-number {
+    font-size: 120%;
+    background-color: #fff;
+    color: #000;
+    margin-right: 5px;
+    border-radius: 3px;
+    padding: 2px 4px;
+  }
+
+  .tt-name {
+    font-size: 110%;
+  }
+
+}
+.tt-data {
+  text-align: left;
+  font-size: 16px;
+}
+
+.tt-section {
+  text-align: left;
+  margin-top: 5px;
+  border-top: 1px solid #fff;
+  padding-top: 5px;
 }
 
 // Print /////
 
 @media print {
 
-  .ladb-cutlist-group {
+  .ladb-header-extra {
 
-    &.ladb-cutlist-group-dark {
-      thead tr {
-        background-color: #fff;
-        color: #000;
-      }
+    .ladb-file-infos {
+      border: 1px solid #000;
+      padding: 10px;
+      text-align: center;
+      margin-bottom: @ladb-gutter;
+      font-size: 1.4em;
     }
 
+    .ladb-time-and-unit {
+      position: absolute;
+      top: 0;
+      right: 0;
+      line-height: 34px;
+    }
+
+  }
+
+  .ladb-cutlist-group {
+
     thead tr {
+
+      &.table-heading {
+        background: none !important;
+        color: #000 !important;
+      }
 
       .ladb-heading {
         line-height: 20px;
@@ -564,6 +763,10 @@ body.no-ie, body.ie-gt10 {
 
   .ladb-cuttingdiagram-group svg {
 
+    &.full-width-diagram {
+      max-height: 85vh !important;
+    }
+
     .part {
       .part-outer {
         fill: #fff;
@@ -577,6 +780,35 @@ body.no-ie, body.ie-gt10 {
       .cut-inner {
         fill: #000;
       }
+      .cut-outer {
+        fill: none !important;
+      }
+    }
+
+  }
+
+  .ladb-cuttingdiagram-labels-group {
+    border: none !important;
+    page-break-after: always;
+    position: relative;
+
+    &:before {
+      content: ' '; // Here to be able to use SVG absolute position and maintain page break
+    }
+
+    & > tbody > tr > td {
+      border: none !important;
+    }
+
+    svg {
+      position: absolute;
+      width: 100vw;
+      top: 50vh;
+      margin-top: -50vh;
+      left: 50vw;
+      margin-left: -50vw;
+      border: none;
+      box-shadow: none;
     }
 
   }

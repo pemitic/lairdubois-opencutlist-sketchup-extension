@@ -50,6 +50,7 @@
   .box-shadow(0 0 1px 1px rgba(0,0,0,.055));
 
   > .ladb-content {
+    position: relative;
     min-height: 64px;
   }
 
@@ -64,8 +65,10 @@
 
 }
 .list-box-active() {
+  box-sizing: border-box;
 
   &.ladb-active {
+    padding: 3px;
     border: 2px solid #888;
   }
 

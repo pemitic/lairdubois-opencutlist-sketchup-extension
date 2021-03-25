@@ -5,16 +5,18 @@
 
 {% block headerInner %}
     {{ parent() }}
+    {% include 'components/_widget-preset.twig' %}
     <ul class="nav nav-tabs nav-justified" role="tablist">
         <li role="presentation" class="active"><a href="#tab_options_general" role="tab" data-toggle="tab">{{ 'tab.cutlist.option.general'|i18next }}</a></li>
         <li role="presentation"><a href="#tab_options_part_order_strategy" role="tab" data-toggle="tab"><i class="ladb-opencutlist-icon-sort-asc"></i> {{ 'tab.cutlist.option.part_order_strategy'|i18next }}</a></li>
         <li role="presentation"><a href="#tab_options_dimension_column_order_strategy" role="tab" data-toggle="tab"><i class="ladb-opencutlist-icon-sort-col"></i> {{ 'tab.cutlist.option.dimension_column_order_strategy'|i18next }}</a></li>
+        <li role="presentation"><a href="#tab_options_tags" role="tab" data-toggle="tab"><i class="ladb-opencutlist-icon-tag"></i> {{ 'tab.cutlist.option.tags'|i18next }}</a></li>
     </ul>
 {% endblock %}
 
 {% block bodyInner %}
     <div class="form form-horizontal">
-        <div class="tab-content" style="margin-top: 10px;">
+        <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="tab_options_general">
                 <div class="checkbox">
                     <div class="col-xs-offset-1 col-xs-10">
@@ -76,9 +78,9 @@
                 </div>
                 <div class="checkbox">
                     <div class="col-xs-offset-1 col-xs-10">
-                        <div class="ladb-minitools ladb-minitools-right"><a tabindex="0" role="button" data-toggle="popover" data-trigger="hover" data-placement="left" title="{{ 'default.help'|i18next }}" data-content="{{ 'tab.cutlist.option.hide_labels_help'|i18next }}"><i class="ladb-opencutlist-icon-help"></i></a></div>
+                        <div class="ladb-minitools ladb-minitools-right"><a tabindex="0" role="button" data-toggle="popover" data-trigger="hover" data-placement="left" title="{{ 'default.help'|i18next }}" data-content="{{ 'tab.cutlist.option.hide_tags_help'|i18next }}"><i class="ladb-opencutlist-icon-help"></i></a></div>
                         <label>
-                            <input type="checkbox" id="ladb_input_hide_labels"> {{ 'tab.cutlist.option.hide_labels'|i18next }}
+                            <input type="checkbox" id="ladb_input_hide_tags"> {{ 'tab.cutlist.option.hide_tags'|i18next }}
                         </label>
                     </div>
                 </div>
@@ -95,14 +97,6 @@
                         <div class="ladb-minitools ladb-minitools-right"><a tabindex="0" role="button" data-toggle="popover" data-trigger="hover" data-placement="left" title="{{ 'default.help'|i18next }}" data-content="{{ 'tab.cutlist.option.hide_bbox_dimensions_help'|i18next }}"><i class="ladb-opencutlist-icon-help"></i></a></div>
                         <label>
                             <input type="checkbox" id="ladb_input_hide_bbox_dimensions"> {{ 'tab.cutlist.option.hide_bbox_dimensions'|i18next }}
-                        </label>
-                    </div>
-                </div>
-                <div class="checkbox" style="padding-left: 10px;">
-                    <div class="col-xs-offset-1 col-xs-10">
-                        <div class="ladb-minitools ladb-minitools-right"><a tabindex="0" role="button" data-toggle="popover" data-trigger="hover" data-placement="left" title="{{ 'default.help'|i18next }}" data-content="{{ 'tab.cutlist.option.hide_untyped_material_dimensions_help'|i18next }}"><i class="ladb-opencutlist-icon-help"></i></a></div>
-                        <label>
-                            <input type="checkbox" id="ladb_input_hide_untyped_material_dimensions"> <span>{{ 'tab.cutlist.option.hide_untyped_material_dimensions'|i18next }}</span>
                         </label>
                     </div>
                 </div>
@@ -148,12 +142,22 @@
                     </div>
                 </div>
             </div>
+            <div role="tabpanel" class="tab-pane" id="tab_options_tags">
+                <div class="form-group">
+                    <p class="help-block text-center"><small>{{ 'tab.cutlist.option.tags_help'|i18next }}</small></p>
+                    <div class="row">
+                        <div  class="col-xs-offset-2 col-xs-8">
+                            <input type="text" class="form-control" id="ladb_input_tags" placeholder="{{ 'tab.cutlist.option.tags_placeholder'|i18next }} ; ...">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
 
 {% block footerInner %}
-    <button type="button" class="btn btn-default" id="ladb_cutlist_options_reset">{{ 'tab.cutlist.option.reset'|i18next }}</button>
-    <button type="button" class="btn btn-default" data-dismiss="modal">{{ 'default.close'|i18next }}</button>
+    <button type="button" class="btn btn-default pull-left" id="ladb_cutlist_options_setup_model_units"><i class="ladb-opencutlist-icon-settings"></i> {{ 'default.setup_model_units'|i18next }}...</button>
+    <button type="button" class="btn btn-default" data-dismiss="modal">{{ 'default.cancel'|i18next }}</button>
     <button type="button" class="btn btn-primary" id="ladb_cutlist_options_update">{{ 'default.validate'|i18next }}</button>
 {% endblock %}

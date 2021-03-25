@@ -17,10 +17,15 @@
                             {{ member.account.description }}
                         </div>
                     {% endif %}
+                    {% if member.publicMessage %}
+                        <div class="ladb-sponsor-member-public-message">
+                            {{ member.publicMessage }}
+                        </div>
+                    {% endif %}
                     <div class="ladb-sponsor-member-footer">
                         {% if member.totalDonations and member.totalDonations.value %}
                             <span class="ladb-sponsor-member-amount">
-                                ${{ member.totalDonations.value }}
+                                {{ member.totalDonations.value|format_currency(member.totalDonations.currency) }}
                             </span>
                         {% endif %}
                     </div>
@@ -30,7 +35,7 @@
     </div>
 {% endfor %}
 {% if nextPage %}
-    <div class="text-center">
-        <button class="btn btn-default ladb-sponsor-next-page-btn"> {{ 'tab.sponsor.load_more'|i18next }}</button>
+    <div class="col-xs-12 text-center">
+        <button class="btn btn-default ladb-sponsor-next-page-btn"> {{ 'default.load_more'|i18next }}</button>
     </div>
 {% endif %}

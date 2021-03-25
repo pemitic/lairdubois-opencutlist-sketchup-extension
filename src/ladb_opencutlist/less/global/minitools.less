@@ -4,6 +4,7 @@
 
 .ladb-minitools {
   text-align: center;
+  white-space: nowrap;
 
   &.ladb-minitools-right {
     float: right;
@@ -28,6 +29,10 @@
     border-right: 1px solid #eee;
     margin: 0 8px;
 
+    &.ladb-separator-dark {
+      border-color: #ccc;
+    }
+
     &.ladb-separator-white {
       border-color: #fff;
     }
@@ -51,8 +56,16 @@
         color: darken(@ladb-brand-warning, 30%);
       }
 
+      &.ladb-tool-danger {
+        color: darken(@ladb-brand-danger, 30%);
+      }
+
       &.ladb-tool-white {
         color: darken(#fff, 30%);
+      }
+
+      &.ladb-tool-dark {
+        color: darken(#888, 30%);
       }
 
     }
@@ -69,8 +82,16 @@
       color: @ladb-brand-warning;
     }
 
+    &.ladb-tool-danger {
+      color: @ladb-brand-danger;
+    }
+
     &.ladb-tool-white {
       color: #fff;
+    }
+
+    &.ladb-tool-dark {
+      color: #888;
     }
 
   }

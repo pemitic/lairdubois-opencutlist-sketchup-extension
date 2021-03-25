@@ -17,7 +17,7 @@
     <div class="form form-horizontal">
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="tab_edit_material_general">
-                {% include 'tabs/materials/_material-properties-form.twig' %}
+                {% include 'tabs/materials/_material-properties-form.twig' with { 'tab':properties_tab } %}
             </div>
             <div role="tabpanel" class="tab-pane" id="tab_edit_material_texture">
                 <div class="ladb-material-texture-preview">
@@ -29,7 +29,7 @@
                 <div class="text-center">
                     {% set areaWidth = 280 %}
                     {% set areaHeight = 20 %}
-                    <svg viewBox="0 0 {{ areaWidth }} {{ areaHeight }}" xmlns="http://www.w3.org/2000/svg" version="1.1" style="width: {{ areaWidth }}px; height: {{ areaHeight }}px;">
+                    <svg viewBox="0 0 {{ areaWidth }} {{ areaHeight }}" style="width: {{ areaWidth }}px; height: {{ areaHeight }}px;">
                         {% include 'core/_grain-direction-arrow.twig' with { 'centerX':areaWidth / 2, 'centerY':areaHeight / 2 } %}
                     </svg>
                 </div>
@@ -70,7 +70,7 @@
 
 {% block footerInner %}
     <button type="button" class="btn btn-danger pull-left" id="ladb_materials_remove"><i class="ladb-opencutlist-icon ladb-opencutlist-icon-trash"></i> {{ 'default.remove'|i18next }}</button>
-    {% if capabilities.sketchupVersionNumber >= 1700000000 %}
+    {% if capabilities.sketchup_version_number >= 1700000000 %}
         <button type="button" class="btn btn-default pull-left" id="ladb_materials_export_to_skm"><i class="ladb-opencutlist-icon ladb-opencutlist-icon-export"></i> {{ 'tab.materials.edit_material.export_to_skm'|i18next }}</button>
     {% endif %}
     <button type="button" class="btn btn-default" data-dismiss="modal">{{ 'default.cancel'|i18next }}</button>

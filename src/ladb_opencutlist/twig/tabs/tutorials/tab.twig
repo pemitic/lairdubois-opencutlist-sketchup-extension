@@ -1,0 +1,18 @@
+{% extends 'tabs/base-tab.twig' %}
+
+{% block headerHeadingInner %}<i class="ladb-opencutlist-icon-tutorials"></i> {{ parent() }}{% endblock %}
+
+{% block headerToolsInner %}
+    <button type="button" id="ladb_btn_submit" class="btn btn-default"><i class="ladb-opencutlist-icon-plus"></i> {{ 'tab.tutorials.submit'|i18next }}</button>
+{% endblock %}
+
+{% block containerInner %}
+    <div class="panel panel-default">
+        <div class="panel-body">
+            {{ 'tab.tutorials.help'|i18next }}
+        </div>
+    </div>
+    <div class="ladb-page">
+        {% include 'core/_loading.twig' with { 'noHidden':true } %}
+    </div>
+{% endblock %}

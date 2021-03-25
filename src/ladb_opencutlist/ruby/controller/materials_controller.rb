@@ -134,7 +134,7 @@ module Ladb::OpenCutList
       require_relative '../worker/materials/materials_get_attributes_worker'
 
       # Setup worker
-      worker = MaterialsGetAttributeWorker.new(material_data)
+      worker = MaterialsGetAttributesWorker.new(material_data)
 
       # Run !
       worker.run

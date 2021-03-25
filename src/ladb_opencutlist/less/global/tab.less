@@ -9,6 +9,10 @@
     margin-bottom: @ladb-bottombar-height;
   }
 
+  .modal.modal-inside {
+    z-index: 1010;
+  }
+
   .modal-backdrop {
     background: @ladb-global-bg;
     z-index: 1000;
@@ -25,7 +29,7 @@
     font-size: 80%;
     background-color: #888;
     color: #eee;
-    .blink(1s);
+    .blink(2s);
   }
 
 }

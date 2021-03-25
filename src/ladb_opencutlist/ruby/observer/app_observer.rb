@@ -1,9 +1,11 @@
 module Ladb::OpenCutList
 
   require 'singleton'
+  require_relative 'model_observer'
   require_relative 'options_provider_observer'
   require_relative 'materials_observer'
   require_relative 'selection_observer'
+  require_relative 'pages_observer'
 
   class AppObserver < Sketchup::AppObserver
 
@@ -22,30 +24,64 @@ module Ladb::OpenCutList
     def onNewModel(model)
       # puts "onNewModel: #{model}"
       Plugin.instance.trigger_event(ON_NEW_MODEL, nil)
+
+      # Clear model presets cache
+      Plugin.instance.clear_model_presets_cache
+
+      # Fetch new length options
       DimensionUtils.instance.fetch_length_options
+
+      # Fetch new mass options
+      MassUtils.instance.fetch_mass_options
+
+      # Fetch new currency options
+      PriceUtils.instance.fetch_currency_options
+
       add_model_observers(model)
     end
 
     def onOpenModel(model)
       # puts "onOpenModel: #{model}"
       Plugin.instance.trigger_event(ON_OPEN_MODEL, { :name => model.name })
+
+      # Clear model presets cache
+      Plugin.instance.clear_model_presets_cache
+
+      # Fetch new length options
       DimensionUtils.instance.fetch_length_options
+
+      # Fetch new mass options
+      MassUtils.instance.fetch_mass_options
+
+      # Fetch new currency options
+      PriceUtils.instance.fetch_currency_options
+
       add_model_observers(model)
     end
 
     def onActivateModel(model)
       # puts "onActivateModel: #{model}"
       Plugin.instance.trigger_event(ON_ACTIVATE_MODEL, { :name => model.name })
+
+      # Clear model presets cache
+      Plugin.instance.clear_model_presets_cache
+
+      # Fetch new length options
       DimensionUtils.instance.fetch_length_options
+
+      # Fetch new mass options
+      MassUtils.instance.fetch_mass_options
+
+      # Fetch new currency options
+      PriceUtils.instance.fetch_currency_options
+
     end
 
     # -----
 
     def add_model_observers(model)
       if model
-        # if model.definitions
-        #   model.definitions.add_observer(@definitions_observer)
-        # end
+        model.add_observer(ModelObserver.instance)
         if model.options['UnitsOptions']
           model.options['UnitsOptions'].add_observer(OptionsProviderObserver.instance)
         end
@@ -55,14 +91,15 @@ module Ladb::OpenCutList
         if model.selection
           model.selection.add_observer(SelectionObserver.instance)
         end
+        if model.pages
+          model.pages.add_observer(PagesObserver.instance)
+        end
       end
     end
 
     def remove_model_observers(model)
       if model
-        # if model.definitions
-        #   model.definitions.remove_observer(@definitions_observer)
-        # end
+        model.remove_observer(ModelObserver.instance)
         if model.options['UnitsOptions']
           model.options['UnitsOptions'].remove_observer(OptionsProviderObserver.instance)
         end
@@ -71,6 +108,9 @@ module Ladb::OpenCutList
         end
         if model.selection
           model.selection.remove_observer(SelectionObserver.instance)
+        end
+        if model.pages
+          model.pages.remove_observer(PagesObserver.instance)
         end
       end
     end

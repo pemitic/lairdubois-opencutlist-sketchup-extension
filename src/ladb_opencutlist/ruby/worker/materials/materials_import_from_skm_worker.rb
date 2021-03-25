@@ -12,8 +12,21 @@ module Ladb::OpenCutList
       # Fetch material
       materials = model.materials
 
-      dir, filename = File.split(model.path)
-      path = UI.openpanel(Plugin.instance.get_i18n_string('tab.materials.import_from_skm.title'), dir, "Material Files|*.skm;||")
+      # Try to use SU Materials dir
+      materials_dir = Sketchup.find_support_file('Materials')
+      if File.directory?(materials_dir)
+
+        # Join with OpenCutList subdir and create it if it dosen't exist
+        dir = File.join(materials_dir, 'OpenCutList')
+        unless File.directory?(dir)
+          FileUtils.mkdir_p(dir)
+        end
+
+      else
+        dir = File.dirname(model.path)
+      end
+
+      path = UI.openpanel(Plugin.instance.get_i18n_string('tab.materials.import_from_skm.title'), URI::escape(dir), "Material Files|*.skm;||")
       if path
         begin
           material = materials.load(path)

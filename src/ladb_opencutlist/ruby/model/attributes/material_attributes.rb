@@ -1,89 +1,27 @@
 ﻿module Ladb::OpenCutList
 
+  require 'json'
   require 'securerandom'
   require_relative '../geom/size2d'
   require_relative '../geom/section'
+  require_relative '../../utils/unit_utils'
   require_relative '../../utils/dimension_utils'
 
   class MaterialAttributes
 
-    TYPE_UNKNOW = 0
+    TYPE_UNKNOWN = 0
     TYPE_SOLID_WOOD = 1
     TYPE_SHEET_GOOD = 2
     TYPE_DIMENSIONAL = 3
     TYPE_EDGE = 4
+    TYPE_HARDWARE = 5
 
-    DEFAULTS = {
-        TYPE_UNKNOW => {
-            :thickness => '0',
-            :length_increase => '0',
-            :width_increase => '0',
-            :thickness_increase => '0',
-            :std_lengths => '',
-            :std_widths => '',
-            :std_thicknesses => '',
-            :std_sections => '',
-            :std_sizes => '',
-            :grained => false,
-            :edge_decremented => false,
-        },
-        TYPE_SOLID_WOOD => {
-            :thickness => '0',
-            :length_increase => '50mm',
-            :width_increase => '5mm',
-            :thickness_increase => '5mm',
-            :std_lengths => '',
-            :std_widths => '',
-            :std_thicknesses => '18mm;27mm;35mm;45mm;64mm;80mm;100mm',
-            :std_sections => '',
-            :std_sizes => '',
-            :grained => true,
-            :edge_decremented => false,
-        },
-        TYPE_SHEET_GOOD => {
-            :thickness => '0',
-            :length_increase => '0',
-            :width_increase => '0',
-            :thickness_increase => '0',
-            :std_lengths => '',
-            :std_widths => '',
-            :std_thicknesses => '5mm;8mm;10mm;15mm;18mm;22mm',
-            :std_sections => '',
-            :std_sizes => '',
-            :grained => false,
-            :edge_decremented => false,
-        },
-        TYPE_DIMENSIONAL => {
-            :thickness => '0',
-            :length_increase => '50mm',
-            :width_increase => '0',
-            :thickness_increase => '0',
-            :std_lengths => '2400mm',
-            :std_widths => '',
-            :std_thicknesses => '',
-            :std_sections => '30mm x 40mm;40mm x 50mm',
-            :std_sizes => '',
-            :grained => false,
-            :edge_decremented => false,
-        },
-        TYPE_EDGE => {
-            :thickness => '2mm',
-            :length_increase => '0',
-            :width_increase => '0',
-            :thickness_increase => '0',
-            :std_lengths => '',
-            :std_widths => '23mm;33mm;43mm',
-            :std_thicknesses => '',
-            :std_sections => '',
-            :std_sizes => '',
-            :grained => false,
-            :edge_decremented => true,
-        },
-    }
+    DEFAULTS_DICTIONARY = 'materials_material_attributes'.freeze
 
-    attr_accessor :uuid, :type, :thickness, :length_increase, :width_increase, :thickness_increase, :std_lengths, :std_widths, :std_thicknesses, :std_sections, :std_sizes, :grained, :edge_decremented
+    attr_accessor :uuid, :type, :thickness, :length_increase, :width_increase, :thickness_increase, :std_lengths, :std_widths, :std_thicknesses, :std_sections, :std_sizes, :grained, :edge_decremented, :volumic_mass, :std_prices
     attr_reader :material
 
+    @@cached_uuids = {}
     @@used_uuids = []
 
     def initialize(material, force_unique_uuid = false)
@@ -93,19 +31,39 @@
 
     # -----
 
+    def self.store_cached_uuid(material, uuid)
+      @@cached_uuids.store("#{material.model.guid}|#{material.entityID}", uuid)
+    end
+
+    def self.fetch_cached_uuid(material)
+      @@cached_uuids.fetch("#{material.model.guid}|#{material.entityID}", nil)
+    end
+
+    def self.delete_cached_uuid(material)
+      @@cached_uuids.delete("#{material.model.guid}|#{material.entityID}")
+    end
+
     def self.reset_used_uuids
       @@used_uuids.clear
+    end
+
+    def self.persist_cached_uuid_of(material)
+      cached_uuid = fetch_cached_uuid(material)
+      if cached_uuid
+        material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'uuid', cached_uuid)
+        MaterialAttributes.delete_cached_uuid(material)
+      end
     end
 
     def self.valid_type(type)
       if type
         i_type = type.to_i
-        if i_type < TYPE_UNKNOW or i_type > TYPE_DIMENSIONAL
-          TYPE_UNKNOW
+        if i_type < TYPE_UNKNOWN || i_type > TYPE_HARDWARE
+          return TYPE_UNKNOWN
         end
         i_type
       else
-        TYPE_UNKNOW
+        TYPE_UNKNOWN
       end
     end
 
@@ -125,8 +83,8 @@
           end
           case property
           when 'type'
-            a_value = [ self.type_order(material_a[:attributes][:type]) ]
-            b_value = [ self.type_order(material_b[:attributes][:type]) ]
+            a_value = [ type_order(material_a[:attributes][:type]) ]
+            b_value = [ type_order(material_b[:attributes][:type]) ]
           when 'name'
             a_value = [ material_a[:display_name] ]
             b_value = [ material_b[:display_name] ]
@@ -155,6 +113,8 @@
           3
         when TYPE_EDGE
           4
+        when TYPE_HARDWARE
+          5
         else
           99
       end
@@ -162,17 +122,30 @@
 
     # -----
 
+    def uuid
+      if @uuid.nil?
+
+        # Generate a new UUID
+        @uuid = SecureRandom.uuid
+
+        # Cache new UUID
+        MaterialAttributes.store_cached_uuid(@material, @uuid)
+
+      end
+      @uuid
+    end
+
     def thickness
       case @type
       when TYPE_EDGE
         @thickness
       else
-        get_default(:thickness)
+        Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['thickness']
       end
     end
 
     def l_thickness
-      DimensionUtils.instance.dd_to_ifloats(thickness).to_l
+      DimensionUtils.instance.d_to_ifloats(thickness).to_l
     end
 
     def length_increase
@@ -180,12 +153,12 @@
         when TYPE_SOLID_WOOD, TYPE_SHEET_GOOD, TYPE_DIMENSIONAL, TYPE_EDGE
           @length_increase
         else
-          get_default(:length_increase)
+          Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['length_increase']
       end
     end
 
     def l_length_increase
-      DimensionUtils.instance.dd_to_ifloats(length_increase).to_l
+      DimensionUtils.instance.d_to_ifloats(length_increase).to_l
     end
 
     def width_increase
@@ -193,12 +166,12 @@
         when TYPE_SOLID_WOOD, TYPE_SHEET_GOOD
           @width_increase
         else
-          get_default(:width_increase)
+          Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['width_increase']
       end
     end
 
     def l_width_increase
-      DimensionUtils.instance.dd_to_ifloats(width_increase).to_l
+      DimensionUtils.instance.d_to_ifloats(width_increase).to_l
     end
 
     def thickness_increase
@@ -206,12 +179,12 @@
         when TYPE_SOLID_WOOD
           @thickness_increase
         else
-          get_default(:thickness_increase)
+          Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['thickness_increase']
       end
     end
 
     def l_thickness_increase
-      DimensionUtils.instance.dd_to_ifloats(thickness_increase).to_l
+      DimensionUtils.instance.d_to_ifloats(thickness_increase).to_l
     end
 
     def std_lengths
@@ -219,7 +192,7 @@
       when TYPE_DIMENSIONAL
         @std_lengths
       else
-        get_default(:std_lengths)
+        Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['std_lengths']
       end
     end
 
@@ -232,7 +205,7 @@
       @std_lengths.split(';').each { |std_length|
         a << DimensionUtils.instance.d_to_ifloats(std_length).to_l
       }
-      a.sort!
+      a.sort_by! { |v| v.to_f }   # Force sort on true float value
       a
     end
 
@@ -241,7 +214,7 @@
       when TYPE_EDGE
         @std_widths
       else
-        get_default(:std_widths)
+        Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['std_widths']
       end
     end
 
@@ -252,9 +225,9 @@
     def l_std_widths
       a = []
       @std_widths.split(';').each { |std_width|
-        a << DimensionUtils.instance.dd_to_ifloats(std_width).to_l
+        a << DimensionUtils.instance.d_to_ifloats(std_width).to_l
       }
-      a.sort!
+      a.sort_by! { |v| v.to_f }   # Force sort on true float value
       a
     end
 
@@ -263,7 +236,7 @@
         when TYPE_SOLID_WOOD, TYPE_SHEET_GOOD
           @std_thicknesses
         else
-          get_default(:std_thicknesses)
+          Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['std_thicknesses']
       end
     end
 
@@ -274,9 +247,9 @@
     def l_std_thicknesses
       a = []
       @std_thicknesses.split(';').each { |std_thickness|
-        a << DimensionUtils.instance.dd_to_ifloats(std_thickness).to_l
+        a << DimensionUtils.instance.d_to_ifloats(std_thickness).to_l
       }
-      a.sort!
+      a.sort_by! { |v| v.to_f }   # Force sort on true float value
       a
     end
 
@@ -285,7 +258,7 @@
         when TYPE_DIMENSIONAL
           @std_sections
         else
-          get_default(:std_sections)
+          Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['std_sections']
       end
     end
 
@@ -306,7 +279,7 @@
         when TYPE_SHEET_GOOD
           @std_sizes
         else
-          get_default(:@std_sizes)
+          Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['std_sizes']
       end
     end
 
@@ -318,62 +291,134 @@
       a
     end
 
+    def volumic_mass
+      case @type
+        when TYPE_SOLID_WOOD, TYPE_SHEET_GOOD, TYPE_DIMENSIONAL, TYPE_EDGE
+          @volumic_mass
+        else
+          Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['volumic_mass']
+      end
+    end
+
+    def h_volumic_mass
+      unit, val = UnitUtils.split_unit_and_value(@volumic_mass)
+      { :unit => unit, :val => val }
+    end
+
+    def std_prices
+      case @type
+        when TYPE_SOLID_WOOD, TYPE_SHEET_GOOD, TYPE_DIMENSIONAL, TYPE_EDGE
+          @std_prices
+        else
+          Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['std_prices']
+      end
+    end
+
+    def h_std_prices
+
+      # Returns an array like [ { :unit => STRING_UNIT, :val => FLOAT }, { :unit => STRING_UNIT, :val => FLOAT , :dim => [ LENGTH or SIZE, ... ]}, ... ]
+
+      # Setup return array with default value first
+      std_prices = [ { unit: nil, :val => 0.0 } ]
+
+      if @std_prices.is_a?(Array)
+        @std_prices.each do |std_price|
+
+          if std_price['dim'].nil?
+            unit, val = UnitUtils.split_unit_and_value(std_price['val'])
+            std_prices[0][:unit] = unit
+            std_prices[0][:val] = val
+          elsif !std_price['dim'].is_a?(String)
+            next
+          else
+            dim = []
+            a = std_price['dim'].split(';')
+            a.each { |d|
+              unless d.nil?
+                if d.index('x').nil?
+                  dim << d.to_f.to_l
+                else
+                  dim << Size2d.new(d.split('x').map { |l| l.to_f })
+                end
+              end
+            }
+            if dim.length > 0
+              unit, val = UnitUtils.split_unit_and_value(std_price['val'])
+              std_prices << { :unit => unit, :val => val, :dim => dim }
+            end
+          end
+
+        end
+      end
+
+      std_prices
+    end
+
     # -----
 
     def read_from_attributes(force_unique_uuid = false)
       if @material
 
-        # Special case for UUID that must be truely unique in the session
-        uuid = Plugin.instance.get_attribute(@material, 'uuid', nil)
-        if uuid.nil? or (force_unique_uuid and @@used_uuids.include?(uuid))
+        # Try to retrieve uuid from cached UUIDs
+        @uuid = MaterialAttributes.fetch_cached_uuid(@material)
 
-          # Generate a new UUID
-          uuid = SecureRandom.uuid
-
-          # Store the new uuid to material attributes
-          @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'uuid', uuid)
-
+        if @uuid.nil?
+          # Try to retrieve uuid from material's attributes
+          @uuid = @material.get_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'uuid', nil)
         end
-        @@used_uuids.push(uuid)
-        @uuid = uuid
 
-        @type = Plugin.instance.get_attribute(@material, 'type', TYPE_UNKNOW)
-        @thickness = Plugin.instance.get_attribute(@material, 'thickness', get_default(:thickness))
-        @length_increase = Plugin.instance.get_attribute(@material, 'length_increase', get_default(:length_increase))
-        @width_increase = Plugin.instance.get_attribute(@material, 'width_increase', get_default(:width_increase))
-        @thickness_increase = Plugin.instance.get_attribute(@material, 'thickness_increase', get_default(:thickness_increase))
-        @std_lengths = Plugin.instance.get_attribute(@material, 'std_lengths', get_default(:std_lengths))
-        @std_widths = Plugin.instance.get_attribute(@material, 'std_widths', get_default(:std_widths))
-        @std_thicknesses = Plugin.instance.get_attribute(@material, 'std_thicknesses', get_default(:std_thicknesses))
-        @std_sections = Plugin.instance.get_attribute(@material, 'std_sections', get_default(:std_sections))
-        @std_sizes = Plugin.instance.get_attribute(@material, 'std_sizes', get_default(:std_sizes))
-        @grained = Plugin.instance.get_attribute(@material, 'grained', get_default(:grained))
-        @edge_decremented = Plugin.instance.get_attribute(@material, 'edge_decremented', get_default(:edge_decremented))
+        unless @uuid.nil?
+          if force_unique_uuid && @@used_uuids.include?(@uuid)
+            @uuid = nil
+          else
+            @@used_uuids.push(@uuid)
+          end
+        end
+
+        defaults = Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)
+
+        @type = MaterialAttributes.valid_type(Plugin.instance.get_attribute(@material, 'type', TYPE_UNKNOWN))
+        @thickness = Plugin.instance.get_attribute(@material, 'thickness', defaults['thickness'])
+        @length_increase = Plugin.instance.get_attribute(@material, 'length_increase', defaults['length_increase'])
+        @width_increase = Plugin.instance.get_attribute(@material, 'width_increase', defaults['width_increase'])
+        @thickness_increase = Plugin.instance.get_attribute(@material, 'thickness_increase', defaults['thickness_increase'])
+        @std_lengths = Plugin.instance.get_attribute(@material, 'std_lengths', defaults['std_lengths'])
+        @std_widths = Plugin.instance.get_attribute(@material, 'std_widths', defaults['std_widths'])
+        @std_thicknesses = Plugin.instance.get_attribute(@material, 'std_thicknesses', defaults['std_thicknesses'])
+        @std_sections = Plugin.instance.get_attribute(@material, 'std_sections', defaults['std_sections'])
+        @std_sizes = Plugin.instance.get_attribute(@material, 'std_sizes', defaults['std_sizes'])
+        @grained = Plugin.instance.get_attribute(@material, 'grained', defaults['grained'])
+        @edge_decremented = Plugin.instance.get_attribute(@material, 'edge_decremented', defaults['edge_decremented'])
+        @volumic_mass = Plugin.instance.get_attribute(@material, 'volumic_mass', defaults['volumic_mass'])
+        @std_prices = Plugin.instance.get_attribute(@material, 'std_prices', defaults['std_prices'])
       else
-        @type = TYPE_UNKNOW
+        @type = TYPE_UNKNOWN
       end
     end
 
     def write_to_attributes
       if @material
-        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'uuid', @uuid)
+
+        unless @uuid.nil?
+          @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'uuid', @uuid)
+          MaterialAttributes.delete_cached_uuid(@material)
+        end
+
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'type', @type)
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'thickness', DimensionUtils.instance.str_add_units(@thickness))
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'length_increase', DimensionUtils.instance.str_add_units(@length_increase))
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'width_increase', DimensionUtils.instance.str_add_units(@width_increase))
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'thickness_increase', DimensionUtils.instance.str_add_units(@thickness_increase))
-        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_lengths', DimensionUtils.instance.dd_add_units(@std_lengths))
-        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_widths', DimensionUtils.instance.dd_add_units(@std_widths))
-        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_thicknesses', DimensionUtils.instance.dd_add_units(@std_thicknesses))
+        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_lengths', DimensionUtils.instance.d_add_units(@std_lengths))
+        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_widths', DimensionUtils.instance.d_add_units(@std_widths))
+        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_thicknesses', DimensionUtils.instance.d_add_units(@std_thicknesses))
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_sections', DimensionUtils.instance.dxd_add_units(@std_sections))
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_sizes', DimensionUtils.instance.dxd_add_units(@std_sizes))
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'grained', @grained)
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'edge_decremented', @edge_decremented)
+        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'volumic_mass', @volumic_mass)
+        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_prices', @std_prices.to_json)
       end
-    end
-
-    def get_default(key)
-      DEFAULTS[@type][key]
     end
 
   end

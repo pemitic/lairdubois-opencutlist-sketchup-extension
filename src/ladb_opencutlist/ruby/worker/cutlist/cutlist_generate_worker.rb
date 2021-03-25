@@ -1,5 +1,6 @@
 module Ladb::OpenCutList
 
+  require_relative '../../helper/layer_visibility_helper'
   require_relative '../../helper/boundingbox_helper'
   require_relative '../../model/attributes/material_attributes'
   require_relative '../../model/attributes/definition_attributes'
@@ -33,9 +34,9 @@ module Ladb::OpenCutList
       @part_number_sequence_by_group = settings['part_number_sequence_by_group']
       @part_folding = settings['part_folding']
       @part_order_strategy = settings['part_order_strategy']
-      @hide_labels = settings['hide_labels']
+      @hide_tags = settings['hide_tags']
       @hide_final_areas = settings['hide_final_areas']
-      @labels_filter = settings['labels_filter']
+      @tags_filter = settings['tags_filter']
       @edge_material_names_filter = settings['edge_material_names_filter']
 
       # Setup caches
@@ -45,8 +46,9 @@ module Ladb::OpenCutList
       @material_attributes_cache = {}
       @definition_attributes_cache = {}
 
-      # Reset materials UUIDS
+      # Reset materials and definitions used UUIDS
       MaterialAttributes::reset_used_uuids
+      DefinitionAttributes::reset_used_uuids
 
     end
 
@@ -77,12 +79,15 @@ module Ladb::OpenCutList
       }
 
       # Retrieve model infos
-      length_unit = model ? model.options["UnitsOptions"]["LengthUnit"] : nil
+      length_unit = DimensionUtils.instance.length_unit
+      mass_unit_strippedname = MassUtils.instance.get_strippedname
+      currency_symbol = PriceUtils.instance.get_symbol
       dir, filename = File.split(model && !model.path.empty? ? model.path : Plugin.instance.get_i18n_string('default.empty_filename'))
+      model_name = model ? model.name : ''
       page_label = model && model.pages && model.pages.selected_page ? model.pages.selected_page.label : ''
 
       # Create cut list
-      cutlist = Cutlist.new(selection_only, length_unit, dir, filename, page_label, @instance_infos_cache.length)
+      cutlist = Cutlist.new(selection_only, length_unit, mass_unit_strippedname, currency_symbol, dir, filename, model_name, page_label, @instance_infos_cache.length)
 
       # Errors & tips
       if @instance_infos_cache.length == 0
@@ -119,11 +124,11 @@ module Ladb::OpenCutList
         definition = entity.definition
         definition_attributes = _get_definition_attributes(definition)
 
-        # Populate used labels
-        cutlist.add_used_labels(definition_attributes.labels)
+        # Populate used tags
+        cutlist.add_used_tags(definition_attributes.tags)
 
         # Labels filter
-        if !@labels_filter.empty? and !definition_attributes.has_labels(@labels_filter)
+        if !@tags_filter.empty? && !definition_attributes.has_tags(@tags_filter)
           cutlist.ignored_instance_count += 1
           next
         end
@@ -142,7 +147,7 @@ module Ladb::OpenCutList
           end
 
           # Edge materials filter -> exclude all non sheet good parts
-          if !@edge_material_names_filter.empty? and material_attributes.type != MaterialAttributes::TYPE_SHEET_GOOD
+          if !@edge_material_names_filter.empty? && material_attributes.type != MaterialAttributes::TYPE_SHEET_GOOD
             cutlist.ignored_instance_count += 1
             next
           end
@@ -173,7 +178,9 @@ module Ladb::OpenCutList
             std_info = {
                 :available => std_thickness_info[:available],
                 :dimension_stipped_name => 'thickness',
-                :dimension => std_thickness_info[:value].to_s,
+                :dimension => std_thickness_info[:value].to_s.gsub(/~ /, ''), # Remove ~ if it exists
+                :dimension_real => DimensionUtils.instance.to_ocl_precision_s(std_thickness_info[:value]),
+                :dimension_rounded => DimensionUtils.instance.rounded_by_model_precision?(std_thickness_info[:value]),
                 :width => 0,
                 :thickness => std_thickness_info[:value],
                 :cutting_size => Size3d.new(
@@ -193,7 +200,9 @@ module Ladb::OpenCutList
             std_info = {
                 :available => std_section_info[:available],
                 :dimension_stipped_name => 'section',
-                :dimension => std_section_info[:value].to_s,
+                :dimension => std_section_info[:value].to_s.gsub(/~ /, ''), # Remove ~ if it exists
+                :dimension_real => std_section_info[:value].to_ocl_precision_s,
+                :dimension_rounded => DimensionUtils.instance.rounded_by_model_precision?(std_section_info[:value].width) || DimensionUtils.instance.rounded_by_model_precision?(std_section_info[:value].height),
                 :width => std_section_info[:value].width,
                 :thickness => std_section_info[:value].height,
                 :cutting_size => Size3d.new(
@@ -207,6 +216,8 @@ module Ladb::OpenCutList
                 :available => true,
                 :dimension_stipped_name => '',
                 :dimension => '',
+                :dimension_real => '',
+                :dimension_rounded => false,
                 :width => 0,
                 :thickness => 0,
                 :cutting_size => size
@@ -230,9 +241,11 @@ module Ladb::OpenCutList
           group_def.std_available = std_info[:available]
           group_def.std_dimension_stipped_name = std_info[:dimension_stipped_name]
           group_def.std_dimension = std_info[:dimension]
+          group_def.std_dimension_real = std_info[:dimension_real]
+          group_def.std_dimension_rounded = std_info[:dimension_rounded]
           group_def.std_width = std_info[:width]
           group_def.std_thickness = std_info[:thickness]
-          group_def.show_cutting_dimensions = material_attributes.type > MaterialAttributes::TYPE_UNKNOW && (material_attributes.l_length_increase > 0 || material_attributes.l_width_increase > 0)
+          group_def.show_cutting_dimensions = material_attributes.type > MaterialAttributes::TYPE_UNKNOWN && (material_attributes.l_length_increase > 0 || material_attributes.l_width_increase > 0)
 
           _store_group_def(group_def)
 
@@ -240,7 +253,7 @@ module Ladb::OpenCutList
 
         # Define part
 
-        part_id = PartDef.generate_part_id(group_id, definition, instance_info, @dynamic_attributes_name)
+        part_id = PartDef.generate_part_id(group_id, definition, definition_attributes, instance_info, @dynamic_attributes_name)
         part_def = group_def.get_part_def(part_id)
         unless part_def
 
@@ -248,11 +261,11 @@ module Ladb::OpenCutList
           saved_number = definition_attributes.fetch_number(part_id)
           if saved_number
             if @part_number_with_letters
-              if saved_number.is_a? String
+              if saved_number.is_a?(String)
                 number = saved_number
               end
             else
-              if definition_attributes.number.is_a? Numeric
+              if saved_number.is_a?(Numeric)
                 number = saved_number
               end
             end
@@ -275,16 +288,20 @@ module Ladb::OpenCutList
           part_def.saved_number = saved_number
           part_def.name, part_def.is_dynamic_attributes_name = instance_info.read_name(@dynamic_attributes_name)
           part_def.scale = instance_info.scale
-          part_def.flipped = instance_info.flipped
+          part_def.flipped = definition_attributes.symmetrical ? false : instance_info.flipped
           part_def.cutting_size = cutting_size
           part_def.size = size
           part_def.material_name = material_name
           part_def.cumulable = definition_attributes.cumulable
+          part_def.instance_count_by_part = definition_attributes.instance_count_by_part
+          part_def.mass = definition_attributes.mass
+          part_def.price = definition_attributes.price
+          part_def.tags = definition_attributes.tags
+          part_def.orientation_locked_on_axis = definition_attributes.orientation_locked_on_axis
+          part_def.symmetrical = definition_attributes.symmetrical
           part_def.length_increase = definition_attributes.length_increase
           part_def.width_increase = definition_attributes.width_increase
           part_def.thickness_increase = definition_attributes.thickness_increase
-          part_def.orientation_locked_on_axis = definition_attributes.orientation_locked_on_axis
-          part_def.labels = definition_attributes.labels
           part_def.length_increased = length_increased
           part_def.width_increased = width_increased
           part_def.thickness_increased = thickness_increased
@@ -299,7 +316,7 @@ module Ladb::OpenCutList
               t_plane_count, t_final_area, t_area_ratio = _compute_oriented_final_area_and_ratio(instance_info, x_face_infos, y_face_infos, z_face_infos, Z_AXIS)
               w_plane_count, w_final_area, w_area_ratio = _compute_oriented_final_area_and_ratio(instance_info, x_face_infos, y_face_infos, z_face_infos, Y_AXIS)
 
-              part_def.not_aligned_on_axes = !(t_area_ratio >= 0.7 or w_area_ratio >= 0.7)
+              part_def.not_aligned_on_axes = !(t_area_ratio >= 0.7 || w_area_ratio >= 0.7)
               part_def.layers = layers
 
             when MaterialAttributes::TYPE_SHEET_GOOD
@@ -308,7 +325,7 @@ module Ladb::OpenCutList
               t_plane_count, t_final_area, t_area_ratio = _compute_oriented_final_area_and_ratio(instance_info, x_face_infos, y_face_infos, z_face_infos, Z_AXIS)
 
               part_def.final_area = t_final_area
-              part_def.not_aligned_on_axes = !(t_plane_count >= 2 and (_face_infos_by_normal(size.oriented_normal(Y_AXIS), x_face_infos, y_face_infos, z_face_infos).length >= 1 or _face_infos_by_normal(size.oriented_normal(X_AXIS), x_face_infos, y_face_infos, z_face_infos).length >= 1))
+              part_def.not_aligned_on_axes = !(t_plane_count >= 2 && (_face_infos_by_normal(size.oriented_normal(Y_AXIS), x_face_infos, y_face_infos, z_face_infos).length >= 1 || _face_infos_by_normal(size.oriented_normal(X_AXIS), x_face_infos, y_face_infos, z_face_infos).length >= 1))
               part_def.layers = layers
 
               # -- Edges --
@@ -386,7 +403,7 @@ module Ladb::OpenCutList
               t_plane_count, t_final_area, t_area_ratio = _compute_oriented_final_area_and_ratio(instance_info, x_face_infos, y_face_infos, z_face_infos, Z_AXIS)
               w_plane_count, w_final_area, w_area_ratio = _compute_oriented_final_area_and_ratio(instance_info, x_face_infos, y_face_infos, z_face_infos, Y_AXIS)
 
-              part_def.not_aligned_on_axes = !(t_area_ratio >= 0.7 and w_area_ratio >= 0.7 and (t_plane_count >= 2 and w_plane_count >= 2))
+              part_def.not_aligned_on_axes = !(t_area_ratio >= 0.7 && w_area_ratio >= 0.7 && (t_plane_count >= 2 && w_plane_count >= 2))
               part_def.layers = layers
 
             else
@@ -429,7 +446,7 @@ module Ladb::OpenCutList
         part_def.add_entity_name(entity.name)
         part_def.store_instance_info(instance_info)
 
-        if group_def.material_type != MaterialAttributes::TYPE_UNKNOW
+        if group_def.material_type != MaterialAttributes::TYPE_UNKNOWN
           if group_def.material_type == MaterialAttributes::TYPE_DIMENSIONAL
             group_def.total_cutting_length += part_def.cutting_size.length
           end
@@ -463,30 +480,43 @@ module Ladb::OpenCutList
               }
             end
           end
-          group_def.total_cutting_volume += part_def.cutting_size.volume
+          if group_def.material_type == MaterialAttributes::TYPE_SOLID_WOOD || group_def.material_type == MaterialAttributes::TYPE_SHEET_GOOD || group_def.material_type == MaterialAttributes::TYPE_DIMENSIONAL
+            group_def.total_cutting_volume += part_def.cutting_size.volume
+          end
         end
         group_def.part_count += 1
 
       end
 
-      # Warnings & tips
-      if @instance_infos_cache.length > 0
-        solid_wood_material_count = 0
-        sheet_good_material_count = 0
-        bar_material_count = 0
-        edge_material_count = 0
-        @material_usages_cache.each { |key, material_usage|
-          if material_usage.type == MaterialAttributes::TYPE_SOLID_WOOD
-            solid_wood_material_count += material_usage.use_count
-          elsif material_usage.type == MaterialAttributes::TYPE_SHEET_GOOD
-            sheet_good_material_count += material_usage.use_count
-          elsif material_usage.type == MaterialAttributes::TYPE_DIMENSIONAL
-            bar_material_count += material_usage.use_count
-          elsif material_usage.type == MaterialAttributes::TYPE_EDGE
-            edge_material_count += material_usage.use_count
+      # Compute instance count by part
+      @group_defs_cache.each { |key, group_def|
+        group_def.part_defs.each { |key, part_def|
+          if part_def.instance_count_by_part > 1
+            instance_count = part_def.count
+            count = ((instance_count * 1.0) / part_def.instance_count_by_part).ceil
+            part_def.count = count
+            part_def.unused_instance_count = count * part_def.instance_count_by_part - instance_count
+            group_def.part_count -= instance_count - count
           end
         }
-        if cutlist.instance_count - cutlist.ignored_instance_count > 0 and solid_wood_material_count == 0 and sheet_good_material_count == 0 and bar_material_count == 0
+      }
+
+      # Warnings & tips
+      if @instance_infos_cache.length > 0
+        @material_usages_cache.each { |key, material_usage|
+          if material_usage.type == MaterialAttributes::TYPE_SOLID_WOOD
+            cutlist.solid_wood_material_count += material_usage.use_count
+          elsif material_usage.type == MaterialAttributes::TYPE_SHEET_GOOD
+            cutlist.sheet_good_material_count += material_usage.use_count
+          elsif material_usage.type == MaterialAttributes::TYPE_DIMENSIONAL
+            cutlist.dimensional_material_count += material_usage.use_count
+          elsif material_usage.type == MaterialAttributes::TYPE_EDGE
+            cutlist.edge_material_count += material_usage.use_count
+          elsif material_usage.type == MaterialAttributes::TYPE_HARDWARE
+            cutlist.hardware_material_count += material_usage.use_count
+          end
+        }
+        if cutlist.instance_count - cutlist.ignored_instance_count > 0 && cutlist.solid_wood_material_count == 0 && cutlist.sheet_good_material_count == 0 && cutlist.dimensional_material_count == 0 && cutlist.hardware_material_count == 0
           cutlist.add_warning("tab.cutlist.warning.no_typed_materials_in_#{selection_only ? "selection" : "model"}")
           cutlist.add_tip("tab.cutlist.tip.no_typed_materials")
         end
@@ -497,7 +527,7 @@ module Ladb::OpenCutList
       # Sort material usages and add them to cutlist
       cutlist.add_material_usages(@material_usages_cache.values.sort_by { |v| [ v.display_name.downcase ] })
 
-      part_number = cutlist.max_number ? cutlist.max_number.succ : (@part_number_with_letters ? 'A' : '1')
+      part_number = cutlist.max_number ? cutlist.max_number.succ : (@part_number_with_letters ? 'A' : 1)
 
       # Sort and browse groups
 
@@ -507,7 +537,7 @@ module Ladb::OpenCutList
         next if group_def.part_count == 0
 
         if @part_number_sequence_by_group
-          part_number = group_def.max_number ? group_def.max_number.succ : (@part_number_with_letters ? 'A' : '1')    # Reset number increment on each group
+          part_number = group_def.max_number ? group_def.max_number.succ : (@part_number_with_letters ? 'A' : 1)    # Reset number increment on each group
         end
 
         group = Group.new(group_def, cutlist)
@@ -516,14 +546,15 @@ module Ladb::OpenCutList
         # Folding
         if @part_folding
           part_defs = []
-          group_def.part_defs.values.sort_by { |v| [ v.size.thickness, v.size.length, v.size.width, v.labels, v.final_area ] }.each do |part_def|
+          group_def.part_defs.values.sort_by { |v| [v.size.thickness, v.size.length, v.size.width, v.tags, v.final_area, v.cumulable ] }.each do |part_def|
             if !(folder_part_def = part_defs.last).nil? &&
+                ((folder_part_def.definition_id == part_def.definition_id && group_def.material_type == MaterialAttributes::TYPE_UNKNOWN) || group_def.material_type > MaterialAttributes::TYPE_UNKNOWN && group_def.material_type != MaterialAttributes::TYPE_HARDWARE) && # Part with TYPE_UNKNOWN materiel are folded only if they have the same definition | Part with TYPE_HARDWARE doesn't fold
                 folder_part_def.size == part_def.size &&
                 folder_part_def.cutting_size == part_def.cutting_size &&
-                (folder_part_def.labels == part_def.labels || @hide_labels) &&
-                ((folder_part_def.final_area - part_def.final_area).abs < 0.001 or @hide_final_areas) &&      # final_area workaround for rounding error
+                (folder_part_def.tags == part_def.tags || @hide_tags) &&
+                (((folder_part_def.final_area.nil? ? 0 : folder_part_def.final_area) - (part_def.final_area.nil? ? 0 : part_def.final_area)).abs < 0.001 || @hide_final_areas) &&      # final_area workaround for rounding error
                 folder_part_def.edge_material_names == part_def.edge_material_names &&
-                ((folder_part_def.definition_id == part_def.definition_id && group_def.material_type == MaterialAttributes::TYPE_UNKNOW) || group_def.material_type > MaterialAttributes::TYPE_UNKNOW) # Part with untyped materiel are folded only if they have the same definition
+                folder_part_def.cumulable == part_def.cumulable
               if folder_part_def.children.empty?
                 first_child_part_def = part_defs.pop
 
@@ -533,7 +564,11 @@ module Ladb::OpenCutList
                 folder_part_def.cutting_size = first_child_part_def.cutting_size
                 folder_part_def.size = first_child_part_def.size
                 folder_part_def.material_name = first_child_part_def.material_name
-                folder_part_def.labels = first_child_part_def.labels
+                folder_part_def.cumulable = first_child_part_def.cumulable
+                folder_part_def.instance_count_by_part = first_child_part_def.instance_count_by_part
+                folder_part_def.mass = first_child_part_def.mass
+                folder_part_def.price = first_child_part_def.price
+                folder_part_def.tags = first_child_part_def.tags
                 folder_part_def.final_area = first_child_part_def.final_area
                 folder_part_def.edge_count = first_child_part_def.edge_count
                 folder_part_def.edge_pattern = first_child_part_def.edge_pattern
@@ -545,6 +580,7 @@ module Ladb::OpenCutList
                 folder_part_def.children.push(first_child_part_def)
                 folder_part_def.children_warning_count += 1 if first_child_part_def.not_aligned_on_axes
                 folder_part_def.children_warning_count += 1 if first_child_part_def.multiple_layers
+                folder_part_def.children_warning_count += 1 if first_child_part_def.unused_instance_count > 0
                 folder_part_def.children_length_increased_count += first_child_part_def.count if first_child_part_def.length_increased
                 folder_part_def.children_width_increased_count += first_child_part_def.count if first_child_part_def.width_increased
                 folder_part_def.children_thickness_increased_count += first_child_part_def.count if first_child_part_def.thickness_increased
@@ -556,6 +592,7 @@ module Ladb::OpenCutList
               folder_part_def.count += part_def.count
               folder_part_def.children_warning_count += 1 if part_def.not_aligned_on_axes
               folder_part_def.children_warning_count += 1 if part_def.multiple_layers
+              folder_part_def.children_warning_count += 1 if part_def.unused_instance_count > 0
               folder_part_def.children_length_increased_count += part_def.count if part_def.length_increased
               folder_part_def.children_width_increased_count += part_def.count if part_def.width_increased
               folder_part_def.children_thickness_increased_count += part_def.count if part_def.thickness_increased
@@ -635,7 +672,7 @@ module Ladb::OpenCutList
     end
 
     def _group_defs_include_number?(number)
-      @group_defs.each { |key, group_def|
+      @group_defs_cache.each { |key, group_def|
         if group_def.include_number? number
           return true
         end
@@ -671,7 +708,7 @@ module Ladb::OpenCutList
     def _get_definition_attributes(definition)
       key = definition ? definition.name : '$EMPTY$'
       unless @definition_attributes_cache.has_key? key
-        @definition_attributes_cache[key] = DefinitionAttributes.new(definition)
+        @definition_attributes_cache[key] = DefinitionAttributes.new(definition, true)
       end
       @definition_attributes_cache[key]
     end
@@ -679,18 +716,18 @@ module Ladb::OpenCutList
     # -- Components utils --
 
     def _fetch_useful_instance_infos(entity, path, auto_orient)
-      return 0 if entity.is_a? Sketchup::Edge   # Minor Speed improvement when there's a lot of edges
+      return 0 if entity.is_a?(Sketchup::Edge)   # Minor Speed improvement when there's a lot of edges
       face_count = 0
-      if entity.visible? and (entity.layer.visible? or (entity.layer.equal?(@layer0) and !path.empty?))   # Layer0 hide entities only on root scene
+      if entity.visible? && _layer_visible?(entity.layer, path.empty?)
 
-        if entity.is_a? Sketchup::Group
+        if entity.is_a?(Sketchup::Group)
 
           # Entity is a group : check its children
           entity.entities.each { |child_entity|
             face_count += _fetch_useful_instance_infos(child_entity, path + [ entity ], auto_orient)
           }
 
-        elsif entity.is_a? Sketchup::ComponentInstance
+        elsif entity.is_a?(Sketchup::ComponentInstance)
 
           # Exclude special behavior components
           if entity.definition.behavior.always_face_camera?
@@ -711,7 +748,7 @@ module Ladb::OpenCutList
           if face_count > 0
 
             bounds = _compute_faces_bounds(entity.definition, nil)
-            unless bounds.empty? or [ bounds.width, bounds.height, bounds.depth ].min == 0    # Exclude empty or flat bounds
+            unless bounds.empty? || [ bounds.width, bounds.height, bounds.depth ].min == 0    # Exclude empty or flat bounds
 
               # Create the instance info
               instance_info = InstanceInfo.new(path + [ entity ])
@@ -725,7 +762,7 @@ module Ladb::OpenCutList
             end
           end
 
-        elsif entity.is_a? Sketchup::Face
+        elsif entity.is_a?(Sketchup::Face)
 
           # Entity is a face : return 1
           return 1
@@ -739,9 +776,9 @@ module Ladb::OpenCutList
 
     def _grab_main_faces_and_layers(definition_or_group, x_face_infos = [], y_face_infos = [], z_face_infos = [], layers = Set[], transformation = nil)
       definition_or_group.entities.each { |entity|
-        next if entity.is_a? Sketchup::Edge   # Minor Speed imrovement when there's a lot of edges
-        if entity.visible? and (entity.layer.visible? or entity.layer.equal?(@layer0))
-          if entity.is_a? Sketchup::Face
+        next if entity.is_a?(Sketchup::Edge)   # Minor Speed imrovement when there's a lot of edges
+        if entity.visible? && _layer_visible?(entity.layer)
+          if entity.is_a?(Sketchup::Face)
             transformed_normal = transformation.nil? ? entity.normal : entity.normal.transform(transformation)
             if transformed_normal.parallel?(X_AXIS)
               x_face_infos.push(FaceInfo.new(entity, transformation))
@@ -751,9 +788,9 @@ module Ladb::OpenCutList
               z_face_infos.push(FaceInfo.new(entity, transformation))
             end
             layers = layers + Set[ entity.layer ]
-          elsif entity.is_a? Sketchup::Group
+          elsif entity.is_a?(Sketchup::Group)
             _grab_main_faces_and_layers(entity, x_face_infos, y_face_infos, z_face_infos, layers + Set[ entity.layer ], transformation ? transformation * entity.transformation : entity.transformation)
-          elsif entity.is_a? Sketchup::ComponentInstance and entity.definition.behavior.cuts_opening?
+          elsif entity.is_a?(Sketchup::ComponentInstance) && entity.definition.behavior.cuts_opening?
             _grab_main_faces_and_layers(entity.definition, x_face_infos, y_face_infos, z_face_infos, layers + Set[ entity.layer ], transformation ? transformation * entity.transformation : entity.transformation)
           end
         end
@@ -812,7 +849,7 @@ module Ladb::OpenCutList
 
       plane_count, final_area = _compute_largest_final_area(instance_info.size.oriented_normal(axis), x_face_infos, y_face_infos, z_face_infos, instance_info.transformation)
       area = instance_info.size.area_by_axis(axis)
-      area_ratio = (final_area.nil? or area.nil?) ? 0 : final_area / area
+      area_ratio = (final_area.nil? || area.nil?) ? 0 : final_area / area
 
       [ plane_count, final_area, area_ratio ]
     end
@@ -857,8 +894,10 @@ module Ladb::OpenCutList
     # -- Std utils --
 
     def _find_std_value(value, std_values, nearest_highest)
+      value_f = DimensionUtils.instance.to_ocl_precision_f(value)
       std_values.each { |std_value|
-        if value <= std_value
+        std_value_f = DimensionUtils.instance.to_ocl_precision_f(std_value)
+        if value_f <= std_value_f
           if nearest_highest
             return {
                 :available => true,
@@ -866,7 +905,7 @@ module Ladb::OpenCutList
             }
           else
             return {
-                :available => value == std_value,
+                :available => value_f == std_value_f,
                 :value => value
             }
           end
@@ -879,8 +918,12 @@ module Ladb::OpenCutList
     end
 
     def _find_std_section(width, thickness, std_sections)
+      width_f = DimensionUtils.instance.to_ocl_precision_f(width)
+      thickness_f = DimensionUtils.instance.to_ocl_precision_f(thickness)
       std_sections.each { |std_section|
-        if width == std_section.width && thickness == std_section.height || width == std_section.height && thickness == std_section.width
+        std_width_f = DimensionUtils.instance.to_ocl_precision_f(std_section.width)
+        std_height_f = DimensionUtils.instance.to_ocl_precision_f(std_section.height)
+        if width_f == std_width_f && thickness_f == std_height_f || width_f == std_height_f && thickness_f == std_width_f
           return {
               :available => true,
               :value => std_section
@@ -900,13 +943,13 @@ module Ladb::OpenCutList
         return nil, MATERIAL_ORIGIN_UNKNOW
       end
       entity = path.last
-      unless entity.is_a? Sketchup::Drawingelement
+      unless entity.is_a?(Sketchup::Drawingelement)
         return nil, MATERIAL_ORIGIN_UNKNOW
       end
       material = entity.material
       material = nil if _get_material_attributes(material).type == MaterialAttributes::TYPE_EDGE
       material_origin = MATERIAL_ORIGIN_OWNED
-      unless material or !smart
+      unless material || !smart
         material = _get_dominant_child_material(entity)
         material = nil if _get_material_attributes(material).type == MaterialAttributes::TYPE_EDGE
         if material
@@ -924,12 +967,12 @@ module Ladb::OpenCutList
 
     def _get_dominant_child_material(entity, level = 0)
       material = nil
-      if entity.is_a? Sketchup::Group or (entity.is_a? Sketchup::ComponentInstance and level == 0)
+      if entity.is_a?(Sketchup::Group) || (entity.is_a?(Sketchup::ComponentInstance) && level == 0)
 
         materials = {}
 
         # Entity is a group : check its children
-        if entity.is_a? Sketchup::ComponentInstance
+        if entity.is_a?(Sketchup::ComponentInstance)
           entities = entity.definition.entities
         else
           entities = entity.entities
@@ -960,7 +1003,7 @@ module Ladb::OpenCutList
           material = entity.material
         end
 
-      elsif entity.is_a? Sketchup::Face
+      elsif entity.is_a?(Sketchup::Face)
 
         # Entity is a face : return entity's material
         material = entity.material
@@ -974,7 +1017,7 @@ module Ladb::OpenCutList
         return nil
       end
       entity = path.last
-      unless entity.is_a? Sketchup::Drawingelement
+      unless entity.is_a?(Sketchup::Drawingelement)
         return nil
       end
       material = entity.material
@@ -999,7 +1042,9 @@ module Ladb::OpenCutList
       std_info = {
           :available => std_width_info[:available],
           :dimension_stipped_name => 'width',
-          :dimension => std_width_info[:value].to_s,
+          :dimension => std_width_info[:value].to_s.gsub(/~ /, ''), # Remove ~ if it exists
+          :dimension_real => DimensionUtils.instance.to_ocl_precision_s(std_width_info[:value]),
+          :dimension_rounded => DimensionUtils.instance.rounded_by_model_precision?(std_width_info[:value]),
           :width => std_width_info[:value],
           :thickness => material_attributes.l_thickness,
       }
@@ -1017,6 +1062,8 @@ module Ladb::OpenCutList
         group_def.std_available = std_info[:available]
         group_def.std_dimension_stipped_name = std_info[:dimension_stipped_name]
         group_def.std_dimension = std_info[:dimension]
+        group_def.std_dimension_real = std_info[:dimension_real]
+        group_def.std_dimension_rounded = std_info[:dimension_rounded]
         group_def.std_width = std_info[:width]
         group_def.std_thickness = std_info[:thickness]
 

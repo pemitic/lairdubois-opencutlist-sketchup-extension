@@ -2,37 +2,57 @@
 
   require 'singleton'
 
-  # Format - just here for convenience
-  DECIMAL       = Length::Decimal
-  ARCHITECTURAL = Length::Architectural
-  ENGINEERING   = Length::Engineering
-  FRACTIONAL    = Length::Fractional
-
-  # Unit - just here for convenience
-  INCHES        = Length::Inches
-  FEET          = Length::Feet
-  MILLIMETER    = Length::Millimeter
-  CENTIMETER    = Length::Centimeter
-  METER         = Length::Meter
-
-  # Unit signs
-  UNIT_SIGN_INCHES = '"'
-  UNIT_SIGN_FEET = "'"
-  UNIT_SIGN_METER = 'm'
-  UNIT_SIGN_CENTIMETER = 'cm'
-  UNIT_SIGN_MILLIMETER = 'mm'
-
-  UNIT_SIGN_METER_2 = 'm²'
-  UNIT_SIGN_FEET_2 = 'ft²'
-
-  UNIT_SIGN_METER_3 = 'm³'
-  UNIT_SIGN_FEET_3 = 'ft³'
-
   class DimensionUtils
+
+    # Format - just here for convenience
+    DECIMAL       = Length::Decimal
+    ARCHITECTURAL = Length::Architectural
+    ENGINEERING   = Length::Engineering
+    FRACTIONAL    = Length::Fractional
+
+    # Unit - just here for convenience
+    INCHES        = Length::Inches
+    FEET          = Length::Feet
+    YARD          = Sketchup.version_number >= 2000000000 ? Length::Yard : 5
+    MILLIMETER    = Length::Millimeter
+    CENTIMETER    = Length::Centimeter
+    METER         = Length::Meter
+
+    # Unit symbols
+    UNIT_SYMBOL_INCHES = '"'
+    UNIT_SYMBOL_FEET = "'"
+    UNIT_SYMBOL_YARD = "yd"
+    UNIT_SYMBOL_METER = 'm'
+    UNIT_SYMBOL_CENTIMETER = 'cm'
+    UNIT_SYMBOL_MILLIMETER = 'mm'
+
+    UNIT_SYMBOL_METER_2 = 'm²'
+    UNIT_SYMBOL_FEET_2 = 'ft²'
+
+    UNIT_SYMBOL_METER_3 = 'm³'
+    UNIT_SYMBOL_FEET_3 = 'ft³'
+    UNIT_SYMBOL_BOARD_FEET = 'FBM'
+
+    # Unit strippednames
+    UNIT_STRIPPEDNAME_INCHES = 'in'
+    UNIT_STRIPPEDNAME_FEET = "ft"
+    UNIT_STRIPPEDNAME_YARD = "yd"
+    UNIT_STRIPPEDNAME_METER = 'm'
+    UNIT_STRIPPEDNAME_CENTIMETER = 'cm'
+    UNIT_STRIPPEDNAME_MILLIMETER = 'mm'
+
+    UNIT_STRIPPEDNAME_METER_2 = 'm2'
+    UNIT_STRIPPEDNAME_FEET_2 = 'ft2'
+
+    UNIT_STRIPPEDNAME_METER_3 = 'm3'
+    UNIT_STRIPPEDNAME_FEET_3 = 'ft3'
+    UNIT_STRIPPEDNAME_BOARD_FEET = 'fbm'
 
     include Singleton
 
     attr_accessor :decimal_separator, :length_unit
+
+    LENGTH_MIN_PRECISION = 3
 
     # Separators
     LIST_SEPARATOR = ';'.freeze
@@ -42,6 +62,8 @@
     @length_unit
     @length_format
     @length_precision
+
+    # -----
 
     def initialize
       begin
@@ -62,6 +84,28 @@
 
     # -----
 
+    def ocl_length_precision
+      [ LENGTH_MIN_PRECISION, @length_precision ].max
+    end
+
+    # Take a Length, convert to float in inches rounded to "OpenCutList" precision
+    def to_ocl_precision_f(l)
+      l.to_f.round(ocl_length_precision)
+    end
+
+    # Take a Length, convert to string representation in model unit rounded to "OpenCutList" precision
+    def to_ocl_precision_s(l)
+      Sketchup.format_length(l, ocl_length_precision).gsub(/~ /, '') # Remove ~ if it exists
+    end
+
+    # Check if given length value is rounded by model precision
+    def rounded_by_model_precision?(f)
+      precision = ocl_length_precision
+      f.to_l.to_s.to_l.to_f.round(precision) != f.to_l.to_f.round(precision)
+    end
+
+    # -----
+
     def from_fractional(i)
      input_split = (i.split('/').map( &:to_i ))
      Rational(*input_split)
@@ -77,6 +121,8 @@
         return i / 0.0254
       when FEET
         return i * 12
+      when YARD
+        return i * 36
       else
         return i
       end
@@ -85,15 +131,17 @@
     def unit_sign
       case @length_unit
         when MILLIMETER
-          return UNIT_SIGN_MILLIMETER
+          return UNIT_SYMBOL_MILLIMETER
         when CENTIMETER
-          return UNIT_SIGN_CENTIMETER
+          return UNIT_SYMBOL_CENTIMETER
         when METER
-          return UNIT_SIGN_METER
+          return UNIT_SYMBOL_METER
         when FEET
-          return UNIT_SIGN_FEET
+          return UNIT_SYMBOL_FEET
+        when YARD
+          return UNIT_SYMBOL_YARD
         else
-          return UNIT_SIGN_INCHES
+          return UNIT_SYMBOL_INCHES
       end
     end
 
@@ -126,7 +174,7 @@
         i
       end
     end
-    
+
     # Take a single dimension as a string and
     # 1. add units if none are present, assuming that no units means model units
     # 2. prepend zero if just unit given (may happen!)
@@ -138,8 +186,8 @@
       i = i.strip
       nu = ""
       sum = 0
-      if i.is_a?(String) 
-        if match = i.match(/^(~?\s*)(\d*(([.,])\d*)?)?\s*(#{UNIT_SIGN_MILLIMETER}|#{UNIT_SIGN_CENTIMETER}|#{UNIT_SIGN_METER}|#{UNIT_SIGN_FEET}|#{UNIT_SIGN_INCHES})?$/)
+      if i.is_a?(String)
+        if match = i.match(/^(~?\s*)(\d*(([.,])\d*)?)?\s*(#{UNIT_SYMBOL_MILLIMETER}|#{UNIT_SYMBOL_CENTIMETER}|#{UNIT_SYMBOL_METER}|#{UNIT_SYMBOL_FEET}|#{UNIT_SYMBOL_INCHES})?$/)
           one, two, three, four, five = match.captures
           if five.nil?
             nu = one + two + unit_sign
@@ -181,23 +229,23 @@
      i = i.strip
      sum = 0
       # make sure the entry is a string and starts with the proper magic
-      if i.is_a?(String) 
-        if match = i.match(/^(\d*([.,]\d*)?)?\s*(#{UNIT_SIGN_MILLIMETER}|#{UNIT_SIGN_CENTIMETER}|#{UNIT_SIGN_METER}|#{UNIT_SIGN_FEET}|#{UNIT_SIGN_INCHES})?$/)
+      if i.is_a?(String)
+        if match = i.match(/^(\d*([.,]\d*)?)?\s*(#{UNIT_SYMBOL_MILLIMETER}|#{UNIT_SYMBOL_CENTIMETER}|#{UNIT_SYMBOL_METER}|#{UNIT_SYMBOL_FEET}|#{UNIT_SYMBOL_INCHES})?$/)
           one, two, three = match.captures
           #puts "i = #{'%7s' % i} => decimal/integer number::  #{'%7s' % one}   #{'%7s' % three}"
           one = one.sub(/,/, '.')
           one = one.to_f
           if three.nil?
             sum = model_units_to_inches(one)
-          elsif three == UNIT_SIGN_MILLIMETER
+          elsif three == UNIT_SYMBOL_MILLIMETER
             sum = one / 25.4
-          elsif three == UNIT_SIGN_CENTIMETER
+          elsif three == UNIT_SYMBOL_CENTIMETER
             sum = one / 2.54
-          elsif three == UNIT_SIGN_METER
+          elsif three == UNIT_SYMBOL_METER
             sum = one / 0.0254
-          elsif three == UNIT_SIGN_FEET
+          elsif three == UNIT_SYMBOL_FEET
             sum = 12 * one
-          elsif three == UNIT_SIGN_INCHES
+          elsif three == UNIT_SYMBOL_INCHES
             sum = one
           end
         elsif match = i.match(/^(((\d*([.,]\d*)?)(\s*\')?)?\s+)?((\d*)\s+)?(\d*\/\d*)?(\s*\")?$/)
@@ -221,7 +269,7 @@
         end
       end
       sum = sum.to_s.sub(/\./, @decimal_separator)
-      sum + UNIT_SIGN_INCHES
+      sum + UNIT_SYMBOL_INCHES
     end
 
     # Takes a single number in a string and converts it to a string
@@ -235,7 +283,7 @@
     # into single d's and applies the function f to each element
     # returns the concatenated string in the same format
     #
-    def dd_transform(i, f)
+    def d_transform(i, f)
       return '' if i.nil?
       a = i.split(LIST_SEPARATOR)
       r = []
@@ -245,12 +293,12 @@
       r.join(LIST_SEPARATOR)
     end
 
-    def dd_add_units(i)
-      dd_transform(i, :str_add_units)
+    def d_add_units(i)
+      d_transform(i, :str_add_units)
     end
 
-    def dd_to_ifloats(i)
-      dd_transform(i, :str_to_ifloat)
+    def d_to_ifloats(i)
+      d_transform(i, :str_to_ifloat)
     end
 
     # Splits a string in the form dxd;dxd;...
@@ -287,6 +335,107 @@
       dxd_transform(i, :str_to_ifloat)
     end
 
+    # Splits a string in the form dxq;dxq;...
+    # into single d's and applies the function f to each element. q stay unchanged.
+    # returns the concatenated string in the same format
+    #
+    def dxq_transform(i, f)
+      return '' if i.nil?
+      a = i.split(LIST_SEPARATOR)
+      r = []
+      a.each do |e|
+        ed = e.split(DXD_SEPARATOR)
+        ed[0] = '0' if ed[0].nil? || ed[0].empty?
+        ed[1] = '0' if ed[1].nil? || ed[1].empty? || ed[1].strip.to_i < 1
+        r << (send(f, ed[0]) + (ed[1] == '0' ? '' : ' ' + DXD_SEPARATOR + ed[1].strip))
+      end
+      r.join(LIST_SEPARATOR)
+    end
+
+    # Take a string containing dimensions in the form dxq;dxq;dxq;...
+    # and make sure they all have units and are not empty
+    # without units, model units are assumed and added
+    #
+    def dxq_add_units(i)
+      dxq_transform(i, :str_add_units)
+    end
+
+    # Take a string containing dimensions in the form dxq;dxq;dxq;...
+    # and convert them into a decimal inch number (Sketchup internal
+    # format)
+    # the number is returned as a string NOT a length or float
+    #
+    def dxq_to_ifloats(i)
+      dxq_transform(i, :str_to_ifloat)
+    end
+
+    # Splits a string in the form dxdxq;dxdxq;...
+    # into single d's and applies the function f to each element. q stay unchanged.
+    # returns the concatenated string in the same format
+    #
+    def dxdxq_transform(i, f)
+      return '' if i.nil?
+      a = i.split(LIST_SEPARATOR)
+      r = []
+      a.each do |e|
+        ed = e.split(DXD_SEPARATOR)
+        ed[0] = '0' if ed[0].nil? || ed[0].empty?
+        ed[1] = '0' if ed[1].nil? || ed[1].empty?
+        ed[2] = '0' if ed[2].nil? || ed[2].empty? || ed[2].strip.to_i < 1
+        r << (send(f, ed[0]) + ' ' + DXD_SEPARATOR + ' ' + send(f, ed[1]) + (ed[2] == '0' ? '' :  ' ' + DXD_SEPARATOR + ed[2].strip))
+      end
+      r.join(LIST_SEPARATOR)
+    end
+
+    # Take a string containing dimensions in the form dxdxq;dxdxq;dxdxq;...
+    # and make sure they all have units and are not empty
+    # without units, model units are assumed and added
+    #
+    def dxdxq_add_units(i)
+      dxdxq_transform(i, :str_add_units)
+    end
+
+    # Take a string containing dimensions in the form dxdxq;dxdxq;dxdxq;...
+    # and convert them into a decimal inch number (Sketchup internal
+    # format)
+    # the number is returned as a string NOT a length or float
+    #
+    def dxdxq_to_ifloats(i)
+      dxdxq_transform(i, :str_to_ifloat)
+    end
+
+    # -----
+
+    def m3_to_inch3(f)
+      f * 0.0254**3
+    end
+
+    def ft3_to_inch3(f)
+      f / 12**3
+    end
+
+    def fbm_to_inch3(f)
+      f / 12**2
+    end
+
+
+    def m2_to_inch2(f)
+      f * 0.0254**2
+    end
+
+    def ft2_to_inch2(f)
+      f / 12**2
+    end
+
+
+    def m_to_inch(f)
+      f * 0.0254
+    end
+
+    def ft_to_inch(f)
+      f / 12
+    end
+
     # -----
 
     # Take a float containing a length in inch
@@ -299,14 +448,14 @@
       end
       if model_unit_is_metric
         multiplier = 0.0254
-        precision = 3
-        unit_sign = UNIT_SIGN_METER
+        precision = [3, @length_precision].max
+        unit_strippedname = UNIT_STRIPPEDNAME_METER
       else
         multiplier = 1 / 12.0
-        precision = 2
-        unit_sign = UNIT_SIGN_FEET
+        precision = [2, @length_precision].max
+        unit_strippedname = UNIT_STRIPPEDNAME_FEET
       end
-      format_value(f, multiplier, precision, unit_sign)
+      UnitUtils.format_readable(f * multiplier, unit_strippedname, precision, precision)
     end
 
     # Take a float containing an area in inch²
@@ -320,39 +469,39 @@
       if model_unit_is_metric
         multiplier = 0.0254**2
         precision = [3, @length_precision].max
-        unit_sign = UNIT_SIGN_METER_2
+        unit_strippedname = UNIT_STRIPPEDNAME_METER_2
       else
         multiplier = 1 / 144.0
         precision = [2, @length_precision].max
-        unit_sign = UNIT_SIGN_FEET_2
+        unit_strippedname = UNIT_STRIPPEDNAME_FEET_2
       end
-      format_value(f2, multiplier, precision, unit_sign)
+      UnitUtils.format_readable(f2 * multiplier, unit_strippedname, precision, precision)
     end
 
     # Take a float containing a volume in inch³
     # and convert it to a string representation according to the
-    # local unit settings.
+    # local unit settings and the material_type (for Board Foot).
     #
-    def format_to_readable_volume(f3)
+    def format_to_readable_volume(f3, material_type)
       if f3.nil?
         return nil
       end
       if model_unit_is_metric
         multiplier = 0.0254**3
         precision = [3, @length_precision].max
-        unit_sign = UNIT_SIGN_METER_3
+        unit_strippedname = UNIT_STRIPPEDNAME_METER_3
       else
-        multiplier = 1 / 1728.0
-        precision = [2, @length_precision].max
-        unit_sign = UNIT_SIGN_FEET_3
+        if material_type == MaterialAttributes::TYPE_SOLID_WOOD
+          multiplier = 1 / 144.0
+          precision = [2, @length_precision].max
+          unit_strippedname = UNIT_STRIPPEDNAME_BOARD_FEET
+        else
+          multiplier = 1 / 1728.0
+          precision = [2, @length_precision].max
+          unit_strippedname = UNIT_STRIPPEDNAME_FEET_3
+        end
       end
-      format_value(f3, multiplier, precision, unit_sign)
-    end
-
-    def format_value(f, multiplier, precision, unit_sign)
-      value = f * multiplier
-      rounded_value = value.round(precision)
-      ((value - rounded_value).abs > 0.0001 ? '~ ' : '') + ("%.#{precision}f" % rounded_value).tr('.', @decimal_separator) + unit_sign
+      UnitUtils.format_readable(f3 * multiplier, unit_strippedname, precision, precision)
     end
 
   end

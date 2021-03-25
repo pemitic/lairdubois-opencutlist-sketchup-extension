@@ -4,115 +4,6 @@
     // CONSTANTS
     // ======================
 
-    // Options keys
-
-    var SETTING_KEY_OPTION_AUTO_ORIENT = 'cutlist.option.auto_orient';
-    var SETTING_KEY_OPTION_SMART_MATERIAL = 'cutlist.option.smart_material';
-    var SETTING_KEY_OPTION_DYNAMIC_ATTRIBUTES_NAME = 'cutlist.option.dynamic_attributes_name';
-    var SETTING_KEY_OPTION_PART_NUMBER_WITH_LETTERS = 'cutlist.option.part_number_with_letters';
-    var SETTING_KEY_OPTION_PART_NUMBER_SEQUENCE_BY_GROUP = 'cutlist.option.part_number_sequence_by_group';
-    var SETTING_KEY_OPTION_PART_FOLDING = 'cutlist.option.part_folding';
-    var SETTING_KEY_OPTION_HIDE_ENTITY_NAMES = 'cutlist.option.hide_entity_names';
-    var SETTING_KEY_OPTION_HIDE_LABELS = 'cutlist.option.hide_labels';
-    var SETTING_KEY_OPTION_HIDE_CUTTING_DIMENSIONS = 'cutlist.option.hide_cutting_dimensions';
-    var SETTING_KEY_OPTION_HIDE_BBOX_DIMENSIONS = 'cutlist.option.hide_bbox_dimensions';
-    var SETTING_KEY_OPTION_HIDE_UNTYPED_MATERIAL_DIMENSIONS = 'cutlist.option.hide_untyped_material_dimensions';
-    var SETTING_KEY_OPTION_HIDE_FINAL_AREAS = 'cutlist.option.hide_final_areas';
-    var SETTING_KEY_OPTION_HIDE_EDGES = 'cutlist.option.hide_edges';
-    var SETTING_KEY_OPTION_MINIMIZE_ON_HIGHLIGHT = 'cutlist.option.minimize_on_highlight';
-    var SETTING_KEY_OPTION_PART_ORDER_STRATEGY = 'cutlist.option.part_order_strategy';
-    var SETTING_KEY_OPTION_DIMENSION_COLUMN_ORDER_STRATEGY = 'cutlist.option.dimension_column_order_strategy';
-    var SETTING_KEY_OPTION_HIDDEN_GROUP_IDS = 'cutlist.option.hidden_group_ids';
-
-    var SETTING_KEY_EXPORT_OPTION_SOURCE = 'cutlist.export.option.source';
-    var SETTING_KEY_EXPORT_OPTION_COL_SEP = 'cutlist.export.option.col_sep';
-    var SETTING_KEY_EXPORT_OPTION_ENCODING = 'cutlist.export.option.encoding';
-
-    var SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_STD_BAR = 'cutlist.cuttingdiagram1d.option.std_bar';
-    var SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_STD_BAR_LENGTH = 'cutlist.cuttingdiagram1d.option.std_bar_length';
-    var SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SCRAP_BAR_LENGTHS = 'cutlist.cuttingdiagram1d.option.scrap_bar_lengths';
-    var SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SAW_KERF = 'cutlist.cuttingdiagram1d.option.saw_kerf';
-    var SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_TRIMMING = 'cutlist.cuttingdiagram1d.option.trimming';
-    var SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_BAR_FOLDING = 'cutlist.cuttingdiagram1d.option.bar_folding';
-    var SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_HIDE_PART_LIST = 'cutlist.cuttingdiagram1d.option.hide_part_list';
-    var SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_WRAP_LENGTH = 'cutlist.cuttingdiagram1d.option.wrap_length';
-
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET = 'cutlist.cuttingdiagram2d.option.std_sheet';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET_LENGTH = 'cutlist.cuttingdiagram2d.option.std_sheet_length';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET_WIDTH = 'cutlist.cuttingdiagram2d.option.std_sheet_width';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SCRAP_SHEET_SIZES = 'cutlist.cuttingdiagram2d.option.scrap_sheet_sizes';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_GRAINED = 'cutlist.cuttingdiagram2d.option.grained';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SAW_KERF = 'cutlist.cuttingdiagram2d.option.saw_kerf';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_TRIMMING = 'cutlist.cuttingdiagram2d.option.trimming';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_PRESORT = 'cutlist.cuttingdiagram2d.option.presort';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STACKING = 'cutlist.cuttingdiagram2d.option.stacking';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_BBOX_OPTIMIZATION = 'cutlist.cuttingdiagram2d.option.bbox_optimization';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SHEET_FOLDING = 'cutlist.cuttingdiagram1d.option.sheet_folding';
-    var SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_HIDE_PART_LIST = 'cutlist.cuttingdiagram2d.option.hide_part_list';
-
-    // Options defaults
-
-    var OPTION_DEFAULT_AUTO_ORIENT = true;
-    var OPTION_DEFAULT_SMART_MATERIAL = true;
-    var OPTION_DEFAULT_DYNAMIC_ATTRIBUTES_NAME = false;
-    var OPTION_DEFAULT_PART_NUMBER_WITH_LETTERS = true;
-    var OPTION_DEFAULT_PART_NUMBER_SEQUENCE_BY_GROUP = true;
-    var OPTION_DEFAULT_PART_FOLDING = false;
-    var OPTION_DEFAULT_HIDE_ENTITY_NAMES = false;
-    var OPTION_DEFAULT_HIDE_LABELS = false;
-    var OPTION_DEFAULT_HIDE_CUTTING_DIMENSIONS = false;
-    var OPTION_DEFAULT_HIDE_BBOX_DIMENSIONS = false;
-    var OPTION_DEFAULT_HIDE_UNTYPED_MATERIAL_DIMENSIONS = false;
-    var OPTION_DEFAULT_HIDE_FINAL_AREAS = true;
-    var OPTION_DEFAULT_HIDE_EDGES = false;
-    var OPTION_DEFAULT_MINIMIZE_ON_HIGHLIGHT = true;
-    var OPTION_DEFAULT_PART_ORDER_STRATEGY = '-thickness>-length>-width>-count>name>-edge_pattern';
-    var OPTION_DEFAULT_DIMENSION_COLUMN_ORDER_STRATEGY = 'length>width>thickness';
-    var OPTION_DEFAULT_HIDDEN_GROUP_IDS = [];
-
-    var EXPORT_OPTION_DEFAULT_SOURCE = 1;      // cutlist
-    var EXPORT_OPTION_DEFAULT_COL_SEP = 0;     // \t
-    var EXPORT_OPTION_DEFAULT_ENCODING = 0;    // UTF-8
-
-    var CUTTINGDIAGRAM1D_OPTION_DEFAULT_STD_BAR = '';
-    var CUTTINGDIAGRAM1D_OPTION_DEFAULT_STD_BAR_LENGTH = '2500mm';
-    var CUTTINGDIAGRAM1D_OPTION_DEFAULT_BAR_FOLDING = true;
-    var CUTTINGDIAGRAM1D_OPTION_DEFAULT_HIDE_PART_LIST = false;
-    var CUTTINGDIAGRAM1D_OPTION_DEFAULT_WRAP_LENGTH = '3000mm';
-    var CUTTINGDIAGRAM1D_OPTION_DEFAULT_SCRAP_BAR_LENGTHS = '';
-    var CUTTINGDIAGRAM1D_OPTION_DEFAULT_SAW_KERF = '3mm';
-    var CUTTINGDIAGRAM1D_OPTION_DEFAULT_TRIMMING = '20mm';
-
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_STD_SHEET = '';
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_STD_SHEET_LENGTH = '2800mm';
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_STD_SHEET_WIDTH = '2070mm';
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_GRAINED = false;
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_SHEET_FOLDING = true;
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_HIDE_PART_LIST = false;
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_SCRAP_SHEET_SIZES = '';
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_SAW_KERF = '3mm';
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_TRIMMING = '10mm';
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_PRESORT = 1;             // PRESORT_WIDTH_DECR
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_STACKING = 0;            // STACKING_NONE
-    var CUTTINGDIAGRAM2D_OPTION_DEFAULT_BBOX_OPTIMIZATION = 0;   // BBOX_OPTIMIZATION_NONE
-
-    // Select picker options
-
-    var SELECT_PICKER_OPTIONS = {
-        size: 10,
-        iconBase: 'ladb-opencutlist-icon',
-        tickIcon: 'ladb-opencutlist-icon-tick',
-        showTick: true
-    };
-
-    // Tokenfield options
-
-    var TOKENFIELD_OPTIONS = {
-        delimiter: ';',
-        createTokensOnBlur: true,
-        beautify: false
-    };
-
     // Various Consts
 
     var MULTIPLE_VALUE = '-1';
@@ -124,7 +15,7 @@
         LadbAbstractTab.call(this, element, options, opencutlist);
 
         this.generateFilters = {
-          labels_filter: [],
+          tags_filter: [],
           edge_material_names_filter: []
         };
 
@@ -132,26 +23,32 @@
         this.filename = null;
         this.pageLabel = null;
         this.lengthUnit = null;
-        this.usedLabels = [];
+        this.usedTags = [];
         this.usedEdgeMaterialDisplayNames = [];
         this.materialUsages = [];
         this.groups = [];
         this.ignoreNextMaterialEvents = false;
         this.selectionGroupId = null;
         this.selectionPartIds = [];
+        this.lastEditPartTab = null;
+        this.lastReportOptionsTab = null;
+        this.lastCuttingdiagram1dOptionsTab = null;
+        this.lastCuttingdiagram2dOptionsTab = null;
+        this.lastLabelsOptionsTab = null;
 
         this.$header = $('.ladb-header', this.$element);
-        this.$fileTabs = $('.ladb-file-tabs', this.$header);
+        this.$headerExtra = $('.ladb-header-extra', this.$header);
         this.$btnGenerate = $('#ladb_btn_generate', this.$header);
         this.$btnPrint = $('#ladb_btn_print', this.$header);
         this.$btnExport = $('#ladb_btn_export', this.$header);
+        this.$btnReport = $('#ladb_btn_report', this.$header);
+        this.$btnOptions = $('#ladb_btn_options', this.$header);
         this.$itemHighlightAllParts = $('#ladb_item_highlight_all_parts', this.$header);
         this.$itemShowAllGroups = $('#ladb_item_show_all_groups', this.$header);
         this.$itemNumbersSave = $('#ladb_item_numbers_save', this.$header);
         this.$itemNumbersReset = $('#ladb_item_numbers_reset', this.$header);
         this.$itemExpendAll = $('#ladb_item_expand_all', this.$header);
         this.$itemCollapseAll = $('#ladb_item_collapse_all', this.$header);
-        this.$itemOptions = $('#ladb_item_options', this.$header);
 
         this.$panelHelp = $('.ladb-panel-help', this.$element);
         this.$page = $('.ladb-page', this.$element);
@@ -169,7 +66,7 @@
         this.groups = [];
         this.$page.empty();
         this.$btnGenerate.prop('disabled', true);
-        this.popSlide();
+        this.popToRootSlide();
 
         rubyCallCommand('cutlist_generate', $.extend(this.generateOptions, this.generateFilters), function (response) {
 
@@ -181,19 +78,30 @@
             var tips = response.tips;
             var selectionOnly = response.selection_only;
             var lengthUnit = response.length_unit;
+            var massUnitStrippedname = response.mass_unit_strippedname;
+            var currencySymbol = response.currency_symbol;
             var filename = response.filename;
+            var modelName = response.model_name;
             var pageLabel = response.page_label;
             var instanceCount = response.instance_count;
             var ignoredInstanceCount = response.ignored_instance_count;
-            var usedLabels = response.used_labels;
+            var usedTags = response.used_tags;
             var materialUsages = response.material_usages;
             var groups = response.groups;
+            var solidWoodMaterialCount = response.solid_wood_material_count;
+            var sheetGoodMaterialCount = response.sheet_good_material_count;
+            var dimensionalMaterialCount = response.dimensional_material_count;
+            var edgeMaterialCount = response.edge_material_count;
+            var hardwareMaterialCount = response.hardware_material_count;
 
             // Keep usefull data
             that.filename = filename;
+            that.modelName = modelName;
             that.pageLabel = pageLabel;
             that.lengthUnit = lengthUnit;
-            that.usedLabels = usedLabels;
+            that.currencySymbol = currencySymbol;
+            that.massUnitStrippedname = massUnitStrippedname;
+            that.usedTags = usedTags;
             that.usedEdgeMaterialDisplayNames = [];
             that.materialUsages = materialUsages;
             that.groups = groups;
@@ -206,10 +114,11 @@
             }
 
             // Update filename
-            that.$fileTabs.empty();
-            that.$fileTabs.append(Twig.twig({ ref: "tabs/cutlist/_file-tab.twig" }).render({
+            that.$headerExtra.empty();
+            that.$headerExtra.append(Twig.twig({ ref: "tabs/cutlist/_header-extra.twig" }).render({
                 selectionOnly: selectionOnly,
                 filename: filename,
+                modelName: modelName,
                 pageLabel: pageLabel,
                 generateAt: that.generateAt,
                 lengthUnit: lengthUnit
@@ -221,6 +130,7 @@
             // Update buttons and items state
             that.$btnPrint.prop('disabled', groups.length === 0);
             that.$btnExport.prop('disabled', groups.length === 0);
+            that.$btnReport.prop('disabled', solidWoodMaterialCount + sheetGoodMaterialCount + dimensionalMaterialCount + edgeMaterialCount + hardwareMaterialCount === 0);
             that.$itemHighlightAllParts.parents('li').toggleClass('disabled', groups.length === 0);
             that.$itemShowAllGroups.parents('li').toggleClass('disabled', groups.length === 0);
             that.$itemNumbersSave.parents('li').toggleClass('disabled', groups.length === 0);
@@ -241,13 +151,13 @@
                 tips: tips,
                 instanceCount: instanceCount,
                 ignoredInstanceCount: ignoredInstanceCount,
-                usedLabels: usedLabels,
+                usedTags: usedTags,
                 usedEdgeMaterialDisplayNames: that.usedEdgeMaterialDisplayNames,
                 groups: groups
             }));
 
             // Setup tooltips
-            that.opencutlist.setupTooltips();
+            that.dialog.setupTooltips();
 
             // Cleanup and Render selection
             that.cleanupSelection();
@@ -256,7 +166,7 @@
             // Cleanup nonexistent hidden group ids
             var hiddenGroupIdsLength = that.generateOptions.hidden_group_ids.length;
             for (var i = hiddenGroupIdsLength - 1 ; i >= 0; i--) {
-                if (that.generateOptions.hidden_group_ids[i].endsWith('summary')) {
+                if (that.generateOptions.hidden_group_ids[i] == null || that.generateOptions.hidden_group_ids[i].endsWith('summary')) {
                     continue;
                 }
                 var exists = false;
@@ -271,14 +181,14 @@
                 }
             }
             if (hiddenGroupIdsLength > that.generateOptions.hidden_group_ids.length) {
-                that.opencutlist.setSetting(SETTING_KEY_OPTION_HIDDEN_GROUP_IDS, that.generateOptions.hidden_group_ids, 2 /* SETTINGS_RW_STRATEGY_MODEL */);
+                that.saveUIOptionsHiddenGroupIds();
             }
 
             // Bind inputs
-            $('#ladb_cutlist_labels_filter', that.$page)
+            $('#ladb_cutlist_tags_filter', that.$page)
                 .tokenfield($.extend(TOKENFIELD_OPTIONS, {
                     autocomplete: {
-                        source: that.usedLabels,
+                        source: that.usedTags,
                         delay: 100
                     },
                     showAutocompleteOnFocus: false
@@ -295,7 +205,7 @@
 
                     // Available token only
                     var available = false;
-                    $.each(that.usedLabels, function (index, token) {
+                    $.each(that.usedTags, function (index, token) {
                         if (token === e.attrs.value) {
                             available = true;
                             return false;
@@ -308,9 +218,9 @@
                 })
                 .on('tokenfield:createdtoken tokenfield:removedtoken', function (e) {
                     var tokenList = $(this).tokenfield('getTokensList');
-                    that.generateFilters.labels_filter = tokenList.length === 0 ? [] : tokenList.split(';');
+                    that.generateFilters.tags_filter = tokenList.length === 0 ? [] : tokenList.split(';');
                     that.generateCutlist(function () {
-                        $('#ladb_cutlist_labels_filter-tokenfield', that.$page).focus();
+                        $('#ladb_cutlist_tags_filter-tokenfield', that.$page).focus();
                     });
                 })
             ;
@@ -356,13 +266,11 @@
             // Bind buttons
             $('.ladb-btn-setup-model-units', that.$header).on('click', function() {
                 $(this).blur();
-                rubyCallCommand('core_open_model_info_page', {
-                    page: i18next.t('core.model_info_page.units')
-                });
+                that.dialog.executeCommandOnTab('settings', 'highlight_panel', { panel:'model' });
             });
-            $('#ladb_cutlist_btn_labels_filter_clear', that.$page).on('click', function () {
+            $('#ladb_cutlist_btn_tags_filter_clear', that.$page).on('click', function () {
                 $(this).blur();
-                that.generateFilters.labels_filter = [];
+                that.generateFilters.tags_filter = [];
                 that.generateCutlist();
             });
             $('#ladb_cutlist_btn_edge_material_names_filter_clear', that.$page).on('click', function () {
@@ -402,9 +310,22 @@
             });
             $('a.ladb-btn-edit-material', that.$page).on('click', function () {
                 $(this).blur();
+
+                // Flag to ignore next material change event
+                that.ignoreNextMaterialEvents = true;
+
                 var materialId = $(this).data('material-id');
-                that.opencutlist.executeCommandOnTab('materials', 'edit_material', {
-                    material_id: materialId
+                that.dialog.executeCommandOnTab('materials', 'edit_material', {
+                    materialId: materialId,
+                    updatedCallback: function () {
+
+                        // Flag to stop ignoring next material change event
+                        that.ignoreNextMaterialEvents = false;
+
+                        // Refresh the list
+                        that.dialog.executeCommandOnTab('cutlist', 'generate_cutlist');
+
+                    }
                 });
                 return false;
             });
@@ -418,13 +339,16 @@
                     // Flag to ignore next material change event
                     that.ignoreNextMaterialEvents = true;
 
-                    rubyCallCommand('materials_add_std_dimension_command', { material_name: group.material_name, std_dimension: group.std_dimension }, function (response) {
+                    // Use real std dimension if dimension is rounded
+                    var std_dimension = group.std_dimension_rounded ? group.std_dimension_real : group.std_dimension;
+
+                    rubyCallCommand('materials_add_std_dimension_command', { material_name: group.material_name, std_dimension: std_dimension }, function (response) {
 
                         // Flag to stop ignoring next material change event
                         that.ignoreNextMaterialEvents = false;
 
                         if (response['errors']) {
-                            that.opencutlist.notifyErrors(response['errors']);
+                            that.dialog.notifyErrors(response['errors']);
                         } else {
 
                             var wTop = $group.offset().top - $(window).scrollTop();
@@ -436,7 +360,7 @@
                                 var $group = $('#ladb_group_' + groupId, that.$page);
                                 if ($group.length > 0) {
                                     that.$rootSlide.animate({ scrollTop: $group.offset().top - wTop }, 0).promise().then(function () {
-                                        $group.effect("highlight", {}, 1500);
+                                        $group.effect('highlight', {}, 1500);
                                     });
                                 }
 
@@ -449,20 +373,27 @@
             });
             $('a.ladb-item-edit-material', that.$page).on('click', function () {
                 $(this).blur();
+
+                // Flag to ignore next material change event
+                that.ignoreNextMaterialEvents = true;
+
                 var $group = $(this).parents('.ladb-cutlist-group');
                 var groupId = $group.data('group-id');
                 var group = that.findGroupById(groupId);
                 if (group) {
-                    that.opencutlist.executeCommandOnTab('materials', 'edit_material', {
-                        material_id: group.material_id
+                    that.dialog.executeCommandOnTab('materials', 'edit_material', {
+                        materialId: group.material_id,
+                        updatedCallback: function () {
+
+                            // Flag to stop ignoring next material change event
+                            that.ignoreNextMaterialEvents = false;
+
+                            // Refresh the list
+                            that.dialog.executeCommandOnTab('cutlist', 'generate_cutlist');
+
+                        }
                     });
                 }
-            });
-            $('a.ladb-item-edit-group', that.$page).on('click', function () {
-                $(this).blur();
-                var $group = $(this).parents('.ladb-cutlist-group');
-                var groupId = $group.data('group-id');
-                that.editGroup(groupId);
             });
             $('a.ladb-item-highlight-group-parts', that.$page).on('click', function () {
                 var $group = $(this).parents('.ladb-cutlist-group');
@@ -476,6 +407,10 @@
                 var groupId = $group.data('group-id');
                 that.hideAllGroups(groupId);
                 that.scrollSlideToTarget(null, $group, true, false);
+            });
+            $('a.ladb-item-show-all-groups', that.$page).on('click', function () {
+                $(this).blur();
+                that.showAllGroups();
             });
             $('a.ladb-item-numbers-save', that.$page).on('click', function () {
                 $(this).blur();
@@ -499,13 +434,19 @@
                 $(this).blur();
                 var $group = $(this).parents('.ladb-cutlist-group');
                 var groupId = $group.data('group-id');
-                that.cuttingdiagram1dGroup(groupId);
+                that.cuttingdiagram1dGroup(groupId, true);
             });
             $('button.ladb-btn-group-cuttingdiagram2d', that.$page).on('click', function () {
                 $(this).blur();
                 var $group = $(this).parents('.ladb-cutlist-group');
                 var groupId = $group.data('group-id');
-                that.cuttingdiagram2dGroup(groupId);
+                that.cuttingdiagram2dGroup(groupId, true);
+            });
+            $('button.ladb-btn-group-labels', that.$page).on('click', function () {
+                $(this).blur();
+                var $group = $(this).parents('.ladb-cutlist-group');
+                var groupId = $group.data('group-id');
+                that.labelsGroup(groupId);
             });
             $('button.ladb-btn-group-dimensions-help', that.$page).on('click', function () {
                 $(this).blur();
@@ -558,20 +499,20 @@
                 that.editPart(partId);
                 return false;
             });
-            $('a.ladb-btn-folding-toggle-part', that.$page).on('click', function () {
+            $('a.ladb-btn-folding-toggle-row', that.$page).on('click', function () {
                 $(this).blur();
                 var $part = $(this).parents('.ladb-cutlist-row-folder');
-                that.toggleFoldingPart($part);
+                that.toggleFoldingRow($part);
                 return false;
             });
             $('a.ladb-btn-label-filter', that.$page).on('click', function () {
                 $(this).blur();
                 var labelFilter = $(this).html();
-                var indexOf = that.generateFilters.labels_filter.indexOf(labelFilter);
+                var indexOf = that.generateFilters.tags_filter.indexOf(labelFilter);
                 if (indexOf > -1) {
-                    that.generateFilters.labels_filter.splice(indexOf, 1);
+                    that.generateFilters.tags_filter.splice(indexOf, 1);
                 } else {
-                    that.generateFilters.labels_filter.push(labelFilter);
+                    that.generateFilters.tags_filter.push(labelFilter);
                 }
                 that.generateCutlist();
                 return false;
@@ -589,7 +530,7 @@
             that.stickSlideHeader(that.$rootSlide);
 
             // Callback
-            if (callback && typeof callback == 'function') {
+            if (typeof callback === 'function') {
                 callback();
             } else {
                 if (errors.length === 0 && warnings.length === 0 && tips.length === 0) {
@@ -605,85 +546,456 @@
     LadbTabCutlist.prototype.exportCutlist = function () {
         var that = this;
 
+        var visibleOnly = this.generateOptions.hidden_group_ids.length > 0 && this.generateOptions.hidden_group_ids.indexOf('summary') === -1
+            || this.generateOptions.hidden_group_ids.length > 1 && this.generateOptions.hidden_group_ids.indexOf('summary') >= 0;
+
         // Retrieve export option options
-        this.opencutlist.pullSettings([
+        rubyCallCommand('core_get_model_preset', { dictionary: 'cutlist_export_options' }, function (response) {
 
-                SETTING_KEY_EXPORT_OPTION_SOURCE,
-                SETTING_KEY_EXPORT_OPTION_COL_SEP,
-                SETTING_KEY_EXPORT_OPTION_ENCODING
+            var exportOptions = response.preset;
 
-            ],
-            3 /* SETTINGS_RW_STRATEGY_MODEL_GLOBAL */,
-            function () {
+            var $modal = that.appendModalInside('ladb_cutlist_modal_export', 'tabs/cutlist/_modal-export.twig', {
+                visible_only: visibleOnly
+            });
 
-                var exportOptions = {
-                    source: that.opencutlist.getSetting(SETTING_KEY_EXPORT_OPTION_SOURCE, EXPORT_OPTION_DEFAULT_SOURCE),
-                    col_sep: that.opencutlist.getSetting(SETTING_KEY_EXPORT_OPTION_COL_SEP, EXPORT_OPTION_DEFAULT_COL_SEP),
-                    encoding: that.opencutlist.getSetting(SETTING_KEY_EXPORT_OPTION_ENCODING, EXPORT_OPTION_DEFAULT_ENCODING)
-                };
+            // Fetch UI elements
+            var $widgetPreset = $('.ladb-widget-preset', $modal);
+            var $selectSource = $('#ladb_cutlist_export_select_source', $modal);
+            var $selectColSep = $('#ladb_cutlist_export_select_col_sep', $modal);
+            var $selectEncoding = $('#ladb_cutlist_export_select_encoding', $modal);
+            var $sortableColumnOrderSummary = $('#ladb_sortable_column_order_summary', $modal);
+            var $sortableColumnOrderCutlist = $('#ladb_sortable_column_order_cutlist', $modal);
+            var $sortableColumnOrderInstancesList = $('#ladb_sortable_column_order_instances_list', $modal);
+            var $btnSetupModelUnits = $('#ladb_btn_setup_model_units', $modal);
+            var $btnExport = $('#ladb_cutlist_export_btn_export', $modal);
 
-                var $modal = that.appendModalInside('ladb_cutlist_modal_export', 'tabs/cutlist/_modal-export.twig');
+            // Define useful functions
 
-                // Fetch UI elements
-                var $selectSource = $('#ladb_cutlist_export_select_source', $modal);
-                var $selectColSep = $('#ladb_cutlist_export_select_col_sep', $modal);
-                var $selectEncoding = $('#ladb_cutlist_export_select_encoding', $modal);
-                var $btnExport = $('#ladb_cutlist_export', $modal);
+            var fnFillAndBindSorter = function ($sorter, colDefs) {
 
-                // Bind select
-                $selectSource.val(exportOptions.source);
-                $selectSource.selectpicker(SELECT_PICKER_OPTIONS);
-                $selectColSep.val(exportOptions.col_sep);
-                $selectColSep.selectpicker(SELECT_PICKER_OPTIONS);
-                $selectEncoding.val(exportOptions.encoding);
-                $selectEncoding.selectpicker(SELECT_PICKER_OPTIONS);
+                // Generate wordDefs
+                var wordDefs = [];
+                for (var i = 0; i < colDefs.length; i++) {
+                    wordDefs.push({
+                        value: colDefs[i].name,
+                        label: i18next.t('tab.cutlist.export.' + colDefs[i].name),
+                        class: 'variable'
+                    });
+                }
+
+                // Populate rows
+                $sorter.empty();
+                for (var i = 0; i < colDefs.length; i++) {
+
+                    // Create ans append row
+                    $sorter.append(Twig.twig({ref: "tabs/cutlist/_export-col-def.twig"}).render({
+                        colDef: colDefs[i]
+                    }));
+
+                    // Setup formula editor
+                    $('li:last-child .ladb-editor-formula', $sorter)
+                        .ladbEditorFormula({
+                            wordDefs: wordDefs
+                        })
+                        .ladbEditorFormula('setFormula', [ colDefs[i].formula ])
+                    ;
+
+                }
 
                 // Bind buttons
-                $btnExport.on('click', function () {
+                $('a.ladb-cutlist-export-col-formula-btn', $sorter).on('click', function () {
+                    var $item = $(this).closest('li');
+                    var $formula = $('.ladb-cutlist-export-col-formula', $item);
+                    $formula.toggleClass('hidden');
+                });
+                $('a.ladb-cutlist-export-col-visibility-btn', $sorter).on('click', function () {
+                    var $item = $(this).closest('li');
+                    var $icon = $('i', $(this));
+                    var hidden = $item.data('hidden');
+                    if (hidden === true) {
+                        hidden = false;
+                        $item.removeClass('ladb-inactive');
+                        $icon.removeClass('ladb-opencutlist-icon-eye-close');
+                        $icon.addClass('ladb-opencutlist-icon-eye-open');
+                    } else {
+                        hidden = true;
+                        $item.addClass('ladb-inactive');
+                        $icon.addClass('ladb-opencutlist-icon-eye-close');
+                        $icon.removeClass('ladb-opencutlist-icon-eye-open');
+                    }
+                    $item.data('hidden', hidden);
+                    return false;
+                });
 
-                    // Fetch options
+                // Bind sorter
+                $sorter.sortable(SORTABLE_OPTIONS);
 
-                    exportOptions.source = $selectSource.val();
-                    exportOptions.col_sep = $selectColSep.val();
-                    exportOptions.encoding = $selectEncoding.val();
+            }
+            var fnComputeSorterVisibility = function (source) {
+                switch (parseInt(source)) {
+                    case 0: // EXPORT_OPTION_SOURCE_SUMMARY
+                        $sortableColumnOrderSummary.show();
+                        $sortableColumnOrderCutlist.hide();
+                        $sortableColumnOrderInstancesList.hide();
+                        break;
+                    case 1: // EXPORT_OPTION_SOURCE_CUTLIST
+                        $sortableColumnOrderSummary.hide();
+                        $sortableColumnOrderCutlist.show();
+                        $sortableColumnOrderInstancesList.hide();
+                        break;
+                    case 2: // EXPORT_OPTION_SOURCE_INSTANCES_LIST
+                        $sortableColumnOrderSummary.hide();
+                        $sortableColumnOrderCutlist.hide();
+                        $sortableColumnOrderInstancesList.show();
+                        break;
+                }
+            };
+            var fnFetchOptions = function (options) {
+                options.source = parseInt($selectSource.val());
+                options.col_sep = parseInt($selectColSep.val());
+                options.encoding = parseInt($selectEncoding.val());
 
-                    // Store options
-                    that.opencutlist.setSettings([
-                        { key:SETTING_KEY_EXPORT_OPTION_SOURCE, value:exportOptions.source },
-                        { key:SETTING_KEY_EXPORT_OPTION_COL_SEP, value:exportOptions.col_sep },
-                        { key:SETTING_KEY_EXPORT_OPTION_ENCODING, value:exportOptions.encoding }
-                    ], 0 /* SETTINGS_RW_STRATEGY_GLOBAL */);
-
-                    rubyCallCommand('cutlist_export', $.extend(exportOptions, that.generateOptions), function (response) {
-
-                        var i;
-
-                        if (response.errors) {
-                            that.opencutlist.notifyErrors(response.errors);
-                        }
-                        if (response.export_path) {
-                            that.opencutlist.notify(i18next.t('tab.cutlist.success.exported_to', { export_path: response.export_path }), 'success', [
-                                Noty.button(i18next.t('default.open'), 'btn btn-default', function () {
-
-                                    rubyCallCommand('core_open_external_file', {
-                                        path: response.export_path
-                                    });
-
-                                })
-                            ]);
-                        }
-
+                var fnFetchColumnDefs = function ($sorter) {
+                    var columnDefs = [];
+                    $sorter.children('li').each(function () {
+                        columnDefs.push({
+                            name: $(this).data('name'),
+                            hidden: $(this).data('hidden'),
+                            formula: $('.ladb-editor-formula', $(this)).ladbEditorFormula('getFormula'),
+                        });
                     });
+                    return columnDefs;
+                }
+                if (options.coldefs == null) {
+                    options.coldefs = [];
+                }
+                options.coldefs[0] = fnFetchColumnDefs($sortableColumnOrderSummary);
+                options.coldefs[1] = fnFetchColumnDefs($sortableColumnOrderCutlist);
+                options.coldefs[2] = fnFetchColumnDefs($sortableColumnOrderInstancesList);
 
-                    // Hide modal
-                    $modal.modal('hide');
+            }
+            var fnFillInputs = function (options) {
+                $selectSource.selectpicker('val', options.source);
+                $selectColSep.selectpicker('val', options.col_sep);
+                $selectEncoding.selectpicker('val', options.encoding);
+                fnFillAndBindSorter($sortableColumnOrderSummary, options.coldefs[0]);
+                fnFillAndBindSorter($sortableColumnOrderCutlist, options.coldefs[1]);
+                fnFillAndBindSorter($sortableColumnOrderInstancesList, options.coldefs[2]);
+                fnComputeSorterVisibility(options.source);
+            }
+
+            $widgetPreset.ladbWidgetPreset({
+                dialog: that.dialog,
+                dictionary: 'cutlist_export_options',
+                fnFetchOptions: fnFetchOptions,
+                fnFillInputs: fnFillInputs
+            });
+            $selectSource.selectpicker(SELECT_PICKER_OPTIONS);
+            $selectColSep.selectpicker(SELECT_PICKER_OPTIONS);
+            $selectEncoding.selectpicker(SELECT_PICKER_OPTIONS);
+
+            fnFillInputs(exportOptions);
+
+            // Bind select
+            $selectSource.on('change', function () {
+                fnComputeSorterVisibility($(this).val());
+            });
+
+            // Bind buttons
+            $btnSetupModelUnits.on('click', function () {
+                $(this).blur();
+                that.dialog.executeCommandOnTab('settings', 'highlight_panel', { panel:'model' });
+            });
+            $btnExport.on('click', function () {
+
+                // Fetch options
+                fnFetchOptions(exportOptions);
+
+                // Store options
+                rubyCallCommand('core_set_model_preset', { dictionary: 'cutlist_export_options', values: exportOptions });
+
+                rubyCallCommand('cutlist_export', $.extend(exportOptions, { col_defs: exportOptions.coldefs[exportOptions.source] }, that.generateOptions), function (response) {
+
+                    var i;
+
+                    if (response.errors) {
+                        that.dialog.notifyErrors(response.errors);
+                    }
+                    if (response.export_path) {
+                        that.dialog.notify(i18next.t('tab.cutlist.success.exported_to', { export_path: response.export_path }), 'success', [
+                            Noty.button(i18next.t('default.open'), 'btn btn-default', function () {
+
+                                rubyCallCommand('core_open_external_file', {
+                                    path: response.export_path
+                                });
+
+                            })
+                        ]);
+                    }
 
                 });
 
-                // Show modal
-                $modal.modal('show');
+                // Hide modal
+                $modal.modal('hide');
 
             });
+
+            // Show modal
+            $modal.modal('show');
+
+        });
+
+    };
+
+    LadbTabCutlist.prototype.reportCutlist = function (forceDefaultTab) {
+        var that = this;
+
+        var visibleOnly = this.generateOptions.hidden_group_ids.length > 0 && this.generateOptions.hidden_group_ids.indexOf('summary') === -1
+            || this.generateOptions.hidden_group_ids.length > 1 && this.generateOptions.hidden_group_ids.indexOf('summary') >= 0;
+
+        // Retrieve label options
+        rubyCallCommand('core_get_model_preset', { dictionary: 'cutlist_report_options' }, function (response) {
+
+            var reportOptions = response.preset;
+
+            var $modal = that.appendModalInside('ladb_cutlist_modal_report', 'tabs/cutlist/_modal-report.twig', {
+                visible_only: visibleOnly,
+                tab: forceDefaultTab || that.lastReportOptionsTab == null ? 'general' : that.lastReportOptionsTab,
+            }, true);
+
+            // Fetch UI elements
+            var $widgetPreset = $('.ladb-widget-preset', $modal);
+            var $inputSolidWoodCoefficient = $('#ladb_input_solid_wood_coefficient', $modal);
+            var $btnSetupModelUnits = $('#ladb_btn_setup_model_units', $modal);
+            var $btnGenerate = $('#ladb_btn_generate', $modal);
+
+            var fnFetchOptions = function (options) {
+                options.solid_wood_coefficient = Math.max(1.0, $inputSolidWoodCoefficient.val() === '' ? 1.0 : parseFloat($inputSolidWoodCoefficient.val().replace(',', '.')));
+            }
+            var fnFillInputs = function (options) {
+                $inputSolidWoodCoefficient.val(options.solid_wood_coefficient);
+            }
+
+            $widgetPreset.ladbWidgetPreset({
+                dialog: that.dialog,
+                dictionary: 'cutlist_report_options',
+                fnFetchOptions: fnFetchOptions,
+                fnFillInputs: fnFillInputs
+            });
+            $inputSolidWoodCoefficient.ladbTextinputNumberWithUnit({
+                resetValue: '1'
+            });
+
+            fnFillInputs(reportOptions);
+
+            // Bind buttons
+            $btnSetupModelUnits.on('click', function () {
+                $(this).blur();
+                that.dialog.executeCommandOnTab('settings', 'highlight_panel', { panel:'model' });
+            });
+            $btnGenerate.on('click', function () {
+
+                // Fetch options
+                fnFetchOptions(reportOptions);
+
+                // Store options
+                rubyCallCommand('core_set_model_preset', {dictionary: 'cutlist_report_options', values: reportOptions });
+
+                // Generate report
+                that.generateReportCutlist(reportOptions);
+
+                // Hide modal
+                $modal.modal('hide');
+
+            });
+
+            // Show modal
+            $modal.modal('show');
+
+            // Setup popovers
+            that.dialog.setupPopovers();
+
+        });
+
+    };
+
+    LadbTabCutlist.prototype.generateReportCutlist = function (reportOptions, callback) {
+        var that = this;
+
+        var fnAdvance = function () {
+            window.requestAnimationFrame(function () {
+                rubyCallCommand('cutlist_report_advance', null, function (response) {
+
+                    if (response.remaining_step === 0 || response.remaining_step === undefined) {
+
+                        window.requestAnimationFrame(function () {
+
+                            var $slide = that.pushNewSlide('ladb_cutlist_slide_report', 'tabs/cutlist/_slide-report.twig', $.extend({
+                                errors: response.errors,
+                                filename: that.filename,
+                                modelName: that.modelName,
+                                pageLabel: that.pageLabel,
+                                lengthUnit: that.lengthUnit,
+                                generatedAt: new Date().getTime() / 1000,
+                                report: response
+                            }, reportOptions), function () {
+
+                                that.dialog.setupTooltips();
+
+                                // Callback
+                                if (typeof callback === 'function') {
+                                    callback();
+                                }
+
+                            });
+
+                            // Fetch UI elements
+                            var $btnReport = $('#ladb_btn_report', $slide);
+                            var $btnPrint = $('#ladb_btn_print', $slide);
+                            var $btnClose = $('#ladb_btn_close', $slide);
+
+                            // Bind buttons
+                            $btnReport.on('click', function () {
+                                that.reportCutlist();
+                            });
+                            $btnPrint.on('click', function () {
+                                window.print();
+                            });
+                            $btnClose.on('click', function () {
+                                that.popSlide();
+                            });
+                            $('.ladb-btn-setup-model-units', $slide).on('click', function() {
+                                $(this).blur();
+                                that.dialog.executeCommandOnTab('settings', 'highlight_panel', { panel:'model' });
+                            });
+                            $('.ladb-btn-toggle-no-print', $slide).on('click', function () {
+                                var $group = $(this).parents('.ladb-cutlist-group');
+                                if ($group.hasClass('no-print')) {
+                                    that.showGroup($group, true);
+                                } else {
+                                    that.hideGroup($group, true);
+                                }
+                                $(this).blur();
+                            });
+                            $('a.ladb-btn-folding-toggle-row', $slide).on('click', function () {
+                                $(this).blur();
+                                var $row = $(this).parents('.ladb-cutlist-row-folder');
+                                that.toggleFoldingRow($row, 'entry-id');
+                                return false;
+                            });
+                            $('.ladb-cutlist-row', $slide).on('click', function () {
+                                $(this).blur();
+                                $('.ladb-click-tool', $(this)).first().click();
+                                return false;
+                            });
+                            $('a.ladb-item-hide-all-other-groups', $slide).on('click', function () {
+                                $(this).blur();
+                                var $group = $(this).parents('.ladb-cutlist-group');
+                                var groupId = $group.data('group-id');
+                                that.hideAllGroups(groupId, $slide, true);
+                                that.scrollSlideToTarget($slide, $group, true, false);
+                            });
+                            $('a.ladb-item-show-all-groups', $slide).on('click', function () {
+                                $(this).blur();
+                                that.showAllGroups($slide, true);
+                            });
+                            $('#ladb_item_expand_all', $slide).on('click', function () {
+                                $(this).blur();
+                                that.expandAllFoldingRows($slide, 'entry-id');
+                            });
+                            $('#ladb_item_collapse_all', $slide).on('click', function () {
+                                $(this).blur();
+                                that.collapseAllFoldingRows($slide, 'entry-id');
+                            });
+                            $('a.ladb-btn-edit-material', $slide).on('click', function () {
+                                $(this).blur();
+
+                                // Flag to ignore next material change event
+                                that.ignoreNextMaterialEvents = true;
+
+                                var materialId = $(this).data('material-id');
+                                that.dialog.executeCommandOnTab('materials', 'edit_material', {
+                                    materialId: materialId,
+                                    propertiesTab: 'attributes',
+                                    updatedCallback: function () {
+
+                                        // Flag to stop ignoring next material change event
+                                        that.ignoreNextMaterialEvents = false;
+
+                                        // Refresh the list
+                                        that.dialog.executeCommandOnTab('cutlist', 'generate_cutlist', {
+                                            callback: function () {
+                                                that.generateReportCutlist(reportOptions);
+                                            }
+                                        });
+
+                                    }
+                                });
+                                return false;
+                            });
+                            $('a.ladb-btn-cuttingdiagram-1d', $slide).on('click', function () {
+                                $(this).blur();
+                                var groupId = $(this).data('group-id');
+                                that.cuttingdiagram1dGroup(groupId, true, function () {
+                                    that.generateReportCutlist(reportOptions);
+                                });
+                                return false;
+                            });
+                            $('a.ladb-btn-cuttingdiagram-2d', $slide).on('click', function () {
+                                $(this).blur();
+                                var groupId = $(this).data('group-id');
+                                that.cuttingdiagram2dGroup(groupId, true, function () {
+                                    that.generateReportCutlist(reportOptions);
+                                });
+                                return false;
+                            });
+                            $('a.ladb-btn-highlight-part', $slide).on('click', function () {
+                                $(this).blur();
+                                var partId = $(this).data('part-id');
+                                that.highlightPart(partId);
+                                return false;
+                            });
+                            $('a.ladb-btn-edit-part', $slide).on('click', function () {
+                                $(this).blur();
+                                var partId = $(this).data('part-id');
+                                that.editPart(partId, undefined, undefined, function () {
+
+                                    // Refresh the list
+                                    that.dialog.executeCommandOnTab('cutlist', 'generate_cutlist', {
+                                        callback: function () {
+                                            that.generateReportCutlist(reportOptions);
+                                        }
+                                    });
+
+                                });
+                                return false;
+                            });
+
+                            that.dialog.finishProgress();
+
+                        });
+
+                    } else {
+
+                        window.requestAnimationFrame(function () {
+                            that.dialog.advanceProgress(1);
+                        });
+
+                        fnAdvance();
+                    }
+
+                });
+            });
+        }
+
+        window.requestAnimationFrame(function () {
+            rubyCallCommand('cutlist_report_start', $.extend(reportOptions, that.generateOptions), function (response) {
+                window.requestAnimationFrame(function () {
+                    that.dialog.startProgress(response.remaining_step);
+                    fnAdvance();
+                });
+            });
+        });
 
     };
 
@@ -695,9 +1007,9 @@
         rubyCallCommand('cutlist_highlight_parts', { minimize_on_highlight: that.generateOptions.minimize_on_highlight }, function (response) {
 
             if (response['errors']) {
-                that.opencutlist.notifyErrors(response['errors']);
+                that.dialog.notifyErrors(response['errors']);
             } else if (that.generateOptions.minimize_on_highlight) {
-                that.opencutlist.minimize();
+                that.dialog.minimize();
             }
 
         });
@@ -710,9 +1022,9 @@
         rubyCallCommand('cutlist_highlight_parts', { minimize_on_highlight: that.generateOptions.minimize_on_highlight, group_id: groupId }, function (response) {
 
             if (response['errors']) {
-                that.opencutlist.notifyErrors(response['errors']);
+                that.dialog.notifyErrors(response['errors']);
             } else if (that.generateOptions.minimize_on_highlight) {
-                that.opencutlist.minimize();
+                that.dialog.minimize();
             }
 
         });
@@ -744,9 +1056,9 @@
             rubyCallCommand('cutlist_highlight_parts', { minimize_on_highlight: that.generateOptions.minimize_on_highlight, part_ids: partIds }, function (response) {
 
                 if (response['errors']) {
-                    that.opencutlist.notifyErrors(response['errors']);
+                    that.dialog.notifyErrors(response['errors']);
                 } else if (that.generateOptions.minimize_on_highlight) {
-                    that.opencutlist.minimize();
+                    that.dialog.minimize();
                 }
 
             });
@@ -799,6 +1111,28 @@
         return null;
     };
 
+    LadbTabCutlist.prototype.renderSelectionOnGroup = function (id) {
+        var that = this;
+        var $group = $('#ladb_group_' + id, this.$page);
+        var defs = [ 'cuttingdiagram1d', 'cuttingdiagram2d', 'labels' ];
+        $.each(defs, function () {
+            var $btn = $('button.ladb-btn-group-' + this, $group);
+            var $i = $('i', $btn);
+            var clazz = 'ladb-opencutlist-icon-' + this + '-selection';
+            var doEffet = false;
+            if (that.selectionPartIds.length > 0) {
+                doEffet = !$i.hasClass(clazz);
+                $i.addClass(clazz);
+            } else {
+                doEffet = $i.hasClass(clazz);
+                $i.removeClass(clazz);
+            }
+            if (doEffet) {
+                $btn.effect('highlight', {}, 1500);
+            }
+        });
+    };
+
     LadbTabCutlist.prototype.renderSelectionOnPart = function (id, selected) {
         var $row = $('#ladb_part_' + id, this.$page);
         var $highlightPartBtn = $('a.ladb-btn-highlight-part', $row);
@@ -835,6 +1169,9 @@
     };
 
     LadbTabCutlist.prototype.renderSelection = function () {
+        if (this.selectionGroupId) {
+            this.renderSelectionOnGroup(this.selectionGroupId);
+        }
         for (var i = 0; i < this.selectionPartIds.length; i++) {
             this.renderSelectionOnPart(this.selectionPartIds[i], true);
         }
@@ -863,6 +1200,7 @@
                 if (state === undefined || state === false) {
                     this.selectionPartIds.splice(this.selectionPartIds.indexOf(partId), 1);
                     if (this.selectionPartIds.length === 0) {
+                        this.renderSelectionOnGroup(groupAndPart.group.id);
                         this.selectionGroupId = null;
                     }
                     selected = false;
@@ -870,12 +1208,15 @@
             } else {
                 if (state === undefined || state === true) {
                     this.selectionPartIds.push(partId);
+                    if (this.selectionGroupId !== groupAndPart.group.id) {
+                        this.renderSelectionOnGroup(groupAndPart.group.id);
+                    }
                     this.selectionGroupId = groupAndPart.group.id;
                     selected = true;
                 }
             }
 
-            // Apply selection
+            // Render selection
             this.renderSelectionOnPart(partId, selected);
 
         }
@@ -895,7 +1236,7 @@
         }
     };
 
-    LadbTabCutlist.prototype.editPart = function (id, serializedPath, tab) {
+    LadbTabCutlist.prototype.editPart = function (id, serializedPath, tab, updatedCallback) {
         var that = this;
 
         var groupAndPart = id ? this.findGroupAndPartById(id) : (serializedPath ? this.findGroupAndPartBySerializedPath(serializedPath) : null);
@@ -956,8 +1297,17 @@
                 if (editedPart.cumulable !== editedParts[i].cumulable) {
                     editedPart.cumulable = MULTIPLE_VALUE;
                 }
-                editedPart.labels = editedPart.labels.filter(function(label) {  // Extract only commun labels
-                    return -1 !== editedParts[i].labels.indexOf(label);
+                if (editedPart.instance_count_by_part !== editedParts[i].instance_count_by_part) {
+                    editedPart.instance_count_by_part = MULTIPLE_VALUE;
+                }
+                if (editedPart.mass !== editedParts[i].mass) {
+                    editedPart.mass = MULTIPLE_VALUE;
+                }
+                if (editedPart.price !== editedParts[i].price) {
+                    editedPart.price = MULTIPLE_VALUE;
+                }
+                editedPart.tags = editedPart.tags.filter(function(tag) {  // Extract only commun tags
+                    return -1 !== editedParts[i].tags.indexOf(tag);
                 });
                 if (editedPart.length_increase !== editedParts[i].length_increase) {
                     editedPart.length_increase = MULTIPLE_VALUE;
@@ -982,6 +1332,19 @@
                 }
             }
 
+            if (tab === undefined) {
+                tab = this.lastEditPartTab;
+            }
+            if (tab === null || tab.length === 0
+                || tab === 'axes' && multiple
+                || tab === 'edges' && group.material_type !== 2 /* 2 = TYPE_SHEET_GOOD */
+                || tab === 'infos'
+                || tab === 'warnings'
+            ) {
+                tab = 'general';
+            }
+            this.lastEditPartTab = tab;
+
             var fnOpenModal = function(thumbnailFile) {
 
                 var $modal = that.appendModalInside('ladb_cutlist_modal_part', 'tabs/cutlist/_modal-part.twig', {
@@ -991,26 +1354,34 @@
                     multiple: multiple,
                     thumbnailFile: thumbnailFile,
                     materialUsages: that.materialUsages,
-                    tab: tab === undefined || tab.length === 0 ? 'general' : tab
+                    tab: tab
                 }, true);
 
                 // Fetch UI elements
+                var $tabs = $('a[data-toggle="tab"]', $modal);
                 var $inputName = $('#ladb_cutlist_part_input_name', $modal);
                 var $selectMaterialName = $('#ladb_cutlist_part_select_material_name', $modal);
                 var $selectCumulable = $('#ladb_cutlist_part_select_cumulable', $modal);
+                var $inputInstanceCountByPart = $('#ladb_cutlist_part_input_instance_count_by_part', $modal);
+                var $inputMass = $('#ladb_cutlist_part_input_mass', $modal);
+                var $inputPrice = $('#ladb_cutlist_part_input_price', $modal);
+                var $inputTags = $('#ladb_cutlist_part_input_tags', $modal);
                 var $inputOrientationLockedOnAxis = $('#ladb_cutlist_part_input_orientation_locked_on_axis', $modal);
-                var $inputLabels = $('#ladb_cutlist_part_input_labels', $modal);
-                var $inputLengthIncrease = $('#ladb_cutlist_part_input_length_increase', $modal);
-                var $inputWidthIncrease = $('#ladb_cutlist_part_input_width_increase', $modal);
-                var $inputThicknessIncrease = $('#ladb_cutlist_part_input_thickness_increase', $modal);
+                var $inputSymmetrical = $('#ladb_cutlist_part_input_symmetrical', $modal);
                 var $inputPartAxes = $('#ladb_cutlist_part_input_axes', $modal);
+                var $sortableAxes = $('#ladb_sortable_axes', $modal);
                 var $sortablePartAxes = $('#ladb_sortable_part_axes', $modal);
                 var $sortablePartAxesExtra = $('#ladb_sortable_part_axes_extra', $modal);
                 var $selectPartAxesOriginPosition = $('#ladb_cutlist_part_select_axes_origin_position', $modal);
+                var $inputLengthIncrease = $('#ladb_cutlist_part_input_length_increase', $modal);
+                var $inputWidthIncrease = $('#ladb_cutlist_part_input_width_increase', $modal);
+                var $inputThicknessIncrease = $('#ladb_cutlist_part_input_thickness_increase', $modal);
                 var $selectEdgeYmaxMaterialName = $('#ladb_cutlist_part_select_edge_ymax_material_name', $modal);
                 var $selectEdgeYminMaterialName = $('#ladb_cutlist_part_select_edge_ymin_material_name', $modal);
                 var $selectEdgeXminMaterialName = $('#ladb_cutlist_part_select_edge_xmin_material_name', $modal);
                 var $selectEdgeXmaxMaterialName = $('#ladb_cutlist_part_select_edge_xmax_material_name', $modal);
+                var $rectIncreaseLength = $('svg .increase-length', $modal);
+                var $rectIncreaseWidth = $('svg .increase-width', $modal);
                 var $rectEdgeYmax = $('svg .edge-ymax', $modal);
                 var $rectEdgeYmin = $('svg .edge-ymin', $modal);
                 var $rectEdgeXmin = $('svg .edge-xmin', $modal);
@@ -1020,6 +1391,7 @@
                 var $labelEdgeXmin = $('#ladb_cutlist_part_label_edge_xmin', $modal);
                 var $labelEdgeXmax = $('#ladb_cutlist_part_label_edge_xmax', $modal);
                 var $btnHighlight = $('#ladb_cutlist_part_highlight', $modal);
+                var $btnExportToSkp = $('#ladb_cutlist_part_export_to_skp', $modal);
                 var $btnUpdate = $('#ladb_cutlist_part_update', $modal);
 
                 // Utils function
@@ -1046,8 +1418,6 @@
                         });
                     }
                 };
-                fnDisplayAxisDimensions();
-
                 var fnUpdateEdgesPreview = function() {
                     if ($selectEdgeYmaxMaterialName.val() === '') {
                         $rectEdgeYmax.removeClass('ladb-active');
@@ -1070,16 +1440,26 @@
                         $rectEdgeXmax.addClass('ladb-active');
                     }
                 };
-
+                var fnUpdateIncreasesPreview = function() {
+                    if ($inputLengthIncrease.val() == null || $inputLengthIncrease.val().length === 0 || $inputLengthIncrease.val().match(/^0([.,]{0,1}[0]*)(m|cm|mm|yd|'|")*$/g)) {
+                        $rectIncreaseLength.removeClass('ladb-active');
+                    } else {
+                        $rectIncreaseLength.addClass('ladb-active');
+                    }
+                    if ($inputWidthIncrease.val() == null || $inputWidthIncrease.val().length === 0 || $inputWidthIncrease.val().match(/^0([.,]{0,1}[0]*)(m|cm|mm|yd|'|")*$/g)) {
+                        $rectIncreaseWidth.removeClass('ladb-active');
+                    } else {
+                        $rectIncreaseWidth.addClass('ladb-active');
+                    }
+                };
                 var fnNewCheck = function($select, type) {
                     if ($select.val() === 'new') {
-                        that.opencutlist.executeCommandOnTab('materials', 'new_material', { type: type });
+                        that.dialog.executeCommandOnTab('materials', 'new_material', { type: type });
                         $modal.modal('hide');
                         return true;
                     }
                     return false;
                 };
-
                 var fnMaterialNameCopyToAllEdges = function(materialName) {
                     if (materialName !== MULTIPLE_VALUE) {
                         if (!$selectEdgeYmaxMaterialName.prop( "disabled")) {
@@ -1097,6 +1477,62 @@
                         fnUpdateEdgesPreview();
                     }
                 };
+                var fnOnAxiesOrderChanged = function () {
+                    var axes = fnComputeAxesOrder();
+
+                    var oriented = editedPart.normals_to_values[axes[0]] >= editedPart.normals_to_values[axes[1]]
+                        &&  editedPart.normals_to_values[axes[1]] >= editedPart.normals_to_values[axes[2]];
+
+                    // Check Orientation Locked On Axis option if needed
+                    $inputOrientationLockedOnAxis.prop('checked', !oriented);
+                    fnDisplayAxisDimensions();
+
+                    // By default set origin position to 'min'
+                    $selectPartAxesOriginPosition
+                        .selectpicker('val', 'min')
+                        .trigger('change')
+                    ;
+
+                }
+
+                fnDisplayAxisDimensions();
+                fnUpdateIncreasesPreview();
+
+                // Bind tabs
+                $tabs.on('shown.bs.tab', function (e) {
+                    that.lastEditPartTab = $(e.target).attr('href').substring('#tab_edit_part_'.length);
+                })
+
+                // Bind input
+                $inputInstanceCountByPart.ladbTextinputNumberWithUnit({
+                    resetValue: '1',
+                    defaultUnit: 'u_p',
+                    units: [
+                        { u_p: i18next.t('default.instance_plural') + ' / ' + i18next.t('default.part_single') },
+                    ]
+                });
+                $inputMass.ladbTextinputNumberWithUnit({
+                    defaultUnit: that.massUnitStrippedname + '_p',
+                    units: [
+                        { kg_p: 'kg / ' + i18next.t('default.part_single') },
+                        { lb_p: 'lb / ' + i18next.t('default.part_single') }
+                    ]
+                });
+                $inputPrice.ladbTextinputNumberWithUnit({
+                    defaultUnit: '$_p',
+                    units: [
+                        { $_p: that.currencySymbol + ' / ' + i18next.t('default.part_single') }
+                    ]
+                });
+                $inputLengthIncrease.on('change', function() {
+                    fnUpdateIncreasesPreview();
+                });
+                $inputLengthIncrease.ladbTextinputDimension();
+                $inputWidthIncrease.on('change', function() {
+                    fnUpdateIncreasesPreview();
+                });
+                $inputWidthIncrease.ladbTextinputDimension();
+                $inputThicknessIncrease.ladbTextinputDimension();
 
                 // Bind select
                 $selectMaterialName.val(editedPart.material_name);
@@ -1145,6 +1581,14 @@
                         }
                     });
 
+                // Bind increases
+                $rectIncreaseLength.on('click', function() {
+                    $inputLengthIncrease.focus();
+                });
+                $rectIncreaseWidth.on('click', function() {
+                    $inputWidthIncrease.focus();
+                });
+
                 // Bind edges
                 $rectEdgeYmin.on('click', function() {
                     $selectEdgeYminMaterialName.selectpicker('toggle');
@@ -1160,23 +1604,21 @@
                 });
 
                 // Bind sorter
+                $sortableAxes.on('dblclick', function () {
+                   var sortedNormals = Object.keys(editedPart.normals_to_values).sort(function (a, b) {
+                       return editedPart.normals_to_values[b] - editedPart.normals_to_values[a]
+                   });
+                   var $rowX = $('li[data-axis="' + sortedNormals[0] + '"]', $sortablePartAxes);
+                   var $rowY = $('li[data-axis="' + sortedNormals[1] + '"]', $sortablePartAxes);
+                   var $rowZ = $('li[data-axis="' + sortedNormals[2] + '"]', $sortablePartAxes);
+                    $rowY.insertBefore($rowZ);
+                    $rowX.insertBefore($rowY);
+                    fnOnAxiesOrderChanged();
+                });
                 $sortablePartAxes.sortable({
                     cursor: 'ns-resize',
                     handle: '.ladb-handle',
-                    stop: function (event, ui) {
-                        var axes = fnComputeAxesOrder();
-
-                        var oriented = editedPart.normals_to_values[axes[0]] >= editedPart.normals_to_values[axes[1]]
-                            &&  editedPart.normals_to_values[axes[1]] >= editedPart.normals_to_values[axes[2]];
-
-                        // Check Orientation Locked On Axis option if needed
-                        $inputOrientationLockedOnAxis.prop('checked', !oriented);
-                        fnDisplayAxisDimensions();
-
-                        // By default set origin position to 'min'
-                        $selectPartAxesOriginPosition.selectpicker('val', 'min');
-
-                    }
+                    stop: fnOnAxiesOrderChanged
                 });
 
                 // Bind checkbox
@@ -1202,6 +1644,22 @@
                     that.highlightPart(part.id);
                     return false;
                 });
+                $btnExportToSkp.on('click', function () {
+                    this.blur();
+                    rubyCallCommand('cutlist_part_export_to_skp', {
+                        definition_id: part.definition_id
+                    }, function (response) {
+
+                        if (response.errors) {
+                            that.dialog.notifyErrors(response.errors);
+                        }
+                        if (response.export_path) {
+                            that.dialog.notify(i18next.t('tab.cutlist.success.exported_to', { export_path: response.export_path }), 'success');
+                        }
+
+                    });
+                    return false;
+                });
                 $btnUpdate.on('click', function () {
 
                     for (var i = 0; i < editedParts.length; i++) {
@@ -1211,6 +1669,7 @@
                             editedParts[i].name = $inputName.val();
 
                             editedParts[i].orientation_locked_on_axis = $inputOrientationLockedOnAxis.is(':checked');
+                            editedParts[i].symmetrical = $inputSymmetrical.is(':checked');
                             editedParts[i].axes_order = $inputPartAxes.val().length > 0 ? $inputPartAxes.val().split(',') : [];
                             editedParts[i].axes_origin_position = $selectPartAxesOriginPosition.val();
 
@@ -1220,19 +1679,28 @@
                             editedParts[i].material_name = $selectMaterialName.val();
                         }
                         if ($selectCumulable.val() !== MULTIPLE_VALUE) {
-                            editedParts[i].cumulable = $selectCumulable.val();
+                            editedParts[i].cumulable = parseInt($selectCumulable.val());
+                        }
+                        if ($inputInstanceCountByPart.val() !== undefined && $inputInstanceCountByPart.val() !== '') {
+                            editedParts[i].instance_count_by_part = Math.max(1, $inputInstanceCountByPart.val() === '' ? 1 : parseInt($inputInstanceCountByPart.val()));
+                        }
+                        if ($inputMass.val() !== undefined && $inputMass.val() !== '') {
+                            editedParts[i].mass = $inputMass.ladbTextinputNumberWithUnit('val');
+                        }
+                        if ($inputPrice.val() !== undefined && $inputPrice.val() !== '') {
+                            editedParts[i].price = $inputPrice.val();
                         }
 
-                        var untouchLabels = editedParts[i].labels.filter(function (label) { return !editedPart.labels.includes(label) });
-                        editedParts[i].labels = untouchLabels.concat($inputLabels.tokenfield('getTokensList').split(';'));
+                        var untouchTags = editedParts[i].tags.filter(function (tag) { return !editedPart.tags.includes(tag) });
+                        editedParts[i].tags = untouchTags.concat($inputTags.tokenfield('getTokensList').split(';'));
 
-                        if ($inputLengthIncrease.val() !== MULTIPLE_VALUE) {
+                        if ($inputLengthIncrease.val() !== undefined && $inputLengthIncrease.val() !== '') {
                             editedParts[i].length_increase = $inputLengthIncrease.val();
                         }
-                        if ($inputWidthIncrease.val() !== MULTIPLE_VALUE) {
+                        if ($inputWidthIncrease.val() !== undefined && $inputWidthIncrease.val() !== '') {
                             editedParts[i].width_increase = $inputWidthIncrease.val();
                         }
-                        if ($inputThicknessIncrease.val() !== MULTIPLE_VALUE) {
+                        if ($inputThicknessIncrease.val() !== undefined && $inputThicknessIncrease.val() !== '') {
                             editedParts[i].thickness_increase = $inputThicknessIncrease.val();
                         }
 
@@ -1255,27 +1723,33 @@
 
                         if (response['errors']) {
 
-                            that.opencutlist.notifyErrors(response['errors']);
+                            that.dialog.notifyErrors(response['errors']);
 
                         } else {
 
-                            var partId = editedPart.id;
-                            var wTop = $('#ladb_part_' + partId).offset().top - $(window).scrollTop();
+                            if (typeof updatedCallback === 'function') {
+                                updatedCallback()
+                            } else {
 
-                            // Refresh the list
-                            that.generateCutlist(function () {
+                                var partId = editedPart.id;
+                                var wTop = $('#ladb_part_' + partId).offset().top - $(window).scrollTop();
 
-                                // Try to scroll to the edited part's row
-                                var $part = $('#ladb_part_' + partId, that.$page);
-                                if ($part.length > 0) {
-                                    if ($part.hasClass('hide')) {
-                                        that.expandFoldingPart($('#ladb_part_' + $part.data('folder-id')));
+                                // Refresh the list
+                                that.generateCutlist(function () {
+
+                                    // Try to scroll to the edited part's row
+                                    var $part = $('#ladb_part_' + partId, that.$page);
+                                    if ($part.length > 0) {
+                                        if ($part.hasClass('hide')) {
+                                            that.expandFoldingRow($('#ladb_part_' + $part.data('folder-id')));
+                                        }
+                                        $part.effect('highlight', {}, 1500);
+                                        that.$rootSlide.animate({ scrollTop: $part.offset().top - wTop }, 0);
                                     }
-                                    $part.effect("highlight", {}, 1500);
-                                    that.$rootSlide.animate({ scrollTop: $part.offset().top - wTop }, 0);
-                                }
 
-                            });
+                                });
+
+                            }
 
                             // Hide modal
                             $modal.modal('hide');
@@ -1295,11 +1769,11 @@
                 // Focus
                 $inputName.focus();
 
-                // Init tokenfields (this must done after modal shown for correct token label max width measurement)
-                $inputLabels
+                // Init tokenfields (this must done after modal shown for correct token tag max width measurement)
+                $inputTags
                     .tokenfield($.extend(TOKENFIELD_OPTIONS, {
                         autocomplete: {
-                            source: that.usedLabels,
+                            source: that.usedTags.concat(that.generateOptions.tags).unique(),
                             delay: 100
                         }
                     }))
@@ -1313,8 +1787,13 @@
                     });
 
                 // Setup popovers and tooltips
-                that.opencutlist.setupPopovers();
-                that.opencutlist.setupTooltips();
+                that.dialog.setupPopovers();
+                that.dialog.setupTooltips();
+
+                // Change event
+                $('input, select', $modal).on('change', function () {
+                    $btnExportToSkp.prop('disabled', true);
+                });
 
             };
 
@@ -1340,54 +1819,54 @@
         }
     };
 
-    LadbTabCutlist.prototype.toggleFoldingPart = function ($part) {
-        var $btn = $('.ladb-btn-folding-toggle-part', $part);
+    LadbTabCutlist.prototype.toggleFoldingRow = function ($row, dataKey) {
+        var $btn = $('.ladb-btn-folding-toggle-row', $row);
         var $i = $('i', $btn);
 
         if ($i.hasClass('ladb-opencutlist-icon-arrow-down')) {
-            this.expandFoldingPart($part);
+            this.expandFoldingRow($row, dataKey);
         } else {
-            this.collapseFoldingPart($part);
+            this.collapseFoldingRow($row, dataKey);
         }
     };
 
-    LadbTabCutlist.prototype.expandFoldingPart = function ($part) {
-        var partId = $part.data('part-id');
-        var $btn = $('.ladb-btn-folding-toggle-part', $part);
+    LadbTabCutlist.prototype.expandFoldingRow = function ($row, dataKey) {
+        var rowId = $row.data(dataKey ? dataKey : 'part-id');
+        var $btn = $('.ladb-btn-folding-toggle-row', $row);
         var $i = $('i', $btn);
 
         $i.addClass('ladb-opencutlist-icon-arrow-up');
         $i.removeClass('ladb-opencutlist-icon-arrow-down');
 
         // Show children
-        $('tr[data-folder-id=' + partId + ']', this.$page).removeClass('hide');
+        $row.siblings('tr[data-folder-id=' + rowId + ']').removeClass('hide');
 
     };
 
-    LadbTabCutlist.prototype.collapseFoldingPart = function ($part) {
-        var partId = $part.data('part-id');
-        var $btn = $('.ladb-btn-folding-toggle-part', $part);
+    LadbTabCutlist.prototype.collapseFoldingRow = function ($row, dataKey) {
+        var rowId = $row.data(dataKey ? dataKey : 'part-id');
+        var $btn = $('.ladb-btn-folding-toggle-row', $row);
         var $i = $('i', $btn);
 
         $i.addClass('ladb-opencutlist-icon-arrow-down');
         $i.removeClass('ladb-opencutlist-icon-arrow-up');
 
         // Hide children
-        $('tr[data-folder-id=' + partId + ']', this.$page).addClass('hide');
+        $row.siblings('tr[data-folder-id=' + rowId + ']').addClass('hide');
 
     };
 
-    LadbTabCutlist.prototype.expandAllFoldingPart = function () {
+    LadbTabCutlist.prototype.expandAllFoldingRows = function ($slide, dataKey) {
         var that = this;
-        $('.ladb-cutlist-row-folder', this.$page).each(function () {
-            that.expandFoldingPart($(this));
+        $('.ladb-cutlist-row-folder', $slide === undefined ? this.$page : $slide).each(function () {
+            that.expandFoldingRow($(this), dataKey);
         });
     };
 
-    LadbTabCutlist.prototype.collapseAllFoldingPart = function () {
+    LadbTabCutlist.prototype.collapseAllFoldingRows = function ($slide, dataKey) {
         var that = this;
-        $('.ladb-cutlist-row-folder', this.$page).each(function () {
-            that.collapseFoldingPart($(this));
+        $('.ladb-cutlist-row-folder', $slide === undefined ? this.$page : $slide).each(function () {
+            that.collapseFoldingRow($(this), dataKey);
         });
     };
 
@@ -1404,10 +1883,11 @@
     };
 
     LadbTabCutlist.prototype.saveUIOptionsHiddenGroupIds = function () {
-        this.opencutlist.setSetting(SETTING_KEY_OPTION_HIDDEN_GROUP_IDS, this.generateOptions.hidden_group_ids, 2 /* SETTINGS_RW_STRATEGY_MODEL */);
+        // TODO find a best way to save hidden IDs without saving all options
+        rubyCallCommand('core_set_model_preset', { dictionary: 'cutlist_options', values: this.generateOptions });
     };
 
-    LadbTabCutlist.prototype.showGroup = function ($group, doNotFlushSettings) {
+    LadbTabCutlist.prototype.showGroup = function ($group, doNotSaveState, doNotFlushSettings) {
         var groupId = $group.data('group-id');
         var $btn = $('.ladb-btn-toggle-no-print', $group);
         var $i = $('i', $btn);
@@ -1418,17 +1898,19 @@
         $i.removeClass('ladb-opencutlist-icon-eye-open');
         $summaryRow.removeClass('ladb-mute');
 
-        var idx = this.generateOptions.hidden_group_ids.indexOf(groupId);
-        if (idx !== -1) {
-            this.generateOptions.hidden_group_ids.splice(idx, 1);
-            if (doNotFlushSettings === undefined || !doNotFlushSettings) {
-                this.saveUIOptionsHiddenGroupIds();
+        if (doNotSaveState === undefined || !doNotSaveState) {
+            var idx = this.generateOptions.hidden_group_ids.indexOf(groupId);
+            if (idx !== -1) {
+                this.generateOptions.hidden_group_ids.splice(idx, 1);
+                if (doNotFlushSettings === undefined || !doNotFlushSettings) {
+                    this.saveUIOptionsHiddenGroupIds();
+                }
             }
         }
 
     };
 
-    LadbTabCutlist.prototype.hideGroup = function ($group, doNotFlushSettings) {
+    LadbTabCutlist.prototype.hideGroup = function ($group, doNotSaveState, doNotFlushSettings) {
         var groupId = $group.data('group-id');
         var $btn = $('.ladb-btn-toggle-no-print', $group);
         var $i = $('i', $btn);
@@ -1439,232 +1921,195 @@
         $i.addClass('ladb-opencutlist-icon-eye-open');
         $summaryRow.addClass('ladb-mute');
 
-        var idx = this.generateOptions.hidden_group_ids.indexOf(groupId);
-        if (idx === -1) {
-            this.generateOptions.hidden_group_ids.push(groupId);
-            if (doNotFlushSettings === undefined || !doNotFlushSettings) {
-                this.saveUIOptionsHiddenGroupIds();
+        if (doNotSaveState === undefined || !doNotSaveState) {
+            var idx = this.generateOptions.hidden_group_ids.indexOf(groupId);
+            if (idx === -1) {
+                this.generateOptions.hidden_group_ids.push(groupId);
+                if (doNotFlushSettings === undefined || !doNotFlushSettings) {
+                    this.saveUIOptionsHiddenGroupIds();
+                }
             }
         }
 
     };
 
-    LadbTabCutlist.prototype.showAllGroups = function () {
+    LadbTabCutlist.prototype.showAllGroups = function ($slide, doNotSaveState) {
+        console.log('showAllGroups', $slide, doNotSaveState);
         var that = this;
-        $('.ladb-cutlist-group', this.$page).each(function () {
-            that.showGroup($(this), true);
+        $('.ladb-cutlist-group', $slide === undefined ? this.$page : $slide).each(function () {
+            that.showGroup($(this), doNotSaveState === undefined  ? false : doNotSaveState,true);
         }).promise().done( function (){
             that.saveUIOptionsHiddenGroupIds();
         });
     };
 
-    LadbTabCutlist.prototype.hideAllGroups = function (exceptedGroupId) {
+    LadbTabCutlist.prototype.hideAllGroups = function (exceptedGroupId, $slide, doNotSaveState) {
+        console.log('hideAllGroups', exceptedGroupId, $slide, doNotSaveState);
         var that = this;
-        $('.ladb-cutlist-group', this.$page).each(function () {
+        $('.ladb-cutlist-group', $slide === undefined ? this.$page : $slide).each(function () {
             var groupId = $(this).data('group-id');
             if (exceptedGroupId && groupId !== exceptedGroupId) {
-                that.hideGroup($(this), true);
+                that.hideGroup($(this), doNotSaveState === undefined  ? false : doNotSaveState,true);
             }
         }).promise().done( function (){
-            that.saveUIOptionsHiddenGroupIds();
+            if (!doNotSaveState) {
+                that.saveUIOptionsHiddenGroupIds();
+            }
         });
     };
 
-    LadbTabCutlist.prototype.cuttingdiagram1dGroup = function (groupId) {
+    LadbTabCutlist.prototype.cuttingdiagram1dGroup = function (groupId, forceDefaultTab, generateCallback) {
         var that = this;
 
         var group = this.findGroupById(groupId);
+        var selectionOnly = this.selectionGroupId === groupId && this.selectionPartIds.length > 0;
 
         // Retrieve cutting diagram options
-        this.opencutlist.pullSettings([
+        rubyCallCommand('core_get_model_preset', { dictionary: 'cutlist_cuttingdiagram1d_options', section: groupId }, function (response) {
 
-                // Defaults
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SAW_KERF,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_TRIMMING,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_BAR_FOLDING,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_HIDE_PART_LIST,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_WRAP_LENGTH,
+            var cuttingdiagram1dOptions = response.preset;
 
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_STD_BAR + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_STD_BAR_LENGTH + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SCRAP_BAR_LENGTHS + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SAW_KERF + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_TRIMMING + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_BAR_FOLDING + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_HIDE_PART_LIST + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_WRAP_LENGTH + '_' + groupId,
+            rubyCallCommand('materials_get_attributes_command', { name: group.material_name }, function (response) {
 
-            ],
-            2 /* SETTINGS_RW_STRATEGY_MODEL */,
-            function () {
+                var $modal = that.appendModalInside('ladb_cutlist_modal_cuttingdiagram_1d', 'tabs/cutlist/_modal-cuttingdiagram-1d.twig', {
+                    material_attributes: response,
+                    group: group,
+                    selection_only: selectionOnly,
+                    tab: forceDefaultTab || that.lastCuttingdiagram1dOptionsTab == null ? 'material' : that.lastCuttingdiagram1dOptionsTab
+                }, true);
 
-                var cuttingdiagram1dOptions = {
-                    std_bar: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_STD_BAR + '_' + groupId, CUTTINGDIAGRAM1D_OPTION_DEFAULT_STD_BAR),
-                    std_bar_length: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_STD_BAR_LENGTH + '_' + groupId, CUTTINGDIAGRAM1D_OPTION_DEFAULT_STD_BAR_LENGTH),
-                    scrap_bar_lengths: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SCRAP_BAR_LENGTHS + '_' + groupId, CUTTINGDIAGRAM1D_OPTION_DEFAULT_SCRAP_BAR_LENGTHS),
-                    saw_kerf: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SAW_KERF + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SAW_KERF, CUTTINGDIAGRAM1D_OPTION_DEFAULT_SAW_KERF)),
-                    trimming: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_TRIMMING + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_TRIMMING, CUTTINGDIAGRAM1D_OPTION_DEFAULT_TRIMMING)),
-                    bar_folding: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_BAR_FOLDING + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_BAR_FOLDING, CUTTINGDIAGRAM1D_OPTION_DEFAULT_BAR_FOLDING)),
-                    hide_part_list: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_HIDE_PART_LIST + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_HIDE_PART_LIST, CUTTINGDIAGRAM1D_OPTION_DEFAULT_HIDE_PART_LIST)),
-                    wrap_length: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_WRAP_LENGTH + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_WRAP_LENGTH, CUTTINGDIAGRAM1D_OPTION_DEFAULT_WRAP_LENGTH)),
+                // Fetch UI elements
+                var $tabs = $('a[data-toggle="tab"]', $modal);
+                var $widgetPreset = $('.ladb-widget-preset', $modal);
+                var $inputStdBar = $('#ladb_select_std_bar', $modal);
+                var $inputScrapBarLengths = $('#ladb_input_scrap_bar_lengths', $modal);
+                var $inputSawKerf = $('#ladb_input_saw_kerf', $modal);
+                var $inputTrimming = $('#ladb_input_trimming', $modal);
+                var $selectBarFolding = $('#ladb_select_bar_folding', $modal);
+                var $selectHidePartList = $('#ladb_select_hide_part_list', $modal);
+                var $selectFullWidthDiagram = $('#ladb_select_full_width_diagram', $modal);
+                var $selectHideCross = $('#ladb_select_hide_cross', $modal);
+                var $selectOriginCorner = $('#ladb_select_origin_corner', $modal);
+                var $inputWrapLength = $('#ladb_input_wrap_length', $modal);
+                var $btnEditMaterial = $('#ladb_btn_edit_material', $modal);
+                var $btnGenerate = $('#ladb_btn_generate', $modal);
+
+                var fnFetchOptions = function (options) {
+                    options.std_bar = $inputStdBar.val();
+                    options.scrap_bar_lengths = $inputScrapBarLengths.ladbTextinputTokenfield('getValidTokensList');
+                    options.saw_kerf = $inputSawKerf.val();
+                    options.trimming = $inputTrimming.val();
+                    options.bar_folding = $selectBarFolding.val() === '1';
+                    options.hide_part_list = $selectHidePartList.val() === '1';
+                    options.full_width_diagram = $selectFullWidthDiagram.val() === '1';
+                    options.hide_cross = $selectHideCross.val() === '1';
+                    options.origin_corner = parseInt($selectOriginCorner.val());
+                    options.wrap_length = $inputWrapLength.val();
+                }
+                var fnFillInputs = function (options) {
+                    $inputSawKerf.val(options.saw_kerf);
+                    $inputTrimming.val(options.trimming);
+                    $selectBarFolding.selectpicker('val', options.bar_folding ? '1' : '0');
+                    $selectHidePartList.selectpicker('val', options.hide_part_list ? '1' : '0');
+                    $selectFullWidthDiagram.selectpicker('val', options.full_width_diagram ? '1' : '0');
+                    $selectHideCross.selectpicker('val', options.hide_cross ? '1' : '0');
+                    $selectOriginCorner.selectpicker('val', options.origin_corner);
+                    $inputWrapLength.val(options.wrap_length);
+                }
+                var fnEditMaterial = function (callback) {
+
+                    // Hide modal
+                    $modal.modal('hide');
+
+                    // Edit material and focus std_sizes input field
+                    that.dialog.executeCommandOnTab('materials', 'edit_material', {
+                        materialId: group.material_id,
+                        propertiesTab: 'cut_options',
+                        callback: callback
+                    });
+
                 };
 
-                rubyCallCommand('materials_get_attributes_command', { name: group.material_name }, function (response) {
-
-                    var $modal = that.appendModalInside('ladb_cutlist_modal_cuttingdiagram_1d', 'tabs/cutlist/_modal-cuttingdiagram-1d.twig', { material_attributes: response, group: group }, true);
-
-                    // Fetch UI elements
-                    var $inputStdBar = $('#ladb_select_std_bar', $modal);
-                    var $inputStdBarLength = $('#ladb_input_std_bar_length', $modal);
-                    var $inputScrapBarLengths = $('#ladb_input_scrap_bar_lengths', $modal);
-                    var $inputSawKerf = $('#ladb_input_saw_kerf', $modal);
-                    var $inputTrimming = $('#ladb_input_trimming', $modal);
-                    var $selectBarFolding = $('#ladb_select_bar_folding', $modal);
-                    var $selectHidePartList = $('#ladb_select_hide_part_list', $modal);
-                    var $inputBreakLength = $('#ladb_input_wrap_length', $modal);
-                    var $btnCuttingdiagramOptionsDefaultsSave = $('#ladb_btn_cuttingdiagram_options_defaults_save', $modal);
-                    var $btnCuttingdiagramOptionsDefaultsReset = $('#ladb_btn_cuttingdiagram_options_defaults_reset', $modal);
-                    var $btnEditMaterial = $('#ladb_btn_edit_material', $modal);
-                    var $btnCuttingdiagram = $('#ladb_btn_cuttingdiagram', $modal);
-
-                    if (cuttingdiagram1dOptions.std_bar) {
-                        $inputStdBar.val(cuttingdiagram1dOptions.std_bar);
-                        if ($inputStdBar.val() == null && response.std_lengths.length === 0) {
+                $widgetPreset.ladbWidgetPreset({
+                    dialog: that.dialog,
+                    dictionary: 'cutlist_cuttingdiagram1d_options',
+                    fnFetchOptions: fnFetchOptions,
+                    fnFillInputs: fnFillInputs
+                });
+                if (cuttingdiagram1dOptions.std_bar) {
+                    var defaultValue = $inputStdBar.val();
+                    $inputStdBar.val(cuttingdiagram1dOptions.std_bar);
+                    if ($inputStdBar.val() == null) {
+                        if (response.std_lengths.length === 0) {
                             $inputStdBar.val('0');  // Special case if the std_bar is not present anymore in the list and no std size defined. Select "none" by default.
+                        } else {
+                            $inputStdBar.val(defaultValue);
                         }
                     }
-                    $inputScrapBarLengths.val(cuttingdiagram1dOptions.scrap_bar_lengths);
-                    $inputStdBar.selectpicker(SELECT_PICKER_OPTIONS);
-                    $inputSawKerf.val(cuttingdiagram1dOptions.saw_kerf);
-                    $inputTrimming.val(cuttingdiagram1dOptions.trimming);
-                    $selectBarFolding.val(cuttingdiagram1dOptions.bar_folding ? '1' : '0');
-                    $selectBarFolding.selectpicker(SELECT_PICKER_OPTIONS);
-                    $selectHidePartList.val(cuttingdiagram1dOptions.hide_part_list ? '1' : '0');
-                    $selectHidePartList.selectpicker(SELECT_PICKER_OPTIONS);
-                    $inputBreakLength.val(cuttingdiagram1dOptions.wrap_length);
+                }
+                $inputStdBar.selectpicker(SELECT_PICKER_OPTIONS);
+                $inputScrapBarLengths.ladbTextinputTokenfield({ format: 'dxq' });
+                $inputScrapBarLengths.ladbTextinputTokenfield('setTokens', cuttingdiagram1dOptions.scrap_bar_lengths);
+                $inputSawKerf.ladbTextinputDimension();
+                $inputTrimming.ladbTextinputDimension();
+                $selectBarFolding.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectHidePartList.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectFullWidthDiagram.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectHideCross.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectOriginCorner.selectpicker(SELECT_PICKER_OPTIONS);
+                $inputWrapLength.ladbTextinputDimension();
 
-                    var fnEditMaterial = function (callback) {
+                fnFillInputs(cuttingdiagram1dOptions);
 
-                        // Hide modal
-                        $modal.modal('hide');
+                // Bind tabs
+                $tabs.on('shown.bs.tab', function (e) {
+                    that.lastCuttingdiagram1dOptionsTab = $(e.target).attr('href').substring('#tab_cuttingdiagram_options_'.length);
+                })
 
-                        // Edit material and focus std_sizes input field
-                        that.opencutlist.executeCommandOnTab('materials', 'edit_material', {
-                            material_id: group.material_id,
-                            callback: callback
+                // Bind select
+                $inputStdBar.on('changed.bs.select', function () {
+                    var value = $inputStdBar.val();
+                    if (value === 'add') {
+                        fnEditMaterial(function ($editMaterialModal) {
+                            $('#ladb_materials_input_std_lengths', $editMaterialModal).siblings('.token-input').focus();
                         });
+                    }
+                });
 
-                    };
-                    var fnSelectSize = function () {
-                        var value = $inputStdBar.val();
-                        if (value === 'add') {
-                            fnEditMaterial(function ($editMaterialModal) {
-                                $('#ladb_materials_input_std_lengths', $editMaterialModal).siblings('.token-input').focus();
-                            });
-                        } else {
-                            $inputStdBarLength.val(value);
-                        }
-                    };
+                // Bind buttons
+                $btnEditMaterial.on('click', function () {
+                    fnEditMaterial();
+                });
+                $btnGenerate.on('click', function () {
 
-                    $inputStdBar.on('changed.bs.select', function (e) {
-                        fnSelectSize();
-                    });
-                    fnSelectSize();
+                    // Fetch options
+                    fnFetchOptions(cuttingdiagram1dOptions);
 
-                    // Bind tabs
-                    $('a[data-toggle=tab]').on('shown.bs.tab', function (e) {
-                        if ($(e.target).attr('href') === '#tab_options_material') {
-                            $('#ladb_panel_cuttingdiagram_options_defaults', $modal).hide();
-                        } else {
-                            $('#ladb_panel_cuttingdiagram_options_defaults', $modal).show();
-                        }
-                    })
+                    // Store options
+                    rubyCallCommand('core_set_model_preset', { dictionary: 'cutlist_cuttingdiagram1d_options', values: cuttingdiagram1dOptions, section: groupId });
 
-                    // Bind buttons
-                    $btnCuttingdiagramOptionsDefaultsSave.on('click', function () {
-
-                        var saw_kerf = $inputSawKerf.val();
-                        var trimming = $inputTrimming.val();
-                        var bar_folding = $selectBarFolding.val();
-                        var hide_part_list = $selectHidePartList.val();
-                        var wrap_length = $inputBreakLength.val();
-
-                        // Update default cut options for specific type to last used
-                        that.opencutlist.setSettings([
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SAW_KERF, value:saw_kerf, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_TRIMMING, value:trimming, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_BAR_FOLDING, value:bar_folding },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_HIDE_PART_LIST, value:hide_part_list },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_WRAP_LENGTH, value:wrap_length, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                        ], 0 /* SETTINGS_RW_STRATEGY_GLOBAL */);
-
-                        that.opencutlist.notify(i18next.t('tab.cutlist.cuttingdiagram.options_defaults.save_success'), 'success');
-
-                        this.blur();
-
-                    });
-                    $btnCuttingdiagramOptionsDefaultsReset.on('click', function () {
-
-                        var saw_kerf = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SAW_KERF, CUTTINGDIAGRAM1D_OPTION_DEFAULT_SAW_KERF);
-                        var trimming = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_TRIMMING, CUTTINGDIAGRAM1D_OPTION_DEFAULT_TRIMMING);
-                        var bar_folding = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_BAR_FOLDING, CUTTINGDIAGRAM1D_OPTION_DEFAULT_BAR_FOLDING);
-                        var hide_part_list = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_HIDE_PART_LIST, CUTTINGDIAGRAM1D_OPTION_DEFAULT_HIDE_PART_LIST);
-                        var wrap_length = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_WRAP_LENGTH, CUTTINGDIAGRAM1D_OPTION_DEFAULT_WRAP_LENGTH);
-
-                        $inputSawKerf.val(saw_kerf);
-                        $inputTrimming.val(trimming);
-                        $selectBarFolding.selectpicker('val', bar_folding ? '1' : '0');
-                        $selectHidePartList.selectpicker('val', hide_part_list ? '1' : '0');
-                        $inputBreakLength.val(wrap_length);
-
-                        this.blur();
-
-                    });
-                    $btnEditMaterial.on('click', function () {
-                        fnEditMaterial();
-                    });
-                    $btnCuttingdiagram.on('click', function () {
-
-                        // Fetch options
-
-                        cuttingdiagram1dOptions.std_bar = $inputStdBar.val();
-                        cuttingdiagram1dOptions.std_bar_length = $inputStdBarLength.val();
-                        cuttingdiagram1dOptions.scrap_bar_lengths = $inputScrapBarLengths.val();
-                        cuttingdiagram1dOptions.saw_kerf = $inputSawKerf.val();
-                        cuttingdiagram1dOptions.trimming = $inputTrimming.val();
-                        cuttingdiagram1dOptions.bar_folding = $selectBarFolding.val() === '1';
-                        cuttingdiagram1dOptions.hide_part_list = $selectHidePartList.val() === '1';
-                        cuttingdiagram1dOptions.wrap_length = $inputBreakLength.val();
-
-                        // Store options
-                        that.opencutlist.setSettings([
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_STD_BAR + '_' + groupId, value:cuttingdiagram1dOptions.std_bar },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_STD_BAR_LENGTH + '_' + groupId, value:cuttingdiagram1dOptions.std_bar_length, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SCRAP_BAR_LENGTHS + '_' + groupId, value:cuttingdiagram1dOptions.scrap_bar_lengths, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_SAW_KERF + '_' + groupId, value:cuttingdiagram1dOptions.saw_kerf, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_TRIMMING + '_' + groupId, value:cuttingdiagram1dOptions.trimming, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_BAR_FOLDING + '_' + groupId, value:cuttingdiagram1dOptions.bar_folding },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_HIDE_PART_LIST + '_' + groupId, value:cuttingdiagram1dOptions.hide_part_list },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM1D_OPTION_WRAP_LENGTH + '_' + groupId, value:cuttingdiagram1dOptions.wrap_length, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                        ], 2 /* SETTINGS_RW_STRATEGY_MODEL */);
-
-                        rubyCallCommand('cutlist_group_cuttingdiagram_1d', $.extend({ group_id: groupId }, cuttingdiagram1dOptions, that.generateOptions), function (response) {
+                    if (typeof generateCallback === 'function') {
+                        generateCallback();
+                    } else {
+                        rubyCallCommand('cutlist_group_cuttingdiagram_1d', $.extend({group_id: groupId, part_ids: selectionOnly ? that.selectionPartIds : null}, cuttingdiagram1dOptions, that.generateOptions), function (response) {
 
                             var $slide = that.pushNewSlide('ladb_cutlist_slide_cuttingdiagram_1d', 'tabs/cutlist/_slide-cuttingdiagram-1d.twig', $.extend({
                                 generateOptions: that.generateOptions,
                                 dimensionColumnOrderStrategy: that.generateOptions.dimension_column_order_strategy.split('>'),
                                 filename: that.filename,
+                                modelName: that.modelName,
                                 pageLabel: that.pageLabel,
                                 lengthUnit: that.lengthUnit,
                                 generatedAt: new Date().getTime() / 1000,
                                 group: group
                             }, response), function () {
-                                that.opencutlist.setupTooltips();
+                                that.dialog.setupTooltips();
                             });
 
                             // Fetch UI elements
                             var $btnCuttingDiagram = $('#ladb_btn_cuttingdiagram', $slide);
                             var $btnPrint = $('#ladb_btn_print', $slide);
+                            var $btnLabels = $('#ladb_btn_labels', $slide);
                             var $btnClose = $('#ladb_btn_close', $slide);
 
                             // Bind buttons
@@ -1674,22 +2119,22 @@
                             $btnPrint.on('click', function () {
                                 window.print();
                             });
+                            $btnLabels.on('click', function () {
+                                that.labelsGroup(groupId);
+                            });
                             $btnClose.on('click', function () {
                                 that.popSlide();
                             });
-                            $('.ladb-btn-setup-model-units', $slide).on('click', function() {
+                            $('.ladb-btn-setup-model-units', $slide).on('click', function () {
                                 $(this).blur();
-                                rubyCallCommand('core_open_model_info_page', {
-                                    page: i18next.t('core.model_info_page.units')
-                                });
+                                that.dialog.executeCommandOnTab('settings', 'highlight_panel', { panel:'model' });
                             });
-
                             $('.ladb-btn-toggle-no-print', $slide).on('click', function () {
                                 var $group = $(this).parents('.ladb-cutlist-group');
                                 if ($group.hasClass('no-print')) {
-                                    that.showGroup($group);
+                                    that.showGroup($group, true);
                                 } else {
-                                    that.hideGroup($group);
+                                    that.hideGroup($group, true);
                                 }
                                 $(this).blur();
                             });
@@ -1697,8 +2142,8 @@
                                 var $group = $(this).parents('.ladb-cutlist-group');
                                 var groupId = $group.data('bar-index');
                                 var $target = $('.ladb-cuttingdiagram-group[data-bar-index=' + (parseInt(groupId) - 1) + ']');
-                                $slide.animate({ scrollTop: $slide.scrollTop() + $target.position().top - $('.ladb-header', $slide).outerHeight(true) - 20 }, 200).promise().then(function () {
-                                    $target.effect("highlight", {}, 1500);
+                                $slide.animate({scrollTop: $slide.scrollTop() + $target.position().top - $('.ladb-header', $slide).outerHeight(true) - 20}, 200).promise().then(function () {
+                                    $target.effect('highlight', {}, 1500);
                                 });
                                 $(this).blur();
                                 return false;
@@ -1707,8 +2152,8 @@
                                 var $group = $(this).parents('.ladb-cutlist-group');
                                 var groupId = $group.data('bar-index');
                                 var $target = $('.ladb-cuttingdiagram-group[data-bar-index=' + (parseInt(groupId) + 1) + ']');
-                                $slide.animate({ scrollTop: $slide.scrollTop() + $target.position().top - $('.ladb-header', $slide).outerHeight(true) - 20 }, 200).promise().then(function () {
-                                    $target.effect("highlight", {}, 1500);
+                                $slide.animate({scrollTop: $slide.scrollTop() + $target.position().top - $('.ladb-header', $slide).outerHeight(true) - 20}, 200).promise().then(function () {
+                                    $target.effect('highlight', {}, 1500);
                                 });
                                 $(this).blur();
                                 return false;
@@ -1723,10 +2168,10 @@
                             $('a.ladb-btn-scrollto', $slide).on('click', function () {
                                 var $target = $($(this).attr('href'));
                                 if ($target.data('group-id')) {
-                                    that.showGroup($target);
+                                    that.showGroup($target, false);
                                 }
-                                $slide.animate({ scrollTop: $slide.scrollTop() + $target.position().top - $('.ladb-header', $slide).outerHeight(true) - 20 }, 200).promise().then(function () {
-                                    $target.effect("highlight", {}, 1500);
+                                $slide.animate({scrollTop: $slide.scrollTop() + $target.position().top - $('.ladb-header', $slide).outerHeight(true) - 20}, 200).promise().then(function () {
+                                    $target.effect('highlight', {}, 1500);
                                 });
                                 $(this).blur();
                                 return false;
@@ -1746,365 +2191,577 @@
                             });
 
                         });
-
-                        // Hide modal
-                        $modal.modal('hide');
-
-                    });
-
-                    // Show modal
-                    $modal.modal('show');
-
-                    // Init tokenfields (this must done after modal shown for correct token label max width measurement)
-                    $inputScrapBarLengths.tokenfield(TOKENFIELD_OPTIONS).on('tokenfield:createdtoken', that.tokenfieldValidatorFn_d);
-
-                    // Setup popovers
-                    that.opencutlist.setupPopovers();
+                    }
+                    
+                    // Hide modal
+                    $modal.modal('hide');
 
                 });
 
+                // Show modal
+                $modal.modal('show');
+
+                // Setup popovers
+                that.dialog.setupPopovers();
+
             });
+
+
+        });
 
     };
 
-    LadbTabCutlist.prototype.cuttingdiagram2dGroup = function (groupId) {
+    LadbTabCutlist.prototype.cuttingdiagram2dGroup = function (groupId, forceDefaultTab, generateCallback) {
         var that = this;
 
         var group = this.findGroupById(groupId);
+        var selectionOnly = this.selectionGroupId === groupId && this.selectionPartIds.length > 0;
 
         // Retrieve cutting diagram options
-        this.opencutlist.pullSettings([
+        rubyCallCommand('core_get_model_preset', { dictionary: 'cutlist_cuttingdiagram2d_options', section: groupId }, function (response) {
 
-                // Defaults
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SAW_KERF,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_TRIMMING,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_PRESORT,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STACKING,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_BBOX_OPTIMIZATION,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SHEET_FOLDING,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_HIDE_PART_LIST,
+            var cuttingdiagram2dOptions = response.preset;
 
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET_LENGTH + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET_WIDTH + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SCRAP_SHEET_SIZES + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_GRAINED + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SAW_KERF + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_TRIMMING + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_PRESORT + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STACKING + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_BBOX_OPTIMIZATION + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SHEET_FOLDING + '_' + groupId,
-                SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_HIDE_PART_LIST + '_' + groupId,
+            rubyCallCommand('materials_get_attributes_command', { name: group.material_name }, function (response) {
 
-            ],
-            2 /* SETTINGS_RW_STRATEGY_MODEL */,
-            function () {
+                var $modal = that.appendModalInside('ladb_cutlist_modal_cuttingdiagram_2d', 'tabs/cutlist/_modal-cuttingdiagram-2d.twig', {
+                    material_attributes: response,
+                    group: group,
+                    selection_only: selectionOnly,
+                    tab: forceDefaultTab || that.lastCuttingdiagram2dOptionsTab == null ? 'material' : that.lastCuttingdiagram2dOptionsTab
+                }, true);
 
-                var cuttingdiagram2dOptions = {
-                    std_sheet: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET + '_' + groupId, CUTTINGDIAGRAM2D_OPTION_DEFAULT_STD_SHEET),
-                    std_sheet_length: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET_LENGTH + '_' + groupId, CUTTINGDIAGRAM2D_OPTION_DEFAULT_STD_SHEET_LENGTH),
-                    std_sheet_width: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET_WIDTH + '_' + groupId, CUTTINGDIAGRAM2D_OPTION_DEFAULT_STD_SHEET_WIDTH),
-                    scrap_sheet_sizes: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SCRAP_SHEET_SIZES + '_' + groupId, CUTTINGDIAGRAM2D_OPTION_DEFAULT_SCRAP_SHEET_SIZES),
-                    grained: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_GRAINED + '_' + groupId, CUTTINGDIAGRAM2D_OPTION_DEFAULT_GRAINED),
-                    saw_kerf: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SAW_KERF + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SAW_KERF, CUTTINGDIAGRAM2D_OPTION_DEFAULT_SAW_KERF)),
-                    trimming: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_TRIMMING + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_TRIMMING, CUTTINGDIAGRAM2D_OPTION_DEFAULT_TRIMMING)),
-                    presort: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_PRESORT + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_PRESORT, CUTTINGDIAGRAM2D_OPTION_DEFAULT_PRESORT)),
-                    stacking: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STACKING + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STACKING, CUTTINGDIAGRAM2D_OPTION_DEFAULT_STACKING)),
-                    bbox_optimization: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_BBOX_OPTIMIZATION + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_BBOX_OPTIMIZATION, CUTTINGDIAGRAM2D_OPTION_DEFAULT_BBOX_OPTIMIZATION)),
-                    sheet_folding: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SHEET_FOLDING + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SHEET_FOLDING, CUTTINGDIAGRAM2D_OPTION_DEFAULT_SHEET_FOLDING)),
-                    hide_part_list: that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_HIDE_PART_LIST + '_' + groupId, that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_HIDE_PART_LIST, CUTTINGDIAGRAM2D_OPTION_DEFAULT_HIDE_PART_LIST)),
+                // Fetch UI elements
+                var $tabs = $('a[data-toggle="tab"]', $modal);
+                var $widgetPreset = $('.ladb-widget-preset', $modal);
+                var $inputStdSheet = $('#ladb_select_std_sheet', $modal);
+                var $inputScrapSheetSizes = $('#ladb_input_scrap_sheet_sizes', $modal);
+                var $inputSawKerf = $('#ladb_input_saw_kerf', $modal);
+                var $inputTrimming = $('#ladb_input_trimming', $modal);
+                var $selectOptimization = $('#ladb_select_optimization', $modal);
+                var $selectStacking = $('#ladb_select_stacking', $modal);
+                var $selectSheetFolding = $('#ladb_select_sheet_folding', $modal);
+                var $selectHidePartList = $('#ladb_select_hide_part_list', $modal);
+                var $selectFullWidthDiagram = $('#ladb_select_full_width_diagram', $modal);
+                var $selectHideCross = $('#ladb_select_hide_cross', $modal);
+                var $selectOriginCorner = $('#ladb_select_origin_corner', $modal);
+                var $selectHighlightPrimaryCuts = $('#ladb_select_highlight_primary_cuts', $modal);
+                var $btnEditMaterial = $('#ladb_btn_edit_material', $modal);
+                var $btnGenerate = $('#ladb_btn_generate', $modal);
+
+                var fnFetchOptions = function (options) {
+                    options.std_sheet = $inputStdSheet.val();
+                    options.scrap_sheet_sizes = $inputScrapSheetSizes.ladbTextinputTokenfield('getValidTokensList');
+                    options.saw_kerf = $inputSawKerf.val();
+                    options.trimming = $inputTrimming.val();
+                    options.optimization = parseInt($selectOptimization.val());
+                    options.stacking = parseInt($selectStacking.val());
+                    options.sheet_folding = $selectSheetFolding.val() === '1';
+                    options.hide_part_list = $selectHidePartList.val() === '1';
+                    options.full_width_diagram = $selectFullWidthDiagram.val() === '1';
+                    options.hide_cross = $selectHideCross.val() === '1';
+                    options.origin_corner = parseInt($selectOriginCorner.val());
+                    options.highlight_primary_cuts = $selectHighlightPrimaryCuts.val() === '1';
+                }
+                var fnFillInputs = function (options) {
+                    $inputSawKerf.val(options.saw_kerf);
+                    $inputTrimming.val(options.trimming);
+                    $selectOptimization.selectpicker('val', options.optimization);
+                    $selectStacking.selectpicker('val', options.stacking);
+                    $selectSheetFolding.selectpicker('val', options.sheet_folding ? '1' : '0');
+                    $selectHidePartList.selectpicker('val', options.hide_part_list ? '1' : '0');
+                    $selectFullWidthDiagram.selectpicker('val', options.full_width_diagram ? '1' : '0');
+                    $selectHideCross.selectpicker('val', options.hide_cross ? '1' : '0');
+                    $selectOriginCorner.selectpicker('val', options.origin_corner);
+                    $selectHighlightPrimaryCuts.selectpicker('val', options.highlight_primary_cuts ? '1' : '0');
+                }
+                var fnEditMaterial = function (callback) {
+
+                    // Hide modal
+                    $modal.modal('hide');
+
+                    // Edit material and focus std_sizes input field
+                    that.dialog.executeCommandOnTab('materials', 'edit_material', {
+                        materialId: group.material_id,
+                        propertiesTab: 'cut_options',
+                        callback: callback
+                    });
+
                 };
 
-                rubyCallCommand('materials_get_attributes_command', { name: group.material_name }, function (response) {
-
-                    var $modal = that.appendModalInside('ladb_cutlist_modal_cuttingdiagram_2d', 'tabs/cutlist/_modal-cuttingdiagram-2d.twig', { material_attributes: response, group: group }, true);
-
-                    // Fetch UI elements
-                    var $inputStdSheet = $('#ladb_select_std_sheet', $modal);
-                    var $inputStdSheetLength = $('#ladb_input_std_sheet_length', $modal);
-                    var $inputStdSheetWidth = $('#ladb_input_std_sheet_width', $modal);
-                    var $inputScrapSheetSizes = $('#ladb_input_scrap_sheet_sizes', $modal);
-                    var $selectGrained = $('#ladb_select_grained', $modal);
-                    var $inputSawKerf = $('#ladb_input_saw_kerf', $modal);
-                    var $inputTrimming = $('#ladb_input_trimming', $modal);
-                    var $selectPresort = $('#ladb_select_presort', $modal);
-                    var $selectStacking = $('#ladb_select_stacking', $modal);
-                    var $selectBBoxOptimization = $('#ladb_select_bbox_optimization', $modal);
-                    var $selectSheetFolding = $('#ladb_select_sheet_folding', $modal);
-                    var $selectHidePartList = $('#ladb_select_hide_part_list', $modal);
-                    var $btnCuttingdiagramOptionsDefaultsSave = $('#ladb_btn_cuttingdiagram_options_defaults_save', $modal);
-                    var $btnCuttingdiagramOptionsDefaultsReset = $('#ladb_btn_cuttingdiagram_options_defaults_reset', $modal);
-                    var $btnEditMaterial = $('#ladb_btn_edit_material', $modal);
-                    var $btnCuttingdiagram = $('#ladb_btn_cuttingdiagram', $modal);
-
-                    var $formGroupGrained = $('#ladb_form_group_grained', $modal);
-
-                    if (cuttingdiagram2dOptions.std_sheet) {
-                        $inputStdSheet.val(cuttingdiagram2dOptions.std_sheet);
-                        if ($inputStdSheet.val() == null && response.std_sizes.length === 0) {
-                            $inputStdSheet.val('0x0|' + response.grained);  // Special case if the std_sheet is not present anymore in the list and no std size defined. Select "none" by default.
+                $widgetPreset.ladbWidgetPreset({
+                    dialog: that.dialog,
+                    dictionary: 'cutlist_cuttingdiagram2d_options',
+                    fnFetchOptions: fnFetchOptions,
+                    fnFillInputs: fnFillInputs
+                });
+                if (cuttingdiagram2dOptions.std_sheet) {
+                    var defaultValue = $inputStdSheet.val();
+                    $inputStdSheet.val(cuttingdiagram2dOptions.std_sheet);
+                    if ($inputStdSheet.val() == null) {
+                        if (response.std_sizes.length === 0) {
+                            $inputStdSheet.val('0x0');  // Special case if the std_sheet is not present anymore in the list and no std size defined. Select "none" by default.
+                        } else {
+                            $inputStdSheet.val(defaultValue);
                         }
                     }
-                    $inputScrapSheetSizes.val(cuttingdiagram2dOptions.scrap_sheet_sizes);
-                    $inputStdSheet.selectpicker(SELECT_PICKER_OPTIONS);
-                    $selectGrained.selectpicker(SELECT_PICKER_OPTIONS);
-                    $inputSawKerf.val(cuttingdiagram2dOptions.saw_kerf);
-                    $inputTrimming.val(cuttingdiagram2dOptions.trimming);
-                    $selectPresort.val(cuttingdiagram2dOptions.presort);
-                    $selectPresort.selectpicker(SELECT_PICKER_OPTIONS);
-                    $selectStacking.val(cuttingdiagram2dOptions.stacking);
-                    $selectStacking.selectpicker(SELECT_PICKER_OPTIONS);
-                    $selectBBoxOptimization.val(cuttingdiagram2dOptions.bbox_optimization);
-                    $selectBBoxOptimization.selectpicker(SELECT_PICKER_OPTIONS);
-                    $selectSheetFolding.val(cuttingdiagram2dOptions.sheet_folding ? '1' : '0');
-                    $selectSheetFolding.selectpicker(SELECT_PICKER_OPTIONS);
-                    $selectHidePartList.val(cuttingdiagram2dOptions.hide_part_list ? '1' : '0');
-                    $selectHidePartList.selectpicker(SELECT_PICKER_OPTIONS);
+                }
+                $inputStdSheet.selectpicker(SELECT_PICKER_OPTIONS);
+                $inputScrapSheetSizes.ladbTextinputTokenfield({ format: 'dxdxq' });
+                $inputScrapSheetSizes.ladbTextinputTokenfield('setTokens', cuttingdiagram2dOptions.scrap_sheet_sizes);
+                $inputSawKerf.ladbTextinputDimension();
+                $inputTrimming.ladbTextinputDimension();
+                $selectOptimization.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectStacking.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectSheetFolding.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectHidePartList.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectFullWidthDiagram.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectHideCross.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectOriginCorner.selectpicker(SELECT_PICKER_OPTIONS);
+                $selectHighlightPrimaryCuts.selectpicker(SELECT_PICKER_OPTIONS);
 
-                    var fnEditMaterial = function (callback) {
+                fnFillInputs(cuttingdiagram2dOptions);
 
-                        // Hide modal
-                        $modal.modal('hide');
+                // Bind tabs
+                $tabs.on('shown.bs.tab', function (e) {
+                    that.lastCuttingdiagram2dOptionsTab = $(e.target).attr('href').substring('#tab_cuttingdiagram_options_'.length);
+                })
 
-                        // Edit material and focus std_sizes input field
-                        that.opencutlist.executeCommandOnTab('materials', 'edit_material', {
-                            material_id: group.material_id,
-                            callback: callback
+                // Bind select
+                $inputStdSheet.on('changed.bs.select', function () {
+                    var value = $inputStdSheet.val();
+                    if (value === 'add') {
+                        fnEditMaterial(function ($editMaterialModal) {
+                            $('#ladb_materials_input_std_sizes', $editMaterialModal).siblings('.token-input').focus();
+                        });
+                    }
+                });
+
+                // Bind buttons
+                $btnEditMaterial.on('click', function () {
+                    fnEditMaterial();
+                });
+                $btnGenerate.on('click', function () {
+
+                    // Fetch options
+                    fnFetchOptions(cuttingdiagram2dOptions);
+
+                    // Store options
+                    rubyCallCommand('core_set_model_preset', { dictionary: 'cutlist_cuttingdiagram2d_options', values: cuttingdiagram2dOptions, section: groupId });
+
+                    if (typeof generateCallback === 'function') {
+                        generateCallback();
+                    } else {
+                        rubyCallCommand('cutlist_group_cuttingdiagram_2d', $.extend({ group_id: groupId, part_ids: selectionOnly ? that.selectionPartIds : null }, cuttingdiagram2dOptions, that.generateOptions), function (response) {
+
+                        var $slide = that.pushNewSlide('ladb_cutlist_slide_cuttingdiagram_2d', 'tabs/cutlist/_slide-cuttingdiagram-2d.twig', $.extend({
+                            generateOptions: that.generateOptions,
+                            dimensionColumnOrderStrategy: that.generateOptions.dimension_column_order_strategy.split('>'),
+                            filename: that.filename,
+                            modelName: that.modelName,
+                            pageLabel: that.pageLabel,
+                            lengthUnit: that.lengthUnit,
+                            generatedAt: new Date().getTime() / 1000,
+                            group: group
+                        }, response), function () {
+                            that.dialog.setupTooltips();
                         });
 
-                    };
-                    var fnSelectSize = function () {
-                        var value = $inputStdSheet.val();
-                        if (value === 'add') {
-                            fnEditMaterial(function ($editMaterialModal) {
-                                $('#ladb_materials_input_std_sizes', $editMaterialModal).siblings('.token-input').focus();
-                            });
-                        } else {
-                            var sizeAndGrained = value.split('|');
-                            var size = sizeAndGrained[0].split('x');
-                            var stdSheetLength = size[0].trim();
-                            var stdSheetWidth = size[1].trim();
-                            var grained = sizeAndGrained[1] === 'true';
-                            $inputStdSheetLength.val(stdSheetLength);
-                            $inputStdSheetWidth.val(stdSheetWidth);
-                            $selectGrained.selectpicker('val', grained ? '1' : '0');
-                            if (stdSheetLength === '0' && stdSheetWidth === '0') {
-                                $formGroupGrained.show();
+                        // Fetch UI elements
+                        var $btnCuttingDiagram = $('#ladb_btn_cuttingdiagram', $slide);
+                        var $btnPrint = $('#ladb_btn_print', $slide);
+                        var $btnLabels = $('#ladb_btn_labels', $slide);
+                        var $btnClose = $('#ladb_btn_close', $slide);
+
+                        // Bind buttons
+                        $btnCuttingDiagram.on('click', function () {
+                            that.cuttingdiagram2dGroup(groupId);
+                        });
+                        $btnPrint.on('click', function () {
+                            window.print();
+                        });
+                        $btnLabels.on('click', function () {
+                            that.labelsGroup(groupId);
+                        });
+                        $btnClose.on('click', function () {
+                            that.popSlide();
+                        });
+                        $('.ladb-btn-setup-model-units', $slide).on('click', function() {
+                            $(this).blur();
+                            that.dialog.executeCommandOnTab('settings', 'highlight_panel', { panel:'model' });
+                        });
+                        $('.ladb-btn-toggle-no-print', $slide).on('click', function () {
+                            var $group = $(this).parents('.ladb-cutlist-group');
+                            if ($group.hasClass('no-print')) {
+                                that.showGroup($group, true);
                             } else {
-                                $formGroupGrained.hide();
+                                that.hideGroup($group, true);
                             }
-                        }
-                    };
+                            $(this).blur();
+                        });
+                        $('.ladb-btn-scrollto-prev-group', $slide).on('click', function () {
+                            var $group = $(this).parents('.ladb-cutlist-group');
+                            var groupId = $group.data('sheet-index');
+                            var $target = $('.ladb-cuttingdiagram-group[data-sheet-index=' + (parseInt(groupId) - 1) + ']');
+                            that.scrollSlideToTarget($slide, $target, true, true);
+                            $(this).blur();
+                            return false;
+                        });
+                        $('.ladb-btn-scrollto-next-group', $slide).on('click', function () {
+                            var $group = $(this).parents('.ladb-cutlist-group');
+                            var groupId = $group.data('sheet-index');
+                            var $target = $('.ladb-cuttingdiagram-group[data-sheet-index=' + (parseInt(groupId) + 1) + ']');
+                            that.scrollSlideToTarget($slide, $target, true, true);
+                            $(this).blur();
+                            return false;
+                        });
+                        $('a.ladb-btn-highlight-part', $slide).on('click', function () {
+                            $(this).blur();
+                            var $part = $(this).parents('.ladb-cutlist-row');
+                            var partId = $part.data('part-id');
+                            that.highlightPart(partId);
+                            return false;
+                        });
+                        $('a.ladb-btn-scrollto', $slide).on('click', function () {
+                            var $target = $($(this).attr('href'));
+                            if ($target.data('group-id')) {
+                                that.showGroup($target, false);
+                            }
+                            that.scrollSlideToTarget($slide, $target, true, true);
+                            $(this).blur();
+                            return false;
+                        });
+                        $('.ladb-cutlist-row', $slide).on('click', function () {
+                            $('.ladb-click-tool', $(this)).click();
+                            $(this).blur();
+                            return false;
+                        });
 
-                    $inputStdSheet.on('changed.bs.select', function (e) {
-                        fnSelectSize();
+                        // SVG
+                        $('SVG .part', $slide).on('click', function () {
+                            var partId = $(this).data('part-id');
+                            that.highlightPart(partId);
+                            $(this).blur();
+                            return false;
+                        });
+
                     });
-                    fnSelectSize();
+                    }
 
-                    // Bind tabs
-                    $('a[data-toggle=tab]').on('shown.bs.tab', function (e) {
-                        if ($(e.target).attr('href') === '#tab_options_material') {
-                            $('#ladb_panel_cuttingdiagram_options_defaults', $modal).hide();
-                        } else {
-                            $('#ladb_panel_cuttingdiagram_options_defaults', $modal).show();
-                        }
-                    })
+                    // Hide modal
+                    $modal.modal('hide');
+
+                });
+
+                // Show modal
+                $modal.modal('show');
+
+                // Setup popovers
+                that.dialog.setupPopovers();
+
+            });
+
+        });
+
+    };
+
+    LadbTabCutlist.prototype.labelsGroup = function (groupId, forceDefaultTab) {
+        var that = this;
+
+        var group = this.findGroupById(groupId);
+        var selectionOnly = this.selectionGroupId === groupId && this.selectionPartIds.length > 0;
+
+        // Retrieve parts to use
+        var parts;
+        if (selectionOnly) {
+            parts = [];
+            $.each(group.parts, function (index) {
+                if (that.selectionPartIds.includes(this.id)) {
+                    parts.push(this);
+                }
+            });
+        } else {
+            parts = group.parts;
+        }
+
+        // Retrieve label options
+        rubyCallCommand('core_get_model_preset', { dictionary: 'cutlist_labels_options', section: groupId }, function (response) {
+
+            var labelsOptions = response.preset;
+
+            var $modal = that.appendModalInside('ladb_cutlist_modal_labels', 'tabs/cutlist/_modal-labels.twig', {
+                group: group,
+                selection_only: selectionOnly,
+                tab: forceDefaultTab || that.lastLabelsOptionsTab == null ? 'layout' : that.lastLabelsOptionsTab
+            }, true);
+
+            // Fetch UI elements
+            var $widgetPreset = $('.ladb-widget-preset', $modal);
+            var $editorLabel = $('#ladb_editor_label', $modal);
+            var $selectPageFormat = $('#ladb_select_page_format', $modal);
+            var $inputPageWidth = $('#ladb_input_page_width', $modal);
+            var $inputPageHeight = $('#ladb_input_page_height', $modal);
+            var $inputMarginTop = $('#ladb_input_margin_top', $modal);
+            var $inputMarginRight = $('#ladb_input_margin_right', $modal);
+            var $inputMarginBottom = $('#ladb_input_margin_bottom', $modal);
+            var $inputMarginLeft = $('#ladb_input_margin_left', $modal);
+            var $inputSpacingH = $('#ladb_input_spacing_h', $modal);
+            var $inputSpacingV = $('#ladb_input_spacing_v', $modal);
+            var $inputColCount = $('#ladb_input_col_count', $modal);
+            var $inputRowCount = $('#ladb_input_row_count', $modal);
+            var $selectCuttingMarks = $('#ladb_select_cutting_marks', $modal);
+            var $btnGenerate = $('#ladb_btn_generate', $modal);
+
+            var fnPageSizeVisibility = function () {
+                if ($selectPageFormat.selectpicker('val') == null) {
+                    $selectPageFormat.selectpicker('val', '0');
+                    $inputPageWidth.ladbTextinputDimension('enable');
+                    $inputPageHeight.ladbTextinputDimension('enable');
+                } else {
+                    $inputPageWidth.ladbTextinputDimension('disable');
+                    $inputPageHeight.ladbTextinputDimension('disable');
+                }
+            }
+            var fnComputeLabelSize = function(pageWidth, pageHeight, marginTop, marginRight, marginBottom, marginLeft, spacingH, spacingV, colCount, rowCount, callback) {
+                rubyCallCommand('core_length_to_float', {
+                    page_width: pageWidth,
+                    page_height: pageHeight,
+                    margin_top: marginTop,
+                    margin_right: marginRight,
+                    margin_bottom: marginBottom,
+                    margin_left: marginLeft,
+                    spacing_h: spacingH,
+                    spacing_v: spacingV
+                }, function (response) {
+                    colCount = parseInt(colCount);
+                    rowCount = parseInt(rowCount);
+                    var labelWidth = (response.page_width - response.margin_left - response.margin_right - response.spacing_v * (colCount - 1)) / colCount;
+                    var labelHeight = (response.page_height - response.margin_top - response.margin_bottom - response.spacing_h * (rowCount - 1)) / rowCount;
+                    callback(labelWidth, labelHeight, response);
+                });
+            }
+            var fnFetchOptions = function (options) {
+                options.page_width = $inputPageWidth.val();
+                options.page_height = $inputPageHeight.val();
+                options.margin_top = $inputMarginTop.val();
+                options.margin_right = $inputMarginRight.val();
+                options.margin_bottom = $inputMarginBottom.val();
+                options.margin_left = $inputMarginLeft.val();
+                options.spacing_h = $inputSpacingH.val();
+                options.spacing_v = $inputSpacingV.val();
+                options.col_count = Math.max(1, parseInt($inputColCount.val() === '' ? 1 : $inputColCount.val()));
+                options.row_count = Math.max(1, parseInt($inputRowCount.val() === '' ? 1 : $inputRowCount.val()));
+                options.cutting_marks = $selectCuttingMarks.val() === '1';
+                options.layout = $editorLabel.ladbEditorLabel('getElementDefs');
+            }
+            var fnFillInputs = function (options) {
+                $selectPageFormat.selectpicker('val', options.page_width.replace(',', '.') + 'x' + options.page_height.replace(',', '.'));
+                $inputPageWidth.val(options.page_width);
+                $inputPageHeight.val(options.page_height);
+                $inputMarginTop.val(options.margin_top);
+                $inputMarginRight.val(options.margin_right);
+                $inputMarginBottom.val(options.margin_bottom);
+                $inputMarginLeft.val(options.margin_left);
+                $inputSpacingH.val(options.spacing_h);
+                $inputSpacingV.val(options.spacing_v);
+                $inputColCount.val(options.col_count);
+                $inputRowCount.val(options.row_count);
+                $selectCuttingMarks.selectpicker('val', options.cutting_marks ? '1' : '0');
+                fnComputeLabelSize(options.page_width, options.page_height, options.margin_top, options.margin_right, options.margin_bottom, options.margin_left, options.spacing_h, options.spacing_v, options.col_count, options.row_count, function (labelWidth, labelHeight) {
+                    $editorLabel.ladbEditorLabel('updateSizeAndElementDefs', [ labelWidth, labelHeight, options.layout ]);
+                });
+                fnPageSizeVisibility();
+            }
+
+            $widgetPreset.ladbWidgetPreset({
+                dialog: that.dialog,
+                dictionary: 'cutlist_labels_options',
+                fnFetchOptions: fnFetchOptions,
+                fnFillInputs: fnFillInputs
+            });
+            $editorLabel.ladbEditorLabel({
+                filename: that.filename,
+                modelName: that.modelName,
+                pageLabel: that.pageLabel,
+                lengthUnit: that.lengthUnit,
+                generatedAt: new Date().getTime() / 1000,
+                group: group,
+                part: parts[0],
+            });
+            $selectPageFormat.selectpicker(SELECT_PICKER_OPTIONS);
+            $inputPageWidth.ladbTextinputDimension();
+            $inputPageHeight.ladbTextinputDimension();
+            $inputMarginTop.ladbTextinputDimension();
+            $inputMarginRight.ladbTextinputDimension();
+            $inputMarginBottom.ladbTextinputDimension();
+            $inputMarginLeft.ladbTextinputDimension();
+            $inputSpacingH.ladbTextinputDimension();
+            $inputSpacingV.ladbTextinputDimension();
+            $inputColCount.ladbTextinputNumberWithUnit({
+                resetValue: '1'
+            });
+            $inputRowCount.ladbTextinputNumberWithUnit({
+                resetValue: '1'
+            });
+            $selectCuttingMarks.selectpicker(SELECT_PICKER_OPTIONS);
+
+            fnFillInputs(labelsOptions);
+
+            // Bind tabs
+            $('a[data-toggle=tab]', $modal).on('shown.bs.tab', function (e) {
+                var tabId = $(e.target).attr('href');
+                that.lastLabelsOptionsTab = tabId.substring('#tab_labels_options_'.length);
+                if (that.lastLabelsOptionsTab === 'layout') {
+
+                    fnComputeLabelSize($inputPageWidth.val(), $inputPageHeight.val(), $inputMarginTop.val(), $inputMarginRight.val(), $inputMarginBottom.val(), $inputMarginLeft.val(), $inputSpacingH.val(), $inputSpacingV.val(), $inputColCount.val(), $inputRowCount.val(), function (labelWidth, labelHeight) {
+                        $editorLabel.ladbEditorLabel('updateSize', [ labelWidth, labelHeight ]);
+                    });
+
+                }
+            });
+
+            // Bind select
+            $selectPageFormat.on('change', function () {
+                var format = $(this).val();
+                if (format !== '0') {
+                    $inputPageWidth.ladbTextinputDimension('disable');
+                    $inputPageHeight.ladbTextinputDimension('disable');
+                    var dimensions = format.split('x');
+                    $inputPageWidth.val(dimensions[0]);
+                    $inputPageHeight.val(dimensions[1]);
+                } else {
+                    $inputPageWidth.ladbTextinputDimension('enable');
+                    $inputPageHeight.ladbTextinputDimension('enable');
+                }
+            });
+
+            // Bind buttons
+            $btnGenerate.on('click', function () {
+
+                // Fetch options
+                fnFetchOptions(labelsOptions);
+
+                // Store options
+                rubyCallCommand('core_set_model_preset', { dictionary: 'cutlist_labels_options', values: labelsOptions, section: groupId });
+
+                fnComputeLabelSize(labelsOptions.page_width, labelsOptions.page_height, labelsOptions.margin_top, labelsOptions.margin_right, labelsOptions.margin_bottom, labelsOptions.margin_left, labelsOptions.spacing_h, labelsOptions.spacing_v, labelsOptions.col_count, labelsOptions.row_count, function (labelWidth, labelHeight, response) {
+
+                    labelsOptions.page_width = response.page_width;
+                    labelsOptions.page_height = response.page_height;
+                    labelsOptions.margin_top = response.margin_top;
+                    labelsOptions.margin_right = response.margin_right;
+                    labelsOptions.margin_bottom = response.margin_bottom;
+                    labelsOptions.margin_left = response.margin_left;
+                    labelsOptions.spacing_h = response.spacing_h;
+                    labelsOptions.spacing_v = response.spacing_v;
+
+                    var errors = [];
+                    var pages = [];
+
+                    if (labelWidth <= 0 || isNaN(labelWidth) || labelHeight <= 0 || isNaN(labelHeight)) {
+
+                        // Invalid size push an error
+                        errors.push('tab.cutlist.labels.error.invalid_size');
+
+                    } else {
+
+                        // Split parts into pages
+                        var page;
+                        var gIndex = 0;
+                        $.each(parts, function (index) {
+                            var entityNames = [];
+                            $.each(this.entity_names, function () {
+                                var entityName = this[0];
+                                var count = this[1];
+                                for (var i = 0; i < count; i++) {
+                                    entityNames.push(entityName)
+                                }
+                            });
+                            for (var i = 1; i <= this.count; i++) {
+                                if (gIndex % (labelsOptions.row_count * labelsOptions.col_count) === 0) {
+                                    page = {
+                                        part_infos: []
+                                    }
+                                    pages.push(page);
+                                }
+                                page.part_infos.push({
+                                    position_in_batch: i,
+                                    entity_name: entityNames[i - 1],
+                                    part: this
+                                });
+                                gIndex++;
+                            }
+                        });
+
+                    }
+
+                    var $slide = that.pushNewSlide('ladb_cutlist_slide_labels', 'tabs/cutlist/_slide-labels.twig', $.extend({
+                        errors: errors,
+                        filename: that.filename,
+                        modelName: that.modelName,
+                        pageLabel: that.pageLabel,
+                        lengthUnit: that.lengthUnit,
+                        generatedAt: new Date().getTime() / 1000,
+                        group: group,
+                        pages: pages,
+                    }, labelsOptions), function () {
+                        that.dialog.setupTooltips();
+                    });
+
+                    // Fetch UI elements
+                    var $btnLabels = $('#ladb_btn_labels', $slide);
+                    var $btnPrint = $('#ladb_btn_print', $slide);
+                    var $btnClose = $('#ladb_btn_close', $slide);
 
                     // Bind buttons
-                    $btnCuttingdiagramOptionsDefaultsSave.on('click', function () {
+                    $btnLabels.on('click', function () {
+                        that.labelsGroup(groupId);
+                    });
+                    $btnPrint.on('click', function () {
 
-                        var saw_kerf = $inputSawKerf.val();
-                        var trimming = $inputTrimming.val();
-                        var presort = $selectPresort.val();
-                        var stacking = $selectStacking.val();
-                        var bbox_optimization = $selectBBoxOptimization.val();
-                        var sheet_folding = $selectSheetFolding.val();
-                        var hide_part_list = $selectHidePartList.val();
+                        // Retrieve an modifiy Page rule to set margin to 0
+                        var cssPageRuleStyle = document.styleSheets[0].cssRules[0].style;
+                        var tmpMargin = cssPageRuleStyle.margin;
+                        cssPageRuleStyle.margin = '0';
 
-                        // Update default cut options for specific type to last used
-                        that.opencutlist.setSettings([
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SAW_KERF, value:saw_kerf, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_TRIMMING, value:trimming, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_PRESORT, value:presort },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STACKING, value:stacking },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_BBOX_OPTIMIZATION, value:bbox_optimization },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SHEET_FOLDING, value:sheet_folding },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_HIDE_PART_LIST, value:hide_part_list },
-                        ], 0 /* SETTINGS_RW_STRATEGY_GLOBAL */);
+                        // Print
+                        window.print();
 
-                        that.opencutlist.notify(i18next.t('tab.cutlist.cuttingdiagram.options_defaults.save_success'), 'success');
-
-                        this.blur();
+                        // Retore margin
+                        cssPageRuleStyle.margin = tmpMargin;
 
                     });
-                    $btnCuttingdiagramOptionsDefaultsReset.on('click', function () {
-
-                        var saw_kerf = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SAW_KERF, CUTTINGDIAGRAM2D_OPTION_DEFAULT_SAW_KERF);
-                        var trimming = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_TRIMMING, CUTTINGDIAGRAM2D_OPTION_DEFAULT_TRIMMING);
-                        var presort = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_PRESORT, CUTTINGDIAGRAM2D_OPTION_DEFAULT_PRESORT);
-                        var stacking = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STACKING, CUTTINGDIAGRAM2D_OPTION_DEFAULT_STACKING);
-                        var bbox_optimization = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_BBOX_OPTIMIZATION, CUTTINGDIAGRAM2D_OPTION_DEFAULT_BBOX_OPTIMIZATION);
-                        var sheet_folding = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SHEET_FOLDING, CUTTINGDIAGRAM2D_OPTION_DEFAULT_SHEET_FOLDING);
-                        var hide_part_list = that.opencutlist.getSetting(SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_HIDE_PART_LIST, CUTTINGDIAGRAM2D_OPTION_DEFAULT_HIDE_PART_LIST);
-
-                        $inputSawKerf.val(saw_kerf);
-                        $inputTrimming.val(trimming);
-                        $selectPresort.selectpicker('val', presort);
-                        $selectStacking.selectpicker('val', stacking);
-                        $selectBBoxOptimization.selectpicker('val', bbox_optimization);
-                        $selectHidePartList.selectpicker('val', sheet_folding ? '1' : '0');
-                        $selectHidePartList.selectpicker('val', hide_part_list ? '1' : '0');
-
-                        this.blur();
-
+                    $btnClose.on('click', function () {
+                        that.popSlide();
                     });
-                    $btnEditMaterial.on('click', function () {
-                        fnEditMaterial();
+                    $('.ladb-btn-setup-model-units', $slide).on('click', function() {
+                        $(this).blur();
+                        that.dialog.executeCommandOnTab('settings', 'highlight_panel', { panel:'model' });
                     });
-                    $btnCuttingdiagram.on('click', function () {
-
-                        // Fetch options
-
-                        cuttingdiagram2dOptions.std_sheet = $inputStdSheet.val();
-                        cuttingdiagram2dOptions.std_sheet_length = $inputStdSheetLength.val();
-                        cuttingdiagram2dOptions.std_sheet_width = $inputStdSheetWidth.val();
-                        cuttingdiagram2dOptions.scrap_sheet_sizes = $inputScrapSheetSizes.val();
-                        cuttingdiagram2dOptions.grained = $selectGrained.val() === '1';
-                        cuttingdiagram2dOptions.saw_kerf = $inputSawKerf.val();
-                        cuttingdiagram2dOptions.trimming = $inputTrimming.val();
-                        cuttingdiagram2dOptions.presort = $selectPresort.val();
-                        cuttingdiagram2dOptions.stacking = $selectStacking.val();
-                        cuttingdiagram2dOptions.bbox_optimization = $selectBBoxOptimization.val();
-                        cuttingdiagram2dOptions.sheet_folding = $selectSheetFolding.val() === '1';
-                        cuttingdiagram2dOptions.hide_part_list = $selectHidePartList.val() === '1';
-
-                        // Store options
-                        that.opencutlist.setSettings([
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET + '_' + groupId, value:cuttingdiagram2dOptions.std_sheet },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET_LENGTH + '_' + groupId, value:cuttingdiagram2dOptions.std_sheet_length, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STD_SHEET_WIDTH + '_' + groupId, value:cuttingdiagram2dOptions.std_sheet_width, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SCRAP_SHEET_SIZES + '_' + groupId, value:cuttingdiagram2dOptions.scrap_sheet_sizes, preprocessor:2 /* SETTINGS_PREPROCESSOR_DXD */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_GRAINED + '_' + groupId, value:cuttingdiagram2dOptions.grained },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SAW_KERF + '_' + groupId, value:cuttingdiagram2dOptions.saw_kerf, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_TRIMMING + '_' + groupId, value:cuttingdiagram2dOptions.trimming, preprocessor:1 /* SETTINGS_PREPROCESSOR_D */ },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_PRESORT + '_' + groupId, value:cuttingdiagram2dOptions.presort },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_STACKING + '_' + groupId, value:cuttingdiagram2dOptions.stacking },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_BBOX_OPTIMIZATION + '_' + groupId, value:cuttingdiagram2dOptions.bbox_optimization },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_SHEET_FOLDING + '_' + groupId, value:cuttingdiagram2dOptions.sheet_folding },
-                            { key:SETTING_KEY_CUTTINGDIAGRAM2D_OPTION_HIDE_PART_LIST + '_' + groupId, value:cuttingdiagram2dOptions.hide_part_list },
-                        ], 2 /* SETTINGS_RW_STRATEGY_MODEL */);
-
-                        rubyCallCommand('cutlist_group_cuttingdiagram_2d', $.extend({ group_id: groupId }, cuttingdiagram2dOptions, that.generateOptions), function (response) {
-
-                            var $slide = that.pushNewSlide('ladb_cutlist_slide_cuttingdiagram_2d', 'tabs/cutlist/_slide-cuttingdiagram-2d.twig', $.extend({
-                                generateOptions: that.generateOptions,
-                                dimensionColumnOrderStrategy: that.generateOptions.dimension_column_order_strategy.split('>'),
-                                filename: that.filename,
-                                pageLabel: that.pageLabel,
-                                lengthUnit: that.lengthUnit,
-                                generatedAt: new Date().getTime() / 1000,
-                                group: group
-                            }, response), function () {
-                                that.opencutlist.setupTooltips();
-                            });
-
-                            // Fetch UI elements
-                            var $btnCuttingDiagram = $('#ladb_btn_cuttingdiagram', $slide);
-                            var $btnPrint = $('#ladb_btn_print', $slide);
-                            var $btnClose = $('#ladb_btn_close', $slide);
-
-                            // Bind buttons
-                            $btnCuttingDiagram.on('click', function () {
-                                that.cuttingdiagram2dGroup(groupId);
-                            });
-                            $btnPrint.on('click', function () {
-                                window.print();
-                            });
-                            $btnClose.on('click', function () {
-                                that.popSlide();
-                            });
-                            $('.ladb-btn-setup-model-units', $slide).on('click', function() {
-                                $(this).blur();
-                                rubyCallCommand('core_open_model_info_page', {
-                                    page: i18next.t('core.model_info_page.units')
-                                });
-                            });
-
-                            $('.ladb-btn-toggle-no-print', $slide).on('click', function () {
-                                var $group = $(this).parents('.ladb-cutlist-group');
-                                if ($group.hasClass('no-print')) {
-                                    that.showGroup($group);
-                                } else {
-                                    that.hideGroup($group);
-                                }
-                                $(this).blur();
-                            });
-                            $('.ladb-btn-scrollto-prev-group', $slide).on('click', function () {
-                                var $group = $(this).parents('.ladb-cutlist-group');
-                                var groupId = $group.data('sheet-index');
-                                var $target = $('.ladb-cuttingdiagram-group[data-sheet-index=' + (parseInt(groupId) - 1) + ']');
-                                that.scrollSlideToTarget($slide, $target, true, true);
-                                $(this).blur();
-                                return false;
-                            });
-                            $('.ladb-btn-scrollto-next-group', $slide).on('click', function () {
-                                var $group = $(this).parents('.ladb-cutlist-group');
-                                var groupId = $group.data('sheet-index');
-                                var $target = $('.ladb-cuttingdiagram-group[data-sheet-index=' + (parseInt(groupId) + 1) + ']');
-                                that.scrollSlideToTarget($slide, $target, true, true);
-                                $(this).blur();
-                                return false;
-                            });
-                            $('a.ladb-btn-highlight-part', $slide).on('click', function () {
-                                $(this).blur();
-                                var $part = $(this).parents('.ladb-cutlist-row');
-                                var partId = $part.data('part-id');
-                                that.highlightPart(partId);
-                                return false;
-                            });
-                            $('a.ladb-btn-scrollto', $slide).on('click', function () {
-                                var $target = $($(this).attr('href'));
-                                if ($target.data('group-id')) {
-                                    that.showGroup($target);
-                                }
-                                that.scrollSlideToTarget($slide, $target, true, true);
-                                $(this).blur();
-                                return false;
-                            });
-                            $('.ladb-cutlist-row', $slide).on('click', function () {
-                                $('.ladb-click-tool', $(this)).click();
-                                $(this).blur();
-                                return false;
-                            });
-
-                            // SVG
-                            $('SVG .part', $slide).on('click', function () {
-                                var partId = $(this).data('part-id');
-                                that.highlightPart(partId);
-                                $(this).blur();
-                                return false;
-                            });
-
-                        });
-
-                        // Hide modal
-                        $modal.modal('hide');
-
+                    $('.ladb-btn-toggle-no-print', $slide).on('click', function () {
+                        var $page = $(this).parents('.ladb-cutlist-group');
+                        if ($page.hasClass('no-print')) {
+                            that.showGroup($page, true);
+                        } else {
+                            that.hideGroup($page, true);
+                        }
+                        $(this).blur();
                     });
 
-                    // Show modal
-                    $modal.modal('show');
-
-                    // Init tokenfields (this must done after modal shown for correct token label max width measurement)
-                    $inputScrapSheetSizes.tokenfield(TOKENFIELD_OPTIONS).on('tokenfield:createdtoken', that.tokenfieldValidatorFn_dxd);
-
-                    // Setup popovers
-                    that.opencutlist.setupPopovers();
+                    // Hide modal
+                    $modal.modal('hide');
 
                 });
 
             });
+
+            // Show modal
+            $modal.modal('show');
+
+            // Setup popovers
+            that.dialog.setupPopovers();
+
+        });
 
     };
 
@@ -2157,7 +2814,7 @@
         rubyCallCommand('cutlist_numbers_save', params ? params : {}, function (response) {
 
             if (response['errors']) {
-                that.opencutlist.notifyErrors(response['errors']);
+                that.dialog.notifyErrors(response['errors']);
             } else {
                 that.generateCutlist(callback);
             }
@@ -2172,7 +2829,7 @@
         rubyCallCommand('cutlist_numbers_reset', params ? params : {}, function (response) {
 
             if (response['errors']) {
-                that.opencutlist.notifyErrors(response['errors']);
+                that.dialog.notifyErrors(response['errors']);
             } else {
                 that.generateCutlist(callback);
             }
@@ -2186,56 +2843,16 @@
     LadbTabCutlist.prototype.loadOptions = function (callback) {
         var that = this;
 
-        this.opencutlist.pullSettings([
+        rubyCallCommand('core_get_model_preset', { dictionary: 'cutlist_options' }, function (response) {
 
-                SETTING_KEY_OPTION_AUTO_ORIENT,
-                SETTING_KEY_OPTION_SMART_MATERIAL,
-                SETTING_KEY_OPTION_DYNAMIC_ATTRIBUTES_NAME,
-                SETTING_KEY_OPTION_PART_NUMBER_WITH_LETTERS,
-                SETTING_KEY_OPTION_PART_NUMBER_SEQUENCE_BY_GROUP,
-                SETTING_KEY_OPTION_PART_FOLDING,
-                SETTING_KEY_OPTION_HIDE_ENTITY_NAMES,
-                SETTING_KEY_OPTION_HIDE_LABELS,
-                SETTING_KEY_OPTION_HIDE_CUTTING_DIMENSIONS,
-                SETTING_KEY_OPTION_HIDE_BBOX_DIMENSIONS,
-                SETTING_KEY_OPTION_HIDE_UNTYPED_MATERIAL_DIMENSIONS,
-                SETTING_KEY_OPTION_HIDE_FINAL_AREAS,
-                SETTING_KEY_OPTION_HIDE_EDGES,
-                SETTING_KEY_OPTION_MINIMIZE_ON_HIGHLIGHT,
-                SETTING_KEY_OPTION_PART_ORDER_STRATEGY,
-                SETTING_KEY_OPTION_DIMENSION_COLUMN_ORDER_STRATEGY,
-                SETTING_KEY_OPTION_HIDDEN_GROUP_IDS
+            that.generateOptions = response.preset;
 
-            ],
-            3 /* SETTINGS_RW_STRATEGY_MODEL_GLOBAL */,
-            function () {
+            // Callback
+            if (typeof callback == 'function') {
+                callback();
+            }
 
-                that.generateOptions = {
-                    auto_orient: that.opencutlist.getSetting(SETTING_KEY_OPTION_AUTO_ORIENT, OPTION_DEFAULT_AUTO_ORIENT),
-                    smart_material: that.opencutlist.getSetting(SETTING_KEY_OPTION_SMART_MATERIAL, OPTION_DEFAULT_SMART_MATERIAL),
-                    dynamic_attributes_name: that.opencutlist.getSetting(SETTING_KEY_OPTION_DYNAMIC_ATTRIBUTES_NAME, OPTION_DEFAULT_DYNAMIC_ATTRIBUTES_NAME),
-                    part_number_with_letters: that.opencutlist.getSetting(SETTING_KEY_OPTION_PART_NUMBER_WITH_LETTERS, OPTION_DEFAULT_PART_NUMBER_WITH_LETTERS),
-                    part_number_sequence_by_group: that.opencutlist.getSetting(SETTING_KEY_OPTION_PART_NUMBER_SEQUENCE_BY_GROUP, OPTION_DEFAULT_PART_NUMBER_SEQUENCE_BY_GROUP),
-                    part_folding: that.opencutlist.getSetting(SETTING_KEY_OPTION_PART_FOLDING, OPTION_DEFAULT_PART_FOLDING),
-                    hide_entity_names: that.opencutlist.getSetting(SETTING_KEY_OPTION_HIDE_ENTITY_NAMES, OPTION_DEFAULT_HIDE_ENTITY_NAMES),
-                    hide_labels: that.opencutlist.getSetting(SETTING_KEY_OPTION_HIDE_LABELS, OPTION_DEFAULT_HIDE_LABELS),
-                    hide_cutting_dimensions: that.opencutlist.getSetting(SETTING_KEY_OPTION_HIDE_CUTTING_DIMENSIONS, OPTION_DEFAULT_HIDE_CUTTING_DIMENSIONS),
-                    hide_bbox_dimensions: that.opencutlist.getSetting(SETTING_KEY_OPTION_HIDE_BBOX_DIMENSIONS, OPTION_DEFAULT_HIDE_BBOX_DIMENSIONS),
-                    hide_untyped_material_dimensions: that.opencutlist.getSetting(SETTING_KEY_OPTION_HIDE_UNTYPED_MATERIAL_DIMENSIONS, OPTION_DEFAULT_HIDE_UNTYPED_MATERIAL_DIMENSIONS),
-                    hide_final_areas: that.opencutlist.getSetting(SETTING_KEY_OPTION_HIDE_FINAL_AREAS, OPTION_DEFAULT_HIDE_FINAL_AREAS),
-                    hide_edges: that.opencutlist.getSetting(SETTING_KEY_OPTION_HIDE_EDGES, OPTION_DEFAULT_HIDE_EDGES),
-                    minimize_on_highlight: that.opencutlist.getSetting(SETTING_KEY_OPTION_MINIMIZE_ON_HIGHLIGHT, OPTION_DEFAULT_MINIMIZE_ON_HIGHLIGHT),
-                    part_order_strategy: that.opencutlist.getSetting(SETTING_KEY_OPTION_PART_ORDER_STRATEGY, OPTION_DEFAULT_PART_ORDER_STRATEGY),
-                    dimension_column_order_strategy: that.opencutlist.getSetting(SETTING_KEY_OPTION_DIMENSION_COLUMN_ORDER_STRATEGY, OPTION_DEFAULT_DIMENSION_COLUMN_ORDER_STRATEGY),
-                    hidden_group_ids: that.opencutlist.getSetting(SETTING_KEY_OPTION_HIDDEN_GROUP_IDS, OPTION_DEFAULT_HIDDEN_GROUP_IDS)
-                };
-
-                // Callback
-                if (callback && typeof(callback) === 'function') {
-                    callback();
-                }
-
-            });
+        });
 
     };
 
@@ -2245,6 +2862,7 @@
         var $modal = that.appendModalInside('ladb_cutlist_modal_options', 'tabs/cutlist/_modal-options.twig');
 
         // Fetch UI elements
+        var $widgetPreset = $('.ladb-widget-preset', $modal);
         var $inputAutoOrient = $('#ladb_input_auto_orient', $modal);
         var $inputSmartMaterial = $('#ladb_input_smart_material', $modal);
         var $inputDynamicAttributesName = $('#ladb_input_dynamic_attributes_name', $modal);
@@ -2252,39 +2870,66 @@
         var $inputPartNumberSequenceByGroup = $('#ladb_input_part_number_sequence_by_group', $modal);
         var $inputPartFolding = $('#ladb_input_part_folding', $modal);
         var $inputHideInstanceNames = $('#ladb_input_hide_entity_names', $modal);
-        var $inputHideLabels = $('#ladb_input_hide_labels', $modal);
+        var $inputHideTags = $('#ladb_input_hide_tags', $modal);
         var $inputHideCuttingDimensions = $('#ladb_input_hide_cutting_dimensions', $modal);
         var $inputHideBBoxDimensions = $('#ladb_input_hide_bbox_dimensions', $modal);
-        var $inputHideUntypedMaterialDimensions = $('#ladb_input_hide_untyped_material_dimensions', $modal);
         var $inputHideFinalAreas = $('#ladb_input_hide_final_areas', $modal);
         var $inputHideEdges = $('#ladb_input_hide_edges', $modal);
         var $inputMinimizeOnHighlight = $('#ladb_input_minimize_on_highlight', $modal);
         var $sortablePartOrderStrategy = $('#ladb_sortable_part_order_strategy', $modal);
+        var $inputTags = $('#ladb_input_tags', $modal);
         var $sortableDimensionColumnOrderStrategy = $('#ladb_sortable_dimension_column_order_strategy', $modal);
-        var $btnReset = $('#ladb_cutlist_options_reset', $modal);
+        var $btnSetupModelUnits = $('#ladb_cutlist_options_setup_model_units', $modal);
         var $btnUpdate = $('#ladb_cutlist_options_update', $modal);
 
         // Define useful functions
-        var populateOptionsInputs = function (generateOptions) {
+        var fnFetchOptions = function (options) {
+            options.auto_orient = $inputAutoOrient.is(':checked');
+            options.smart_material = $inputSmartMaterial.is(':checked');
+            options.dynamic_attributes_name = $inputDynamicAttributesName.is(':checked');
+            options.part_number_with_letters = $inputPartNumberWithLetters.is(':checked');
+            options.part_number_sequence_by_group = $inputPartNumberSequenceByGroup.is(':checked');
+            options.part_folding = $inputPartFolding.is(':checked');
+            options.hide_entity_names = $inputHideInstanceNames.is(':checked');
+            options.hide_tags = $inputHideTags.is(':checked');
+            options.hide_cutting_dimensions = $inputHideCuttingDimensions.is(':checked');
+            options.hide_bbox_dimensions = $inputHideBBoxDimensions.is(':checked');
+            options.hide_final_areas = $inputHideFinalAreas.is(':checked');
+            options.hide_edges = $inputHideEdges.is(':checked');
+            options.minimize_on_highlight = $inputMinimizeOnHighlight.is(':checked');
+            options.tags = $inputTags.tokenfield('getTokensList').split(';');
+
+            var properties = [];
+            $sortablePartOrderStrategy.children('li').each(function () {
+                properties.push($(this).data('property'));
+            });
+            options.part_order_strategy = properties.join('>');
+
+            properties = [];
+            $sortableDimensionColumnOrderStrategy.children('li').each(function () {
+                properties.push($(this).data('property'));
+            });
+            options.dimension_column_order_strategy = properties.join('>');
+
+        };
+        var fnFillInputs = function (options) {
 
             // Checkboxes
 
-            $inputAutoOrient.prop('checked', generateOptions.auto_orient);
-            $inputSmartMaterial.prop('checked', generateOptions.smart_material);
-            $inputDynamicAttributesName.prop('checked', generateOptions.dynamic_attributes_name);
-            $inputPartNumberWithLetters.prop('checked', generateOptions.part_number_with_letters);
-            $inputPartNumberSequenceByGroup.prop('checked', generateOptions.part_number_sequence_by_group);
-            $inputPartFolding.prop('checked', generateOptions.part_folding);
-            $inputHideInstanceNames.prop('checked', generateOptions.hide_entity_names);
-            $inputHideLabels.prop('checked', generateOptions.hide_labels);
-            $inputHideCuttingDimensions.prop('checked', generateOptions.hide_cutting_dimensions);
-            $inputHideBBoxDimensions.prop('checked', generateOptions.hide_bbox_dimensions);
-            $inputHideUntypedMaterialDimensions
-                .prop('checked', generateOptions.hide_untyped_material_dimensions)
-                .prop('disabled', generateOptions.hide_bbox_dimensions);
-            $inputHideFinalAreas.prop('checked', generateOptions.hide_final_areas);
-            $inputHideEdges.prop('checked', generateOptions.hide_edges);
-            $inputMinimizeOnHighlight.prop('checked', generateOptions.minimize_on_highlight);
+            $inputAutoOrient.prop('checked', options.auto_orient);
+            $inputSmartMaterial.prop('checked', options.smart_material);
+            $inputDynamicAttributesName.prop('checked', options.dynamic_attributes_name);
+            $inputPartNumberWithLetters.prop('checked', options.part_number_with_letters);
+            $inputPartNumberSequenceByGroup.prop('checked', options.part_number_sequence_by_group);
+            $inputPartFolding.prop('checked', options.part_folding);
+            $inputHideInstanceNames.prop('checked', options.hide_entity_names);
+            $inputHideTags.prop('checked', options.hide_tags);
+            $inputHideCuttingDimensions.prop('checked', options.hide_cutting_dimensions);
+            $inputHideBBoxDimensions.prop('checked', options.hide_bbox_dimensions);
+            $inputHideFinalAreas.prop('checked', options.hide_final_areas);
+            $inputHideEdges.prop('checked', options.hide_edges);
+            $inputMinimizeOnHighlight.prop('checked', options.minimize_on_highlight);
+            $inputTags.tokenfield('setTokens', options.tags === '' ? ' ' : options.tags);
 
             // Sortables
 
@@ -2292,7 +2937,7 @@
 
             // Part order sortables
 
-            properties = generateOptions.part_order_strategy.split('>');
+            properties = options.part_order_strategy.split('>');
             $sortablePartOrderStrategy.empty();
             for (i = 0; i < properties.length; i++) {
                 property = properties[i];
@@ -2316,14 +2961,11 @@
                 }
                 $item.data('property', property);
             });
-            $sortablePartOrderStrategy.sortable({
-                cursor: 'ns-resize',
-                handle: '.ladb-handle'
-            });
+            $sortablePartOrderStrategy.sortable(SORTABLE_OPTIONS);
 
             // Dimension column order sortables
 
-            properties = generateOptions.dimension_column_order_strategy.split('>');
+            properties = options.dimension_column_order_strategy.split('>');
             $sortableDimensionColumnOrderStrategy.empty();
             for (i = 0; i < properties.length; i++) {
                 property = properties[i];
@@ -2331,92 +2973,29 @@
                     property: property
                 }));
             }
-            $sortableDimensionColumnOrderStrategy.sortable({
-                cursor: 'ns-resize',
-                handle: '.ladb-handle'
-            });
+            $sortableDimensionColumnOrderStrategy.sortable(SORTABLE_OPTIONS);
 
         };
 
-        // Bind inputs
-        $inputHideBBoxDimensions.on('change', function () {
-            $inputHideUntypedMaterialDimensions.prop('disabled', $(this).is(':checked'));
+        $widgetPreset.ladbWidgetPreset({
+            dialog: that.dialog,
+            dictionary: 'cutlist_options',
+            fnFetchOptions: fnFetchOptions,
+            fnFillInputs: fnFillInputs
         });
 
         // Bind buttons
-        $btnReset.on('click', function () {
+        $btnSetupModelUnits.on('click', function () {
             $(this).blur();
-
-            var generateOptions = $.extend($.extend({}, that.generateOptions), {
-                auto_orient: OPTION_DEFAULT_AUTO_ORIENT,
-                smart_material: OPTION_DEFAULT_SMART_MATERIAL,
-                dynamic_attributes_name: OPTION_DEFAULT_DYNAMIC_ATTRIBUTES_NAME,
-                part_number_with_letters: OPTION_DEFAULT_PART_NUMBER_WITH_LETTERS,
-                part_number_sequence_by_group: OPTION_DEFAULT_PART_NUMBER_SEQUENCE_BY_GROUP,
-                part_folding: OPTION_DEFAULT_PART_FOLDING,
-                hide_entity_names: OPTION_DEFAULT_HIDE_ENTITY_NAMES,
-                hide_labels: OPTION_DEFAULT_HIDE_LABELS,
-                hide_cutting_dimensions: OPTION_DEFAULT_HIDE_CUTTING_DIMENSIONS,
-                hide_bbox_dimensions: OPTION_DEFAULT_HIDE_BBOX_DIMENSIONS,
-                hide_untyped_material_dimensions: OPTION_DEFAULT_HIDE_UNTYPED_MATERIAL_DIMENSIONS,
-                hide_final_areas: OPTION_DEFAULT_HIDE_FINAL_AREAS,
-                hide_edges: OPTION_DEFAULT_HIDE_EDGES,
-                minimize_on_highlight: OPTION_DEFAULT_MINIMIZE_ON_HIGHLIGHT,
-                part_order_strategy: OPTION_DEFAULT_PART_ORDER_STRATEGY,
-                dimension_column_order_strategy: OPTION_DEFAULT_DIMENSION_COLUMN_ORDER_STRATEGY
-            });
-            populateOptionsInputs(generateOptions);
+            that.dialog.executeCommandOnTab('settings', 'highlight_panel', { panel:'model' });
         });
         $btnUpdate.on('click', function () {
 
             // Fetch options
-
-            that.generateOptions.auto_orient = $inputAutoOrient.is(':checked');
-            that.generateOptions.smart_material = $inputSmartMaterial.is(':checked');
-            that.generateOptions.dynamic_attributes_name = $inputDynamicAttributesName.is(':checked');
-            that.generateOptions.part_number_with_letters = $inputPartNumberWithLetters.is(':checked');
-            that.generateOptions.part_number_sequence_by_group = $inputPartNumberSequenceByGroup.is(':checked');
-            that.generateOptions.part_folding = $inputPartFolding.is(':checked');
-            that.generateOptions.hide_entity_names = $inputHideInstanceNames.is(':checked');
-            that.generateOptions.hide_labels = $inputHideLabels.is(':checked');
-            that.generateOptions.hide_cutting_dimensions = $inputHideCuttingDimensions.is(':checked');
-            that.generateOptions.hide_bbox_dimensions = $inputHideBBoxDimensions.is(':checked');
-            that.generateOptions.hide_untyped_material_dimensions = $inputHideUntypedMaterialDimensions.is(':checked');
-            that.generateOptions.hide_final_areas = $inputHideFinalAreas.is(':checked');
-            that.generateOptions.hide_edges = $inputHideEdges.is(':checked');
-            that.generateOptions.minimize_on_highlight = $inputMinimizeOnHighlight.is(':checked');
-
-            var properties = [];
-            $sortablePartOrderStrategy.children('li').each(function () {
-                properties.push($(this).data('property'));
-            });
-            that.generateOptions.part_order_strategy = properties.join('>');
-
-            properties = [];
-            $sortableDimensionColumnOrderStrategy.children('li').each(function () {
-                properties.push($(this).data('property'));
-            });
-            that.generateOptions.dimension_column_order_strategy = properties.join('>');
+            fnFetchOptions(that.generateOptions);
 
             // Store options
-            that.opencutlist.setSettings([
-                { key:SETTING_KEY_OPTION_AUTO_ORIENT, value:that.generateOptions.auto_orient },
-                { key:SETTING_KEY_OPTION_SMART_MATERIAL, value:that.generateOptions.smart_material },
-                { key:SETTING_KEY_OPTION_DYNAMIC_ATTRIBUTES_NAME, value:that.generateOptions.dynamic_attributes_name },
-                { key:SETTING_KEY_OPTION_PART_NUMBER_WITH_LETTERS, value:that.generateOptions.part_number_with_letters },
-                { key:SETTING_KEY_OPTION_PART_NUMBER_SEQUENCE_BY_GROUP, value:that.generateOptions.part_number_sequence_by_group },
-                { key:SETTING_KEY_OPTION_PART_FOLDING, value:that.generateOptions.part_folding },
-                { key:SETTING_KEY_OPTION_HIDE_ENTITY_NAMES, value:that.generateOptions.hide_entity_names },
-                { key:SETTING_KEY_OPTION_HIDE_LABELS, value:that.generateOptions.hide_labels },
-                { key:SETTING_KEY_OPTION_HIDE_CUTTING_DIMENSIONS, value:that.generateOptions.hide_cutting_dimensions },
-                { key:SETTING_KEY_OPTION_HIDE_BBOX_DIMENSIONS, value:that.generateOptions.hide_bbox_dimensions },
-                { key:SETTING_KEY_OPTION_HIDE_UNTYPED_MATERIAL_DIMENSIONS, value:that.generateOptions.hide_untyped_material_dimensions },
-                { key:SETTING_KEY_OPTION_HIDE_FINAL_AREAS, value:that.generateOptions.hide_final_areas },
-                { key:SETTING_KEY_OPTION_HIDE_EDGES, value:that.generateOptions.hide_edges },
-                { key:SETTING_KEY_OPTION_MINIMIZE_ON_HIGHLIGHT, value:that.generateOptions.minimize_on_highlight },
-                { key:SETTING_KEY_OPTION_PART_ORDER_STRATEGY, value:that.generateOptions.part_order_strategy },
-                { key:SETTING_KEY_OPTION_DIMENSION_COLUMN_ORDER_STRATEGY, value:that.generateOptions.dimension_column_order_strategy }
-            ], 3 /* SETTINGS_RW_STRATEGY_MODEL_GLOBAL */);
+            rubyCallCommand('core_set_model_preset', { dictionary: 'cutlist_options', values: that.generateOptions });
 
             // Hide modal
             $modal.modal('hide');
@@ -2428,14 +3007,31 @@
 
         });
 
-        // Populate inputs
-        populateOptionsInputs(that.generateOptions);
-
         // Show modal
         $modal.modal('show');
 
+        // Init tokenfields (this must done after modal shown for correct token tag max width measurement)
+        $inputTags
+            .tokenfield($.extend(TOKENFIELD_OPTIONS, {
+                autocomplete: {
+                    source: that.usedTags,
+                    delay: 100
+                }
+            }))
+            .on('tokenfield:createtoken', function (e) {
+                var existingTokens = $(this).tokenfield('getTokens');
+                $.each(existingTokens, function (index, token) {
+                    if (token.value === e.attrs.value) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+        // Populate inputs
+        fnFillInputs(that.generateOptions);
+
         // Setup popovers
-        this.opencutlist.setupPopovers();
+        this.dialog.setupPopovers();
 
     };
 
@@ -2468,6 +3064,37 @@
         }
     };
 
+    // Init /////
+
+    LadbTabCutlist.prototype.registerCommands = function () {
+        LadbAbstractTab.prototype.registerCommands.call(this);
+
+        var that = this;
+
+        this.registerCommand('generate_cutlist', function (parameters) {
+            var callback = parameters ? parameters.callback : null;
+            setTimeout(function () {     // Use setTimeout to give time to UI to refresh
+                that.generateCutlist(callback);
+            }, 1);
+        });
+        this.registerCommand('edit_part', function (parameters) {
+            var partId = parameters.part_id;
+            var partSerializedPath = parameters.part_serialized_path;
+            var tab = parameters.tab;
+            var dontGenerate = parameters.dontGenerate;
+            setTimeout(function () {     // Use setTimeout to give time to UI to refresh
+                if (dontGenerate) {
+                    that.editPart(partId, partSerializedPath, tab);
+                } else {
+                    that.generateCutlist(function () {
+                        that.editPart(partId, partSerializedPath, tab);
+                    });
+                }
+            }, 1);
+        });
+
+    };
+
     LadbTabCutlist.prototype.bind = function () {
         LadbAbstractTab.prototype.bind.call(this);
 
@@ -2486,6 +3113,14 @@
         });
         this.$btnExport.on('click', function () {
             that.exportCutlist();
+            this.blur();
+        });
+        this.$btnReport.on('click', function () {
+            that.reportCutlist();
+            this.blur();
+        });
+        this.$btnOptions.on('click', function () {
+            that.editOptions();
             this.blur();
         });
         this.$itemHighlightAllParts.on('click', function () {
@@ -2513,16 +3148,12 @@
             this.blur();
         });
         this.$itemExpendAll.on('click', function () {
-            that.expandAllFoldingPart();
+            that.expandAllFoldingRows();
             $(this).blur();
         });
         this.$itemCollapseAll.on('click', function () {
-            that.collapseAllFoldingPart();
+            that.collapseAllFoldingRows();
             $(this).blur();
-        });
-        this.$itemOptions.on('click', function () {
-            that.editOptions();
-            this.blur();
         });
 
         // Events
@@ -2544,6 +3175,11 @@
                 that.showObsolete('core.event.options_change', true);
             }
         });
+        addEventCallback('on_model_preset_changed', function (params) {
+            if (that.generateAt && params.dictionary === 'settings_model') {
+                that.showObsolete('core.event.options_change', true);
+            }
+        });
         addEventCallback([ 'on_material_remove', 'on_material_change' ], function () {
             if (!that.ignoreNextMaterialEvents) {
                 if (that.generateAt) {
@@ -2551,7 +3187,7 @@
                 }
             }
         });
-        addEventCallback([ 'on_selection_bulk_change', 'on_selection_cleared' ], function () {
+        addEventCallback([ 'on_selection_bulk_change', 'on_selection_cleared', 'on_pages_contents_modified' ], function () {
             if (that.generateAt) {
                 that.showObsolete('core.event.selection_change');
             }
@@ -2559,37 +3195,12 @@
 
     };
 
-    LadbTabCutlist.prototype.init = function (initializedCallback) {
+    LadbTabCutlist.prototype.processInitializedCallback = function (initializedCallback) {
         var that = this;
-
-        // Register commands
-        this.registerCommand('generate_cutlist', function (parameters) {
-            var callback = parameters ? parameters.callback : null;
-            setTimeout(function () {     // Use setTimer to give time tu UI to refresh
-                that.generateCutlist(callback);
-            }, 1);
-        });
-        this.registerCommand('edit_part', function (parameters) {
-            var partId = parameters.part_id;
-            var partSerializedPath = parameters.part_serialized_path;
-            var tab = parameters.tab;
-            setTimeout(function () {     // Use setTimer to give time tu UI to refresh
-                that.generateCutlist(function () {
-                    that.editPart(partId, partSerializedPath, tab);
-                });
-            }, 1);
-        });
 
         // Load Options
         this.loadOptions(function () {
-
-            that.bind();
-
-            // Callback
-            if (initializedCallback && typeof(initializedCallback) == 'function') {
-                initializedCallback(that.$element);
-            }
-
+            LadbAbstractTab.prototype.processInitializedCallback.call(that, initializedCallback);
         });
 
     };
@@ -2601,16 +3212,16 @@
     function Plugin(option, params) {
         return this.each(function () {
             var $this = $(this);
-            var data = $this.data('ladb.tabCutlist');
-            var options = $.extend({}, LadbTabCutlist.DEFAULTS, $this.data(), typeof option == 'object' && option);
+            var data = $this.data('ladb.tab.plugin');
+            var options = $.extend({}, LadbTabCutlist.DEFAULTS, $this.data(), typeof option === 'object' && option);
 
             if (!data) {
-                if (undefined === options.opencutlist) {
-                    throw 'opencutlist option is mandatory.';
+                if (undefined === options.dialog) {
+                    throw 'dialog option is mandatory.';
                 }
-                $this.data('ladb.tabCutlist', (data = new LadbTabCutlist(this, options, options.opencutlist)));
+                $this.data('ladb.tab.plugin', (data = new LadbTabCutlist(this, options, options.dialog)));
             }
-            if (typeof option == 'string') {
+            if (typeof option === 'string') {
                 data[option].apply(data, Array.isArray(params) ? params : [ params ])
             } else {
                 data.init(option.initializedCallback);

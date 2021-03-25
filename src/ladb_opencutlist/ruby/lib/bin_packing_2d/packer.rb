@@ -1,468 +1,600 @@
 module Ladb::OpenCutList::BinPacking2D
 
+  #
+  # Core computing for 2D Bin Packing.
+  #
   class Packer < Packing2D
 
-    attr_accessor :saw_kerf, :original_bins, :unplaced_boxes, :unused_bins, :score, :split, :performance
+    # Array of input bins and boxes.
+    attr_reader :bins, :boxes
+
+    # Maximum sizes for stacking into the current Bin.
+    attr_reader :stacking_maxlength, :stacking_maxwidth
+
+    # Running index for all Bins, zero based.
+    attr_reader :next_bin_index
+
+    # Number of valid Boxes at start.
+    attr_reader :nb_input_boxes
+
+    # List of valid Boxes at start.
+    attr_reader :nb_valid_boxes
+
+    # List of unplaced boxes because too large to fit or because
+    # of a lack of available Bins.
+    attr_reader :unplaced_boxes
+
+    # List of Boxes that cannot be placed into the current Bin.
+    attr_reader :invalid_boxes
+
+    # List of Bins that have been used in packing.
+    attr_accessor :packed_bins
+
+    # List of Bins that were not used for packing.
+    attr_reader :unused_bins
+
+    # List of Bins that were deemed invalid for packing.
+    attr_reader :invalid_bins
+
+    # Statistic objects for this packing.
+    attr_reader :stat, :gstat
+
+    # Link to previous packer, one is used per bin.
+    # N-th packer is linked to previous packer.
+    attr_reader :previous_packer
 
     def initialize(options)
-      @saw_kerf = options.saw_kerf
-      @trimsize = options.trimming
-      @rotatable = options.rotatable
-      @score = -1
-      @split = -1
+      super
 
-      @original_bins = []
-      @unplaced_boxes = []
+      @bins = []
+      @next_bin_index = 0
+      @packed_bins = []
       @unused_bins = []
+      @invalid_bins = []
 
-      @b_x = 0
-      @b_y = 0
-      @b_w = 0
-      @b_l = 0
+      @boxes = []
+      @unplaced_boxes = []
+      @invalid_boxes = []
+
       @stacking_maxlength = 0
       @stacking_maxwidth = 0
 
-      @performance = nil
+      @previous_packer = nil
+
+      # Statistics per Packer, points to current_bin.
+      @stat = nil
+
+      # Statistics collected for final report.
+      @gstat = {}
+      @gstat[:nb_input_boxes] = 0
+      @gstat[:nb_packed_boxes] = 0
+      @gstat[:nb_invalid_boxes] = 0
+      @gstat[:nb_packed_bins] = 0
+      @gstat[:nb_unused_bins] = 0
+      @gstat[:nb_invalid_bins] = 0
+      @gstat[:nb_leftovers] = 0
+      @gstat[:total_length_cuts] = 0
+      @gstat[:total_nb_cuts] = 0
+      @gstat[:nb_through_cuts] = 0
+      @gstat[:total_l_measure] = 0
+      @gstat[:area_unplaced_boxes] = 0
+      @gstat[:all_largest_area] = 0
+      @gstat[:largest_bottom_parts] = 0
+      @gstat[:rank] = 0
     end
 
-    # Pack boxes in available bins with given heuristics for the
-    # in placement (score) and splitting (split).
-    # If stacking is desired, then preprocess/postprocess supergroups.
     #
-    def pack(bins, boxes, score, split, options)
-      s = Score.new
-      @score = score
-      @split = split
+    # Links this packer to a previous packer, i.e.
+    # takes over unplaced_boxes, invalid_boxes, unused bins
+    # and packed bins.
+    # Must make deep copies of unplaced boxes and unused bins
+    # because these will be used in multiple packings.
+    #
+    def link_to(previous_packer)
+      # Previous_packer is never nil?
+      @previous_packer = previous_packer
+      @next_bin_index = previous_packer.next_bin_index
 
-      # remember original length/width of first bin, aka reference bin
-      @b_l = options.base_bin_length
-      @b_w = options.base_bin_width
-      @b_x = 0
-      @b_y = 0
-
-      # bins are numbered in sequence, this is the next available index
-      if bins.nil? || bins.empty?
-        next_bin_index = 0
-        # make sure we have at least one panel, otherwise stacking will try to break
-        # stacks just for fun and give suboptimal solutions
-        bins << Bin.new(@b_l, @b_w, @b_x, @b_y, next_bin_index, BIN_TYPE_AUTO_GENERATED)
-        next_bin_index += 1
-      else
-        bins.each do |bin|
-          @stacking_maxlength = bin.length unless bin.length <= @stacking_maxlength
-          @stacking_maxwidth = bin.width unless bin.width <= @stacking_maxwidth
-        end
-        next_bin_index = bins.length
+      # Packed bins will not get modified anymore, no need to make own instances
+      @previous_packer.packed_bins.each do |bin|
+        @packed_bins << bin
       end
 
-      # keep a copy of the original bins to collect all relevant info
-      unless bins.empty?
-        bins.each do |bin|
-          b = bin.get_copy
-          # the original bins are not cleaned but they know about the trimming size
-          b.trimsize = @trimsize
-          b.trimmed = true
-          @original_bins << b
-          # trim bins, this reduces the available space
-          bin.trim_rough_bin(@trimsize)
-        end
+      # Make copies of unused bins so that each packer has its own instances
+      @previous_packer.unused_bins.each do |bin|
+        new_bin = Bin.new(bin.length, bin.width, bin.type, @options, 0)
+        @next_bin_index = new_bin.set_index(bin.index)
+        @bins << new_bin
       end
 
-      # remove boxes that are too large to fit a single bin
-      boxes = remove_too_large_boxes(boxes, bins)
-
-      # preprocess supergroups
-      boxes = preprocess_supergroups(boxes, options.stacking) if options.stacking != STACKING_NONE
-
-      # sort boxes width/length decreasing (other heuristics like
-      # by decreasing area/perimeter would also be possible)
-      case options.presort
-        when PRESORT_WIDTH_DECR
-          boxes = boxes.sort_by { |b| [b.width, b.length] }.reverse
-        when PRESORT_LENGTH_DECR
-          boxes = boxes.sort_by { |b| [b.length, b.width] }.reverse
-        when PRESORT_AREA_DECR
-          boxes = boxes.sort_by { |b| [b.width * b.length] }.reverse
-        when PRESORT_PERIMETER_DECR
-          boxes = boxes.sort_by { |b| [b.length + b.width] }.reverse
-        when PRESORT_INPUT_ORDER
-          # do nothing
-        else
-          boxes = boxes.sort_by { |b| [b.width, b.length] }.reverse
+      # Theses bins will not be used anymore, thus no need to clone them.
+      @previous_packer.invalid_bins.each do |bin|
+        @invalid_bins << bin
       end
 
-      until boxes.empty?
-        # get next box to place
-        # alternating between big and small boxes might be an idea?
-        box = boxes.shift
-
-        # find best position for given box in collection of bins
-        i, using_rotated = s.find_position_for_box(box, bins, @rotatable, @score)
-        if i == -1
-          if options.bbox_optimization == BBOX_OPTIMIZATION_ALWAYS
-            assign_leftovers_to_bins(bins, @original_bins)
-            postprocess_bounding_box(@original_bins, box)
-            bins = collect_leftovers(@original_bins)
-            i, using_rotated = s.find_position_for_box(box, bins, @rotatable, @score)
-          end
-          if i == -1
-            if options.stacking != STACKING_NONE && options.break_stacking_if_needed
-              # try to break up this box if it is a supergroup
-              if box.is_superbox
-                sboxes = box.break_up_supergroup
-                boxes += sboxes
-                next
-              end
-              # FIXME in 1.5.1 it would be nice to only break up part of the superbox
-              #if box.is_superbox
-              #  sboxes = box.reduce_supergroup(@saw_kerf)
-              #  boxes.unshift(*sboxes) # prepend the boxes, this does not guarantee that order is preserved
-              #  next
-              #end
-            end
-            # only create a new bin if this box will fit into it
-            if box.fits_into_bin?(@b_l, @b_w, @trimsize, @rotatable)
-              cs = Bin.new(@b_l, @b_w, @b_x, @b_y, next_bin_index, BIN_TYPE_AUTO_GENERATED)
-              cs.trimsize = @trimsize
-              cs.trimmed = true
-              @original_bins << cs.get_copy
-              cs.trim_rough_bin(@trimsize)
-              next_bin_index += 1
-            else
-              # this will never happen if the above FIXME is not implemented, because
-              # the superbox will have been brocken down by now
-              if box.is_superbox
-                #sboxes = box.break_up_supergroup()
-                #@unplaced_boxes.unshift(*sboxes)
-                @unplaced_boxes << box
-              else
-                @unplaced_boxes << box
-              end
-              next
-            end
-          else
-            box.rotate if using_rotated
-            cs = bins[i]
-            bins.delete_at(i)
-          end
-        else
-          box.rotate if using_rotated
-          cs = bins[i]
-          bins.delete_at(i)
-        end
-
-        # the box will be placed at the top/left corner of the bin, get its index
-        # and added to the original bin
-        box.set_position(cs.x, cs.y)
-        @original_bins[cs.index].add_box(box)
-
-        # split horizontally first
-        if cs.split_horizontally_first?(box, @split)
-          if box.width < cs.width # this will split into top (contains the box), bottom (goes to leftover)
-            cs, sb = cs.split_horizontally(box.width, @saw_kerf)
-            @original_bins[cs.index].add_cut(Cut.new(cs.x, cs.y + box.width, cs.length, true))
-            # leftover returns to bins
-            bins << sb
-          end
-          if box.length < cs.length # this will split into left (the box), right (goes to leftover)
-            cs, sr = cs.split_vertically(box.length, @saw_kerf)
-            @original_bins[cs.index].add_cut(Cut.new(cs.x + box.length, cs.y, cs.width, false))
-            bins << sr
-          end
-        else
-          if box.length < cs.length # this will split into left (containes the box), right (goes to leftover)
-            cs, sr = cs.split_vertically(box.length, @saw_kerf)
-            @original_bins[cs.index].add_cut(Cut.new(cs.x + box.length, cs.y, cs.width, false))
-            bins << sr
-          end
-          if box.width < cs.width # this will split into top (the box), bottom (goes to leftover)
-            cs, sb = cs.split_horizontally(box.width, @saw_kerf)
-            @original_bins[cs.index].add_cut(Cut.new(cs.x, cs.y + box.width, cs.length, true))
-            bins << sb
-          end
-        end
-        # cs is the piece of bin that contains exactly the box, but is not used since the box has already been added
+      # Make copies of unplaced boxes so that each packer has its own instances.
+      @previous_packer.unplaced_boxes.each do |box|
+        new_box = Box.new(box.length, box.width, box.rotatable, box.data)
+        new_box.set_rotated if box.rotated?
+        @boxes << new_box
       end
 
-      # postprocess supergroups: boxes in @original_bins.boxes
-      postprocess_supergroups(@original_bins, options.stacking) if options.stacking != STACKING_NONE
+      # Invalid boxes for one bin, may be valid for the next bin.
+      @previous_packer.invalid_boxes.each do |box|
+        new_box = Box.new(box.length, box.width, box.rotatable, box.data)
+        @boxes << new_box
+      end
 
-      # assign leftovers to the original bins, here mainly for drawing purpose
-      assign_leftovers_to_bins(bins, @original_bins)
-
-      # compute the bounding box and fix bottom and right leftovers
-      postprocess_bounding_box(@original_bins) if options.bbox_optimization != BBOX_OPTIMIZATION_NONE
-
-      # unpacked boxes are in @unpacked_boxes
-
-      @performance = get_performance
+      # Update start statistics for this packer
+      @gstat[:nb_input_boxes] = @previous_packer.gstat[:nb_input_boxes]
+      @gstat[:nb_leftovers] = @previous_packer.gstat[:nb_leftovers]
+      @gstat[:nb_packed_boxes] = @previous_packer.gstat[:nb_packed_boxes]
+      @gstat[:total_length_cuts] = @previous_packer.gstat[:total_length_cuts]
+      @gstat[:total_nb_cuts] = @previous_packer.gstat[:total_nb_cuts]
+      @gstat[:nb_through_cuts] = @previous_packer.gstat[:nb_through_cuts]
+      @gstat[:all_largest_area] = @previous_packer.gstat[:all_largest_area]
+      @gstat[:total_l_measure] = @previous_packer.gstat[:total_l_measure]
     end
 
-    private
-
-    # Preprocess boxes by turning them into supergroups, that is
-    # into length or width stripes of identical boxes up to the
-    # maximum length of the standard bin
     #
-    def preprocess_supergroups(boxes, stacking)
-      sboxes = []
+    # Adds a Bin to this Packer.
+    #
+    def add_bin(bin)
+      @bins << bin
+      @next_bin_index += 1 if @previous_packer.nil?
+    end
 
-      if stacking == STACKING_LENGTH
-        maxlength = [(@b_l - 2 * @trimsize).abs, (@stacking_maxlength - 2 * @trimsize).abs].max
-        # compute groups of same width and stack them lengthwise
-        # up to maxlength
-        width_groups = boxes.group_by { |b| [b.width] }
-        width_groups.each do |k, v|
-          if v.length() > 1
-            v = v.sort_by { |b| [b.length] }.reverse
-            superbox = Box.new(0, k[0])
-            until v.empty?
-              box = v.shift
-              if box.length <= maxlength
-                # try to stack it, if it fails
-                if !superbox.stack_length(box, @saw_kerf, maxlength)
-                  # close this superbox
-                  sboxes << superbox
-                  # and create a new one
-                  superbox = Box.new(0, k[0])
-                  # this should alway succeed, because box.length <= maxlength
-                  superbox.stack_length(box, @saw_kerf, maxlength)
-                end
-              else
-                # box is larger than the maxlength to stack, let packer handle it
-                sboxes << box
-              end
-            end
-            # close the last superbox created if it is not empty
-            if superbox.sboxes.length() > 0
-              sboxes << superbox
-            end
-           else
-            sboxes << v[0]
-          end
+    #
+    # Adds a Box to this Packer.
+    #
+    def add_box(box)
+      @boxes << box
+    end
+
+    #
+    # Adds a list of invalid Boxes (too large to fit any Bin) to this Packer.
+    # TODO: We do not yet make a distinction between invalid and unplaceable box in the GUI.
+    #
+    def add_invalid_boxes(invalid_boxes)
+      @invalid_boxes += invalid_boxes
+      gstat[:nb_invalid_boxes] += invalid_boxes.size
+      @unplaced_boxes += invalid_boxes
+    end
+
+    def add_invalid_bins(invalid_bins)
+      @invalid_bins += invalid_bins
+      gstat[:nb_invalid_bins] += invalid_bins.size
+      @unused_bins += invalid_bins
+    end
+
+    #
+    # Returns true if standard Bins can be infinitely added.
+    #
+    def bins_can_be_added?
+      (@options.base_length - 2 * @options.trimsize > EPS && @options.base_width - 2 * @options.trimsize > EPS) || !@bins.empty?
+    end
+
+    #
+    # Presorts the boxes to be packed.
+    #
+    def sort_boxes
+      case @options.presort
+      when PRESORT_WIDTH_DECR
+        @boxes.sort_by! { |box| [-box.width, -box.length] }
+      when PRESORT_LENGTH_DECR
+        @boxes.sort_by! { |box| [-box.length, -box.width] }
+      when PRESORT_AREA_DECR
+        @boxes.sort_by! { |box| [-box.width * box.length, -box.length] }
+      when PRESORT_LONGEST_SIDE_DECR
+        @boxes.sort_by! { |box| [-[box.length, box.width].max, [box.length, box.width].max] }
+      when PRESORT_SHORTEST_SIDE_DECR
+        @boxes.sort_by! { |box| [-[box.length, box.width].min, [box.length, box.width].max] }
+      when PRESORT_PERIMETER_DECR
+        @boxes.sort_by! { |box| [-box.length - box.width, -box.length] }
+      when PRESORT_ALTERNATING_WIDTHS
+        w_max = @boxes.max_by(&:width)
+        wl, ws = @boxes.partition { |box| box.width >= (@_maxwidth - w_max.width) }
+        wl.sort_by! { |box| -box.width }
+        ws.sort_by! { |box| -box.width }
+        if wl.empty? || ws.empty?
+          @options.presort = PRESORT_WIDTH_DECR
+          sort_boxes
+        elsif ws.size >= wl.size
+          @boxes = ws.zip(wl).flatten!.compact
+        else
+          @boxes = wl.zip(ws).flatten!.compact
+        end
+      when PRESORT_ALTERNATING_LENGTHS
+        l_max = @boxes.max_by(&:length)
+        ll, ls = @boxes.partition { |box| box.length >= (@_maxlength - l_max.length) }
+        ll.sort_by! { |box| -box.length }
+        ls.sort_by! { |box| -box.length }
+        if ll.empty? || ls.empty?
+          @options.presort = PRESORT_ALTERNATING_WIDTHS
+          sort_boxes
+        elsif ls.size >= ll.size
+          @boxes = ls.zip(ll).flatten!.compact
+        else
+          @boxes = ll.zip(ls).flatten!.compact
         end
       else
-        maxwidth = [(@b_w - 2 * @trimsize).abs, (@stacking_maxwidth - 2 * @trimsize).abs].max
-        # make groups of same length and stack them widthwise
-        # up to maxwidth
-        length_groups = boxes.group_by { |b| [b.length] }
-        length_groups.each do |k, v|
-          if v.length() > 1
-            v = v.sort_by { |b| [b.width] }.reverse
-            superbox = Box.new(k[0], 0)
-            until v.empty?
-              box = v.shift
-                if box.width <= maxwidth
-                  if !superbox.stack_width(box, @saw_kerf, maxwidth)
-                    sboxes << superbox
-                    superbox = Box.new(k[0], 0)
-                    superbox.stack_width(box, @saw_kerf, maxwidth)
-                  end
-                else
-                  sboxes << box
-                end
-              end
-              if superbox.sboxes.length() > 0
-                sboxes << superbox
-              end
-           else
-            sboxes << v[0]
-          end
-        end
-      end
-      return sboxes
-    end
-
-    # Postprocess supergroups by extracting the original boxes from the
-    # superboxes and adding the necessary cuts.
-    #
-    # This function will change the instance variables
-    # @cuts and @boxes from each bin in bins
-    #
-    def postprocess_supergroups(bins, stacking)
-      if stacking == STACKING_LENGTH
-        bins.each do |bin|
-          new_boxes = []
-          bin.boxes.each do |sbox|
-            if sbox.is_superbox
-              x = sbox.x
-              y = sbox.y
-              cut_counts = sbox.sboxes.length() - 1
-              sbox.sboxes.each do |b|
-                b.set_position(x, y)
-                if sbox.rotated
-                  b.rotate
-                  y += b.width + @saw_kerf
-                  if cut_counts > 0
-                    bin.add_cut(Cut.new(b.x, b.y + b.width, b.length, true, false))
-                    cut_counts = cut_counts - 1
-                  end
-                else
-                  x += b.length + @saw_kerf
-                  if cut_counts > 0
-                    bin.add_cut(Cut.new(b.x + b.length, b.y, b.width, false, false))
-                    cut_counts = cut_counts - 1
-                  end
-                end
-                new_boxes << b
-              end
-            else
-              new_boxes << sbox
-            end
-          end
-          bin.boxes = new_boxes
-        end
-      else
-        bins.each do |bin|
-          new_boxes = []
-          bin.boxes.each do |sbox|
-            if sbox.is_superbox
-              x = sbox.x
-              y = sbox.y
-              cut_counts = sbox.sboxes.length() - 1
-              sbox.sboxes.each do |b|
-                b.set_position(x, y)
-                if sbox.rotated
-                  b.rotate
-                  x += b.length + @saw_kerf
-                  if cut_counts > 0
-                    bin.add_cut(Cut.new(b.x + b.length, b.y, b.width, false, false))
-                    cut_counts = cut_counts - 1
-                  end
-                else
-                  y += b.width + @saw_kerf
-                  if cut_counts > 0
-                    bin.add_cut(Cut.new(b.x, b.y + b.width, b.length, true, false))
-                    cut_counts = cut_counts - 1
-                  end
-                end
-                new_boxes << b
-              end
-            else
-              new_boxes << sbox
-            end
-          end
-          bin.boxes = new_boxes
-        end
+        raise(Packing2DError, "Presorting option not available in packer.sort_boxes!")
       end
     end
 
-    # Postprocess bounding boxes because some length/width cuts may go
-    # through the entire bin, but are not necessary.
-    # This function trims the lower/right side of the bin by producing
-    # a longer bottom part and a shorter vertical right side part or
-    # inversely.
     #
-    # THIS is also a good place to remove too small boxes (< 2*saw_kerf)
-    # which are really waste and not leftovers
+    # Takes boxes with same length/width and tries to stack them so
+    # that they will be placed as a single box, horizontally or vertically, thus
+    # reducing the number of cuts.
+    # TODO: try to rebalance stacks, this leads to more compact bounding boxes!
     #
-    def postprocess_bounding_box(bins, box = nil)
-      # box is optional and will be used to decide how to split
-      # the bottom/right part of the bounding box, depending on a
-      # next candidate box.
-      bins.each do |bin|
-        bin.crop_to_bounding_box(@saw_kerf, box)
-      end
-    end
-
-    # Assign leftovers to original bins.
-    # This function will be called at least once at the end of packing
-    #
-    def assign_leftovers_to_bins(bins, original_bins)
-
-      # add the leftovers (bin in bins) to the parent bin, but only if
-      # they are larger and longer than the saw_kerf
-      original_bins.each_with_index do |bin, index|
-        bin.leftovers = []
-        bins.each do |b|
-          if b.index == index && b.width >= saw_kerf && b.length >= saw_kerf
-            bin.leftovers << b
-          end
-        end
-      end
-    end
-
-    # Collect leftovers from all original bins and return them
-    #
-    def collect_leftovers(original_bins)
-      leftovers = []
-      original_bins.each do |bin|
-        leftovers += bin.leftovers
-      end
-      return leftovers
-    end
-
-    # Remove boxes that are too large to fit the available bins
-    # If a box only fits rotated, rotate it
-    #
-    def remove_too_large_boxes(boxes, bins)
-      standard_bin = Bin.new(@b_l, @b_w, 0, 0, 0, BIN_TYPE_AUTO_GENERATED)
-      boxes_that_fit = []
-      boxes.each_with_index do |box, i|
-        box_fits = false
-        bins.each do |bin|
-          if bin.encloses?(box)
-            box_fits = true
-          elsif (@rotatable && bin.encloses_rotated?(box))
-            box.rotate
-            box_fits = true
-          end
-        end
-        if box_fits
-          boxes_that_fit << box
-        elsif standard_bin.encloses?(box)
-          boxes_that_fit << box
-        elsif (@rotatable && standard_bin.encloses_rotated?(box))
+    def make_superboxes_length
+      # Trying to make them as long as possible
+      @boxes.each do |box|
+        if box.rotatable && box.length < box.width
           box.rotate
-          boxes_that_fit << box
-        else
-          @unplaced_boxes << box
         end
       end
-      return boxes_that_fit
+
+      # Stack the boxes by decreasing length.
+      @boxes.sort_by!(&:length).reverse!
+
+      sboxes = []
+      until @boxes.empty?
+        sbox = SuperBox.new(@stacking_maxlength, @stacking_maxwidth, @options.saw_kerf)
+        sbox.add_first_box(@boxes.shift)
+        sboxes << sbox
+        @boxes = sbox.stack_length(@boxes) unless @boxes.empty?
+      end
+      @boxes = sboxes
     end
 
-    # Compute some statistics that will be stored in the
-    # performance object
     #
-    def get_performance
-      largest_bin = nil
-      largest_area = 0
-
-      p = Performance.new
-
-      bins = []
-      
-      # we split the bins into ones that contain boxes and ones
-      # that do not contain boxes
-      @original_bins.each do |bin|
-        if bin.boxes.empty? # a bin without boxes has not been used
-          @unused_bins << bin
-        else
-          p.nb_boxes_packed += bin.boxes.length
-          p.nb_leftovers += bin.leftovers.length
-          bin.total_cutlengths
-          bin.leftovers.each do |b|
-            a = b.area
-            if a > largest_area
-              largest_bin = b
-              largest_area = a
-            end
-          end
-          bin.compute_efficiency
-
-          bins << bin
-        end
+    # Takes boxes with same length/width and tries to stack them so
+    # that they will be placed as a single box.
+    #
+    def make_superboxes_width
+      # Trying to make them as wide as possible
+      @boxes.each do |box|
+        box.rotate if box.rotatable && box.width < box.length
       end
-      @original_bins = bins
 
-      p.largest_leftover_length = largest_bin.length unless largest_bin.nil?
-      p.largest_leftover_width = largest_bin.width unless largest_bin.nil?
+      # Start with width decreasing!
+      @boxes.sort_by!(&:width).reverse!
 
-      p.nb_bins = @original_bins.length
-      return p
+      sboxes = []
+      until @boxes.empty?
+        box = @boxes.shift
+        sbox = SuperBox.new(@stacking_maxlength, @stacking_maxwidth, @options.saw_kerf)
+        sbox.add_first_box(box)
+        sboxes << sbox
+        @boxes = sbox.stack_width(@boxes) unless @boxes.empty?
+      end
+      @boxes = sboxes
     end
 
-  end
+    #
+    # Unmakes all superboxes.
+    # This must be done at the end of packing and between packings, to restore
+    # unpacked boxes to their original state .
+    #
+    def unmake_superboxes(unplaced_boxes)
+      exploded_boxes = []
+      unplaced_boxes.each do |box|
+        if box.is_a?(SuperBox)
+          exploded_boxes += box.sboxes
+        else
+          exploded_boxes << box
+        end
+      end
+      exploded_boxes
+    end
 
+    #
+    # Preprocesses the list of Boxes by
+    # . removing Boxes that are too large and place them into @unplaced_boxes
+    # . stack bins if options is on
+    # . presort parts for packing
+    #
+    def can_be_packed?(current_bin)
+      return false if current_bin.nil?
+
+      # Compute maximal stacking length/width.
+      @stacking_maxlength = current_bin.length - 2 * @options.trimsize
+      @stacking_maxwidth = current_bin.width - 2 * @options.trimsize
+
+      # Depending on Bin, some Boxes may be placeable.
+      @boxes += @invalid_boxes
+      @invalid_boxes = []
+      @boxes, @invalid_boxes = @boxes.partition { |box| box.fits_into?(@stacking_maxlength, @stacking_maxwidth) }
+
+      return false if @boxes.empty?
+
+      case @options.stacking
+      when STACKING_LENGTH
+        make_superboxes_length
+      when STACKING_WIDTH
+        make_superboxes_width
+      end
+      sort_boxes
+
+      true
+    end
+
+    #
+    # Gets the next available bin from the offcuts or produce one.
+    #
+    def get_next_bin
+      bin = nil
+      if !@bins.empty?
+        bin = @bins.shift
+      elsif bins_can_be_added?
+        bin = Bin.new(@options.base_length, @options.base_width, BIN_TYPE_AUTO_GENERATED, @options)
+        @next_bin_index = bin.set_index(@next_bin_index)
+      end
+      bin
+    end
+
+    #
+    # Top level packing algorithm for a single Bin.
+    #
+    def pack
+      # Remember the number of valid input boxes. Invalid boxes have been
+      # removed by Packengine and will be re-added at the end.
+      @gstat[:nb_input_boxes] = @boxes.size if @previous_packer.nil?
+
+      current_bin = nil
+      nb_packed_boxes = 0
+      loop do
+        # Get the next Bin. If there are offcuts, this will be the smallest
+        # in area, if not it will be a standard Bin, or nil if no Bin can be
+        # produced. At this point we do not yet have Superboxes!
+        current_bin = get_next_bin
+        # Packing cannot proceed, return with what we have.
+        return ERROR_NO_PLACEMENT_POSSIBLE if current_bin.nil?
+        # Partition the Boxes into @boxes and @invalid_boxes, those that cannot
+        # fit into this bin, also makes SuperBoxes if required.
+        if can_be_packed?(current_bin)
+          nb_packed_boxes = pack_single(current_bin)
+          # @boxes contains all Boxes that have NOT been placed, they may be
+          # Superboxes. This packer is now done!
+
+          if nb_packed_boxes > 0
+            current_bin.final_bounding_box
+            current_bin.keep_signature(@options.signature)
+            @packed_bins << current_bin
+            @unplaced_boxes = unmake_superboxes(@boxes)
+            if !@invalid_boxes.empty?
+              @unplaced_boxes += @invalid_boxes
+              @invalid_boxes = []
+            end
+            postprocess(current_bin)
+            @unused_bins += @bins
+            @bins = []
+            @boxes = []
+            return ERROR_NONE
+          end
+        elsif current_bin.type == BIN_TYPE_USER_DEFINED
+          # Boxes cannot fit into Bin, mark this Bin as unused.
+          @invalid_bins << current_bin
+          @boxes = unmake_superboxes(@boxes)
+          if !bins_can_be_added?
+            # We are done with packing.
+            @unplaced_boxes = @boxes
+            if !@invalid_boxes.empty?
+              @unplaced_boxes += @invalid_boxes
+              @invalid_boxes = []
+            end
+            @boxes = []
+            return ERROR_NO_BIN
+          end
+          @boxes += @invalid_boxes
+        else
+          # Silently drop the last Bin, not used.
+          return ERROR_NO_BIN
+        end
+      end
+      ERROR_NO_PLACEMENT_POSSIBLE
+    end
+
+    #
+    # Packs boxes into a single bin, returns unused boxes.
+    #
+    def pack_single(current_bin)
+      nb_placed_boxes = 0
+      # List of boxes that could not be placed during this run.
+      unused_boxes = []
+
+      previous_box = nil
+      begin
+        until @boxes.empty?
+          # Select next box and get ranked score from current_bin.
+          box = @boxes.shift
+
+          # Recompute bounding box, while packing!
+          # Remove this until version 2.1 and further tests.
+=begin
+          if current_bin.boxes.size > 1 && box.different?(previous_box)
+            current_bin.bounding_box(box, false)
+            # This would be a good place to make a rectangle merge, but
+            # 26.txt shows that this is not possible!
+            # Only recompute bounding box when no merge is possible!
+          end
+=end
+          score = current_bin.best_ranked_score(box)
+
+          # No placement possible in current bin.
+          if score.nil?
+            #
+            # Step 1: if this box is a superbox, reduce it by one. Push
+            #         remaining superbox back onto the stack of boxes.
+            #
+            if box.is_a?(SuperBox)
+              front, sbox = box.reduce
+              # Push the remaining sbox back onto the stack, it was not consumed
+              @boxes.unshift(sbox) unless sbox.nil?
+              @boxes.unshift(front)
+            else
+              unused_boxes << box
+            end
+            #
+            # At least one score was found, so there is a leftover or bin with
+            # space for the current box.
+            #
+          else
+            # Safety nets, should never happen!
+            raise(Packing2DError, "No bin in packer.pack to add to #{@options.signature}!") if current_bin.nil?
+            raise(Packing2DError, "No box in packer.pack to add #{@options.signature}!") if box.nil?
+
+            leftover_index = score[0]
+            box.rotate if score[2] == ROTATED
+            # Caution! once the box has been placed, the leftover index is NOT VALID anymore!
+            current_bin.add_box(box, leftover_index)
+            previous_box = box
+            nb_placed_boxes += 1
+          end
+        end
+      rescue Packing2DError => e
+        puts("Running signature #{@options.signature}")
+        puts("Rescued in Packer #{e.inspect}")
+        puts(e.backtrace)
+        return ERROR_BAD_ERROR
+      end
+
+      @boxes = unused_boxes
+      nb_placed_boxes
+    end
+
+    #
+    # Collects all pieces per bin, runs statistics.
+    # TODO: packer.postprocess verify that we havent lost any boxes in the packing process
+    #
+    def postprocess(current_bin)
+      current_bin.summarize
+      # Get statistics from Bin, add our own.
+      @stat = current_bin.stat
+      @gstat[:area_unplaced_boxes] = @unplaced_boxes.inject(0) { |sum, box| sum + box.area }
+      @gstat[:nb_unplaced_boxes] = @unplaced_boxes.size
+      @gstat[:nb_invalid_boxes] += @invalid_boxes.size
+      @gstat[:area_unplaced_boxes] += @invalid_boxes.inject(0) { |sum, box| sum + box.area }
+      @gstat[:nb_packed_bins] = @packed_bins.size
+      @gstat[:nb_unused_bins] = @unused_bins.size
+      @gstat[:nb_leftovers] += current_bin.stat[:nb_leftovers]
+      @gstat[:nb_packed_boxes] += current_bin.stat[:nb_packed_boxes]
+      @gstat[:nb_invalid_bins] += @invalid_bins.size
+      @gstat[:total_length_cuts] += @stat[:length_cuts]
+      @gstat[:total_nb_cuts] += @stat[:nb_cuts]
+      @gstat[:nb_through_cuts] += @stat[:nb_h_through_cuts] + @stat[:nb_v_through_cuts]
+      @gstat[:total_l_measure] += @stat[:l_measure]
+      @gstat[:all_largest_area] += current_bin.stat[:outer_leftover_area]
+      @gstat[:largest_bottom_parts] += current_bin.stat[:largest_bottom_part]
+    end
+
+    #
+    # Checks if all Boxes
+    #
+    def no_box_left_behind(must_have_nb)
+      have_nb = @gstat[:nb_packed_boxes] + @gstat[:nb_invalid_boxes] + @gstat[:nb_unplaced_boxes]
+      if have_nb != must_have_nb
+        p(to_str)
+        raise(Packing2DError, "Lost boxes in packing process have=#{have_nb} <> must_have=#{must_have_nb}!")
+      end
+    end
+
+    def all_signatures
+      @packed_bins.each do |bin|
+        dbg("#{bin.stat[:signature]}, L=#{bin.length}, W=#{bin.width}")
+      end
+    end
+
+    #
+    # Sorts used bins by efficiency. Done by interface, currently unused
+    # (see packengine.rb).
+    #
+    def sort_bins_by_efficiency
+      @packed_bins.sort_by! { |bin| -bin.stat[:efficiency] }
+    end
+
+    #
+    # Debugging! Prints stuff to terminal.
+    #
+    def to_str
+      debug_old = @options.debug
+      @options.set_debug(true)
+
+      dbg("-> Packing Summary")
+      @packed_bins.each do |bin|
+        dbg("\n   single packer stats #{bin.index}")
+        dbg("    nb_packed_boxes            #{"%5d" % bin.stat[:nb_packed_boxes]}")
+        dbg("    efficiency                #{"%6.2f" % bin.stat[:efficiency]}")
+        dbg("    nb_leftovers               #{"%5d" % bin.stat[:nb_leftovers]}")
+        dbg("    outer leftover      #{"%12.2f" % bin.stat[:outer_leftover_area]}")
+        dbg("    length_cuts         #{"%12.2f" % bin.stat[:length_cuts]}")
+        dbg("    nb_cuts                    #{"%5d" % bin.stat[:nb_cuts]}")
+        dbg("    nb_h_through_cuts          #{"%5d" % bin.stat[:nb_h_through_cuts]}")
+        dbg("    nb_v_through_cuts          #{"%5d" % bin.stat[:nb_v_through_cuts]}")
+
+        dbg("\n")
+        bin.to_term
+      end
+
+      dbg("\n   general stats (accumulated)")
+      dbg("    nb_input_boxes             #{"%5d" % @gstat[:nb_input_boxes]}")
+      dbg("    nb_invalid_boxes           #{"%5d" % @gstat[:nb_invalid_boxes]}")
+      dbg("    nb_packed_boxes            #{"%5d" % @gstat[:nb_packed_boxes]}")
+      dbg("    nb_unplaced_boxes          #{"%5d" % @gstat[:nb_unplaced_boxes]}")
+      dbg("    nb_packed_bins             #{"%5d" % @gstat[:nb_packed_bins]}")
+      dbg("    nb_unused_bins             #{"%5d" % @gstat[:nb_unused_bins]}")
+      dbg("    nb_invalid_bins            #{"%5d" % @gstat[:nb_invalid_bins]}")
+      dbg("    nb_leftovers               #{"%5d" % @gstat[:nb_leftovers]}")
+      dbg("    all_largest_area    #{"%12.2f" % @gstat[:all_largest_area]}")
+      dbg("    total_length_cuts   #{"%12.2f" % @gstat[:total_length_cuts]}")
+      dbg("    total_nb_cuts              #{"%5d" % @gstat[:total_nb_cuts]}")
+      dbg("    nb_through_cuts            #{"%5d" % @gstat[:nb_through_cuts]}")
+      #dbg("    avg compactness           #{"%6.2f" % (@gstat[:total_compactness] / @gstat[:nb_packed_bins])}")
+
+      dbg("\n   unused bins")
+      @unused_bins.each do |bin|
+        dbg("    #{bin.to_str}")
+      end
+
+      dbg("\n   invalid bins")
+      @invalid_bins.each do |bin|
+        dbg("    #{bin.to_str}")
+      end
+
+      dbg("\n   unplaced boxes")
+      @unplaced_boxes.each do |box|
+        dbg("    #{box.to_str}")
+      end
+
+      dbg("\n   invalid boxes")
+      @invalid_boxes.each do |box|
+        dbg("    #{box.to_str}")
+      end
+
+      @options.set_debug(debug_old)
+    end
+
+    #
+    # Debugging!
+    #
+    def signature
+      "packer id=#{@options.signature}"
+    end
+
+    #
+    # Prints the packing as a Matlab/Octave graphics.
+    #
+    def octave(id, directory = "./results")
+      dbg("-> printing octave")
+      # FileUtils.rm_f Dir.glob("#{directory}/res*.m")
+      @packed_bins.each do |bin|
+        dbg("   bin #{bin.index}")
+        filename = "#{directory}/res_#{id}_#{bin.index}.m"
+        f = File.open(filename, "w")
+        bin.octave(f)
+      end
+    end
+  end
 end

@@ -1,0 +1,46 @@
+//
+// LADB TexinputColor
+//
+
+.ladb-textinput-color-preview {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ladb-textinput-color-picker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 2px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  background-color: #efefef;
+  z-index: 10000;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    float: left;
+
+    li {
+      display: block;
+      width: 30px;
+      height: 30px;
+      float: left;
+      cursor: pointer;
+      border: 2px solid #efefef;
+      border-radius: 5px;
+
+      &:hover {
+        border-color: @ladb-brand-primary;
+      }
+
+    }
+
+  }
+
+}
+

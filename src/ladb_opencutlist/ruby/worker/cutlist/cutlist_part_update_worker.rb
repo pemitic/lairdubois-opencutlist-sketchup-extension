@@ -15,13 +15,17 @@ module Ladb::OpenCutList
         :is_dynamic_attributes_name,
         :material_name,
         :cumulable,
+        :instance_count_by_part,
+        :mass,
+        :price,
+        :tags,
+        :orientation_locked_on_axis,
+        :symmetrical,
+        :axes_order,
+        :axes_origin_position,
         :length_increase,
         :width_increase,
         :thickness_increase,
-        :orientation_locked_on_axis,
-        :labels,
-        :axes_order,
-        :axes_origin_position,
         :edge_material_names,
         :edge_entity_ids,
         :entity_ids
@@ -38,13 +42,17 @@ module Ladb::OpenCutList
             part_data['is_dynamic_attributes_name'],
             part_data['material_name'],
             DefinitionAttributes.valid_cumulable(part_data['cumulable']),
+            part_data['instance_count_by_part'],
+            part_data['mass'],
+            part_data['price'],
+            DefinitionAttributes.valid_tags(part_data['tags']),
+            part_data['orientation_locked_on_axis'],
+            part_data['symmetrical'],
+            part_data['axes_order'],
+            part_data['axes_origin_position'],
             part_data['length_increase'],
             part_data['width_increase'],
             part_data['thickness_increase'],
-            part_data['orientation_locked_on_axis'],
-            DefinitionAttributes.valid_labels(part_data['labels']),
-            part_data['axes_order'],
-            part_data['axes_origin_position'],
             part_data['edge_material_names'],
             part_data['edge_entity_ids'],
             part_data['entity_ids']
@@ -64,6 +72,9 @@ module Ladb::OpenCutList
       model = Sketchup.active_model
       return { :errors => [ 'tab.cutlist.error.no_model' ] } unless model
 
+      # Start model modification operation
+      model.start_operation('OpenCutList - Part Update', true, false, true)
+
       definitions = model.definitions
       @parts_data.each { |part_data|
 
@@ -72,24 +83,32 @@ module Ladb::OpenCutList
         if definition
 
           # Update definition's name
-          if definition.name != part_data.name and !part_data.is_dynamic_attributes_name
+          if definition.name != part_data.name && !part_data.is_dynamic_attributes_name
             definition.name = part_data.name
           end
 
           # Update definition's attributes
           definition_attributes = DefinitionAttributes.new(definition)
           if part_data.cumulable != definition_attributes.cumulable ||
+              part_data.instance_count_by_part != definition_attributes.instance_count_by_part ||
+              part_data.mass != definition_attributes.mass ||
+              part_data.price != definition_attributes.price ||
+              part_data.orientation_locked_on_axis != definition_attributes.orientation_locked_on_axis ||
+              part_data.symmetrical != definition_attributes.symmetrical ||
+              part_data.tags != definition_attributes.tags ||
               part_data.length_increase != definition_attributes.length_increase ||
               part_data.width_increase != definition_attributes.width_increase ||
-              part_data.thickness_increase != definition_attributes.thickness_increase ||
-              part_data.orientation_locked_on_axis != definition_attributes.orientation_locked_on_axis ||
-              part_data.labels != definition_attributes.labels
+              part_data.thickness_increase != definition_attributes.thickness_increase
             definition_attributes.cumulable = part_data.cumulable
+            definition_attributes.instance_count_by_part = part_data.instance_count_by_part
+            definition_attributes.mass = part_data.mass
+            definition_attributes.price = part_data.price
+            definition_attributes.tags = part_data.tags
+            definition_attributes.orientation_locked_on_axis = part_data.orientation_locked_on_axis
+            definition_attributes.symmetrical = part_data.symmetrical
             definition_attributes.length_increase = part_data.length_increase
             definition_attributes.width_increase = part_data.width_increase
             definition_attributes.thickness_increase = part_data.thickness_increase
-            definition_attributes.orientation_locked_on_axis = part_data.orientation_locked_on_axis
-            definition_attributes.labels = part_data.labels
             definition_attributes.write_to_attributes
           end
 
@@ -101,7 +120,7 @@ module Ladb::OpenCutList
           _apply_material(part_data.edge_material_names['xmax'], part_data.edge_entity_ids['xmax'], model)
 
           # Transform part axes if axes order exist
-          if part_data.axes_order.is_a?(Array) and part_data.axes_order.length == 3
+          if part_data.axes_order.is_a?(Array) && part_data.axes_order.length == 3
 
             axes_convertor = {
                 'x' => X_AXIS,
@@ -141,14 +160,14 @@ module Ladb::OpenCutList
             bounds = _compute_faces_bounds(definition)
 
             case part_data.axes_origin_position
-              when 'min'
-                origin = bounds.min
-              when 'center'
-                origin = bounds.center
-              when 'min-center'
-                origin = Geom::Point3d.new(bounds.min.x , bounds.center.y, bounds.center.z)
-              else
-                origin = ORIGIN
+            when 'min'
+              origin = bounds.min
+            when 'center'
+              origin = bounds.center
+            when 'min-center'
+              origin = Geom::Point3d.new(bounds.min.x , bounds.center.y, bounds.center.z)
+            else
+              origin = ORIGIN
             end
 
             # Create transformations
@@ -169,6 +188,10 @@ module Ladb::OpenCutList
         end
 
       }
+
+      # Commit model modification operation
+      model.commit_operation
+
     end
 
     # -----
@@ -176,12 +199,12 @@ module Ladb::OpenCutList
     def _apply_material(material_name, entity_ids, model)
       unless entity_ids.nil?
         material = nil
-        if material_name.nil? or material_name.empty? or (material = model.materials[material_name])
+        if material_name.nil? || material_name.empty? || (material = model.materials[material_name])
 
           entity_ids.each { |entity_id|
             entity = ModelUtils::find_entity_by_id(model, entity_id)
             if entity
-              if material_name.nil? or material_name.empty?
+              if material_name.nil? || material_name.empty?
                 entity.material = nil
               elsif entity.material != material
                 entity.material = material

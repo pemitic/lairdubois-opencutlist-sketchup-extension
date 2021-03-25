@@ -83,18 +83,40 @@
     height: auto;
     overflow: hidden;
 
+    .ladb-container {
+      padding: 0;
+
+      > .container-fluid {
+        padding: 0;
+      }
+
+    }
+
+    &.print-no-header {
+      .ladb-header-wrapper {
+        display: none !important;
+      }
+    }
+
     .ladb-header-wrapper {
       height: auto !important;
     }
 
     .ladb-header {
       border-bottom: none;
+      background: none;
 
       &.stuck {
         position: relative;
         top: auto;
         left: auto;
         width: auto !important;
+      }
+
+      .ladb-heading {
+        margin: 0;
+        line-height: 1.1em;
+        font-size: 1.8em;
       }
 
     }

@@ -12,6 +12,7 @@ var md = markdownIt({
 }).use(externalLinks, {
     externalTarget: '_blank'
 });
+md.linkify.set({ fuzzyEmail: false });  // disables converting email to link
 
 var PluginError = require('plugin-error');
 

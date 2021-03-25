@@ -4,7 +4,7 @@ module Ladb::OpenCutList
 
   class GroupDef
 
-    attr_accessor :material_id, :material_name, :material_display_name, :material_type, :material_color, :material_grained, :part_count, :std_available, :std_dimension_stipped_name, :std_dimension, :std_width, :std_thickness, :max_number, :total_cutting_length, :total_cutting_area, :total_cutting_volume, :total_final_area, :invalid_final_area_part_count, :show_cutting_dimensions, :show_edges, :edge_decremented
+    attr_accessor :material_id, :material_name, :material_display_name, :material_type, :material_color, :material_grained, :part_count, :std_available, :std_dimension_stipped_name, :std_dimension, :std_dimension_real, :std_dimension_rounded, :std_width, :std_thickness, :max_number, :total_cutting_length, :total_cutting_area, :total_cutting_volume, :total_final_area, :invalid_final_area_part_count, :show_cutting_dimensions, :show_edges, :edge_decremented
     attr_reader :id, :part_defs
 
     def initialize(id)
@@ -12,12 +12,14 @@ module Ladb::OpenCutList
       @material_id = ''
       @material_name = ''
       @material_display_name = ''
-      @material_type = MaterialAttributes::TYPE_UNKNOW
+      @material_type = MaterialAttributes::TYPE_UNKNOWN
       @material_color = nil
       @material_grained = false
       @std_available = true
       @std_dimension_stipped_name = ''
       @std_dimension = ''
+      @std_dimension_real = ''
+      @std_dimension_rounded = false
       @std_width = 0
       @std_thickness = 0
       @max_number = nil
@@ -36,7 +38,7 @@ module Ladb::OpenCutList
     # -----
 
     def self.generate_group_id(material, material_attributes, std_info)
-      Digest::MD5.hexdigest("#{material.nil? ? 0 : material_attributes.uuid}#{material_attributes.type > MaterialAttributes::TYPE_UNKNOW ? '|' + std_info[:dimension] : ''}")
+      Digest::MD5.hexdigest("#{material.nil? ? 0 : material_attributes.uuid}#{material_attributes.type > MaterialAttributes::TYPE_UNKNOWN ? '|' + DimensionUtils.instance.to_ocl_precision_f(std_info[:width].to_l).to_s + 'x' + DimensionUtils.instance.to_ocl_precision_f(std_info[:thickness].to_l).to_s : ''}")
     end
 
     # -----

@@ -21,11 +21,19 @@ module Ladb::OpenCutList
       model = Sketchup.active_model
       return { :errors => [ 'tab.cutlist.error.no_model' ] } unless model
 
+      # Start model modification operation
+      model.start_operation('OpenCutList - Numbers', true, false, true)
+
       definitions = model.definitions
 
       @cutlist.groups.each { |group|
 
         if @group_id && group.id != @group_id
+          next
+        end
+
+        # Ignore Edge groups
+        if group.material_type == MaterialAttributes::TYPE_EDGE
           next
         end
 
@@ -41,6 +49,9 @@ module Ladb::OpenCutList
 
         }
       }
+
+      # Commit model modification operation
+      model.commit_operation
 
     end
 

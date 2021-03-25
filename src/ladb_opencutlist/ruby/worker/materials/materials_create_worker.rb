@@ -18,6 +18,8 @@ module Ladb::OpenCutList
       @std_sizes = attributes['std_sizes']
       @grained = attributes['grained']
       @edge_decremented = attributes['edge_decremented']
+      @volumic_mass = attributes['volumic_mass']
+      @std_prices = attributes['std_prices']
     end
 
     # -----
@@ -26,6 +28,9 @@ module Ladb::OpenCutList
 
       model = Sketchup.active_model
       return { :errors => [ 'tab.materials.error.no_model' ] } unless model
+
+      # Start model modification operation
+      model.start_operation('OpenCutList - Material Create', true, false, true)
 
       materials = model.materials
       material = materials.add(@name)
@@ -45,7 +50,12 @@ module Ladb::OpenCutList
       material_attributes.std_sizes = @std_sizes
       material_attributes.grained = @grained
       material_attributes.edge_decremented = @edge_decremented
+      material_attributes.volumic_mass = @volumic_mass
+      material_attributes.std_prices = @std_prices
       material_attributes.write_to_attributes
+
+      # Commit model modification operation
+      model.commit_operation
 
       {
           :id => material.entityID,

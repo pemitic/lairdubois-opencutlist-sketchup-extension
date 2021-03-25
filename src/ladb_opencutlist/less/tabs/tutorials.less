@@ -1,0 +1,89 @@
+//
+// Tutorials
+//
+
+@color-prefered: #003eff;
+
+.ladb-tutorial-box {
+  .list-box();
+  .list-box-hover();
+  .list-box-active();
+  width: 100%;
+  margin-bottom: @ladb-gutter;
+
+  &.ladb-active {
+    border-color: @color-prefered;
+  }
+
+  > .ladb-content {
+
+    > .ladb-image {
+      overflow: hidden;
+      position: relative;
+
+      img {
+        margin-top: -10%;
+        margin-bottom: -10%;
+      }
+
+      .ladb-tutorial-country {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        margin: 0;
+      }
+
+    }
+
+    > .ladb-footer {
+      padding: 5px;
+
+      .ladb-tutorial-title {
+        font-weight: bold;
+        min-height: 60px;
+      }
+
+      .ladb-tutorial-author {
+        font-size: 85%;
+        display: inline-block;
+
+        > a {
+          font-weight: bold;
+        }
+
+      }
+
+    }
+
+  }
+
+}
+
+.ladb-tutorial-author {
+
+  > span {
+    color: #bbb;
+  }
+
+}
+
+.ladb-tutorial-country {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background-color: #fff;
+}
+
+.ladb-tutorial-language {
+  display: inline-block;
+  background: #333;
+  color: #fff;
+  border-radius: 5px;
+  padding: 3px 5px;
+
+  &.ladb-tutorial-language-prefered {
+    background: @color-prefered;
+  }
+
+}
