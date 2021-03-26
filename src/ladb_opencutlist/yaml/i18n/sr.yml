@@ -1,0 +1,995 @@
+---
+_label: Srpski
+_reload_msg: "Da biste primjenili sve izmjene, morate **zatvoriti** i **ponovo otvoriti** OpenCutList prozor."
+_description: "Generator lista i dijagrama rezanja za stolare. Otvoreni kod, financiran dobrovoljnim prilozima i jednostavan za upotrebu;)"
+default:
+  minimize: Smanjiti
+  maximize: Uvećaj
+  cancel: Otkaži
+  validate: Primijeni
+  confirm: Provjerite
+  ok: Ok
+  open: Otvori
+  see: Vidi
+  close: Zatvori
+  clear: Očisti
+  refresh: Osvježi
+  generate: Generiši
+  print: Štampaj
+  export: Izvoz
+  import: Uvoz
+  load: Učitaj
+  options: Opcije
+  caution: Oprez
+  remove: Ukloni
+  create: Kreiraj
+  ignore: Zanemari
+  download: Preuzmi
+  upgrade: Ažuriranje
+  empty_filename: Novi.skp
+  help: Pomoć
+  error: Upozorenje!
+  warning: Oprez
+  tip: Savjet
+  good: Dobro
+  bad: Loše
+  by: od
+  date_format: "d/m/Y g:ia"
+  date_format_short: d/m/Y
+  unit_0: Inč
+  unit_1: Stopa
+  unit_2: Milimetar
+  unit_3: Centimetar
+  unit_4: Metar
+  unit_5: Jarda
+  unit_mass_0: Kilogram
+  unit_mass_1: Funta
+  part_single: dio
+  part_plural: dijelovi
+  setup_model_units: Postavite jedinice modela
+  load_more: "Učitaj više ..."
+  reset_to_app_defaults: Vrati na izvorne vrijednosti
+core:
+  menu:
+    submenu: OpenCutList
+    item:
+      edit_part_properties: '$(tab.cutlist.edit_part_properties)'
+      edit_part_axes_properties: '$(tab.cutlist.edit_part_axes_properties)'
+  toolbar:
+    name: OpenCutList
+    command: OpenCutList
+  dialog:
+    title: OpenCutList by L'Air du Bois
+  leftbar:
+    more: Više
+    more_docs: Dokumenti
+    more_reviews: Recenzije
+    more_plans: Planovi
+    more_extensions: Ekstenzije/Proširenja
+    more_update: Ažuriranje
+  warning:
+    dev: |
+      Koristite **razvojnu** verziju *​​OpenCutList*. 
+      Ova verzija je dostupna samo za testiranje. 
+      Ne preporučuje se upotreba u proizvodnji. 
+
+      Da biste prijavili grešku: <a href="mailto:opencutlist@lairdubois.fr?Subject=Bug%20Report%20OpenCutList%20 {{ version }}%20(build: {{ build }})" target="_ blank">opencutlist@lairdubois.fr</a>.
+    old_su: |
+      Koristite stariju verziju SketchUp-a ({{ sketchup_version }}). Ovaj dodatak će raditi, ali može prikazivati ​​određene greške. Da biste u potpunosti iskoristili OpenCutList, preporučujemo nadogradnju na najmanje **SketchUp 2017**.
+    feature_locked: "*Nije moguće deaktivirati u ovoj verziji SketchUp-a*"
+  event:
+    model_change: Aktivni model je promijenjen.
+    options_change: Promijenjene su opcije u modelu.
+    material_change: Promijenjen je barem jedan materijal.
+    selection_change: Selekcija u aktivnom modelu je promijenjena.
+  upgrade:
+    unavailable: Najnovija verzija *OpenCutList* nije pronađena.
+    available: |
+      Dostupna je nova verzija *OpenCutList*. 
+      Ažurirajte da biste dobili najnovije funkcije!
+    up_to_date: |
+      Već imate najnoviju verziju *​​OpenCutList*.
+
+      *Razmislite o sponzorstvu ovog projekta da biste nam pomogli da dodamo još više mogućnosti!*
+    downloading: Preuzimanje je u toku...
+    changelog: "Što je novo?"
+    ignore_update: Preskoči ovo ažuriranje
+    download_rescue: "Problem s preuzimanjem?"
+    manual_download: Manuelno preuzimanje
+    zzz: "Trenutno sam neaktivan nakon ažuriranja. Da biste me aktivirali, morate ponovo pokrenuti SketchUp."
+    success: |
+      Završeno je ažuriranje OpenCutList-a! 
+      PONOVNO Učitajte SKETCHUP da biste aktivirali izmjene.
+    error:
+      download: Greška prilikom preuzimanja arhive.
+      unzip: Greška prilikom raspakivanja arhive.
+  preset:
+    label: Unaprijed zadane postavke
+    save_to: Snimi kao
+    restore_from: Vrati sa/iz
+    app_defaults: Fabrički zadana podešavanja
+    user_defaults: Moja zadana podešavanja
+    new: Nova podešavanja
+    new_prompt: |
+      *Snimanje prilagođenih podešavanja omogućava vam zadržavanje trenutnih podešavanja obrasca globalno kako biste ih mogli ponovo koristiti u svim svojim modelima.* 
+
+      Unesite ime za podešavanja:
+    delete_confirm_title: Uklanjanje
+    delete_confirm: "Da li ste sigurni da želite obrisati podešavanja **\"{{ name }}\"**?"
+    override_confirm_title: Ažuriranje
+    override_confirm: "Potvrđujete li izmjenu podešavanja **\"{{name}}\" ** sa ovim parametrima?"
+    new_success: "Podešavanja **\"{{ name }}\"** su kreirana"
+    override_success: "Podešavanja **\"{{ name }}\"** su izmjenjena"
+    restore_success: "Obrazac je popunjen sa unaprijed definisanim podešavanjima **\"{{ name }}\"**"
+    delete_success: "Podešavanja **\"{{ name }}\"** su izbrisana"
+    tooltip:
+      save_to: "Ažurirajte podešavanja '{{ name }}'"
+      delete: "Izbriši podešavanja '{{name}}'"
+  progress:
+    please_wait: Molimo pričekajte
+tab:
+  cutlist:
+    label: Dijelovi
+    title: Popis dijelova
+    help: |
+      Odaberite dijelove koji će se koristiti za vašu listu u trenutnoj sceni i kliknite **Generiši**. 
+      Ako je odabir prazan, sve vidljive komponente scene koriste se za izračunavanje popisa dijelova.
+    selection_only: Odabrano
+    material_undefined: Nije definisan materijal
+    not_available_std_width: Širina nedefinisana
+    not_available_std_thickness: Debljina nedefinisana
+    not_available_std_section: Presjek nedefiniran
+    highlight_part: Označite dio u modelu
+    highlight_parts: Označite dijelove u modelu
+    edit_part_properties: Izmjenite parametre dijela
+    edit_part_axes_properties: Uredi svojstva (osi) dijela
+    edit_part_size_increase_properties: Uredi svojstva (povećanje dimenzija) dijela
+    edit_part_edges_properties: Uredi svojstva (kant trake) dijela
+    tooltip:
+      show_hide_block: Prikaži / sakrij grupu
+      scroll_to_block: Pomaknite se do grupe
+      not_available_std_width: "Širina *{{ std_dimension_real }}* nije definisana u standardnim širinama materijala '{{ material_name }}'."
+      not_available_std_thickness: "Debljina *{{ std_dimension }}* nije definisana u standardnim debljinama materijala '{{ material_name }}'"
+      not_available_std_section: "Presjek *{{ std_dimension }}* nije definisan u standardnim presjecima materijala '{{ material_name }}'"
+      add_std_width_to_material: |
+        Dodaj širinu *{{ std_dimension }}* 
+        na materijal '{{ material_name }}'
+      add_std_thickness_to_material: |
+        Dodaj debljinu *{{ std_dimension }}* 
+        na materijal '{{ material_name }}'
+      add_std_section_to_material: |
+        Dodajte presjek *{{ std_dimension }}* 
+        na materijal '{{ material_name }}'
+      rounded_std_width: |
+        Širina *{{ std_dimension }}* zaokružena je preciznošću jedinica modela. 
+        Stvarna širina: *{{ std_dimension_real }}* 
+        ---
+        $t(tab.cutlist.tooltip.rounded_std_footer)
+      rounded_std_thickness: |
+        Debljina *{{ std_dimension }}* zaokružena je preciznošću jedinica modela. 
+        Stvarna debljina: *{{ std_dimension_real }}* 
+        ---
+        $t(tab.cutlist.tooltip.rounded_std_footer)
+      rounded_std_section: |
+        Poprečni presjek *{{ std_dimension }}* zaokružen je preciznošću jedinica modela. 
+        Stvarni presjek: *{{ std_dimension_real }}*
+        ---
+        $t(tab.cutlist.tooltip.rounded_std_footer)
+      rounded_std_footer: Podesite preciznost u *Informacije o modelu* ili provjerite dimenzije dijelova u ovoj grupi.
+      highlight_part: '$t(tab.cutlist.highlight_part)'
+      highlight_parts: '$t(tab.cutlist.highlight_parts)'
+      edit_part_properties: '$t(tab.cutlist.edit_part_properties)'
+      edit_parts_properties: Uredi svojstva dijelova u grupi
+      edit_material: '$t(tab.cutlist.menu.edit_material)'
+      folding_part: Razmotaj / preklopi
+      material_origin_1: Materijal ovog dijela je definisan na njegovoj instanci
+      material_origin_2: Materijal ovog dijela naslijeđen je od jednog od njegovih roditelj elemenata
+      material_origin_3: Materijal ovog dijela izdvojen je iz jednog njegovog nasljednog elementa
+      orientation_locked_on_axis: Orijentacija ovog dijela zaključana je na njegov koordinatni sistem
+      number_saved: Broj ovog dijela je snimljen
+      number_hidden: "Broj '{{ number }}' zabilježen na ovom dijelu ne može se koristiti jer je već dodijeljen"
+      number_generated: Broj ovog dijela je generisan automatski
+      resized: Ovom dijelu je promijenjena veličina s obzirom na definiciju njegove komponente
+      flipped: Ovaj se dio preslikava u usporedbi s definicijom njegove komponente
+      symmetrical: Detekcija preslikanog dijela je onemogućena na ovom dijelu
+      auto_oriented: Ovaj dio je automatski reorijentisan
+      add_label_filter: "Filtriranje na '{{ label }}'"
+      remove_label_filter: "Uklonite filtriranje sa '{{ label }}'"
+      add_edge_material_name_filter: "Filtriraj na '{{ material_name }}'"
+      remove_edge_material_name_filter: "Uklonite filtriranje sa '{{ material_name }}'"
+      not_aligned_on_axes: "Oprez, ovaj dio možda neće biti pravilno orijentisan u odnosu na svoje osi"
+      instance_count_by_part: "Ovaj se dio ubraja u skupove od **{{ count }}** jedinica."
+      missing_instance_count: "Imajte na umu da se jedinica **{{ count }}** iz posljednjeg skupa neće koristiti."
+      missing_instance_count_plural: "Imajte na umu da se **{{ count }}** jedinice iz posljednjeg skupa neće koristiti."
+      multiple_layers: "Oprez, ovaj dio se sastoji od poddijelova prisutnih u {{ count }} različitim lejerima:<br>{{ layers }}"
+      children_warnings: "Oprez, postoji {{ count }} upozorenja u grupisanim dijelovima"
+      children_warnings_plural: "Oprez, postoji {{ count }} upozorenja u grupisanim dijelovima"
+      children_size_increase: "Ova dimenzija se uvećava za iznos za {{ count }} grupisanih dijelova"
+      invalid_final_area: "Oprez, ovo sumirano polje nije moguće izračunati jer {{ count }} dio (od {{ total }}) ima pogrešno polje"
+      invalid_final_area_plural: "Oprez, ovo sumirano područje nije moguće izračunati jer dijelovi {{ count }} (od {{ total }}) imaju pogrešno područje"
+      is_dynamic_attributes_name: Opis ovog dijela izdvojen je iz atributa 'Ime' dinamičke komponente
+      size_increased: "Dimenzija se povećavaju za prekoračenje iznosa {{ value }}"
+      has_edges: "Ovaj dio sadrži {{ count }} kant trake"
+      has_edges_plural: "Ovaj dio sadrži {{ count }} traka za kantovanje"
+      edge_decremented: "Smanjeno za debljinu kant trake ({{ decrement }})"
+      edge_ymin: Dužina ruba 1
+      edge_ymax: Dužina ruba 2
+      edge_xmin: Širina ruba 1
+      edge_xmax: Širina ruba 2
+      dblclick_to_copy_all_edges: Dvoklik ovdje da biste kopirali ovu vrijednost na druge rubove
+      part_axes: Interne osi dijela
+      select_unselect_all_parts: Odaberite/poništite odabir svih dijelova u grupi
+      setup_group_cuttingdiagram: "Konfigurišite dijagram rezanja '{{ material_name }}&nbsp;/&nbsp; {{ std_dimension }}'"
+    menu:
+      show_all_groups: Prikaži sve grupe
+      hide_all_other_groups: Sakrij sve ostale grupe
+      numbers_save: Spremite brojeve dijelova
+      numbers_reset: Ponovo inicijalizujte brojeve dijelova
+      highlight_parts: '$t(tab.cutlist.highlight_parts)'
+      group_numbers_save: Spremite brojeve dijelova ove grupe
+      group_numbers_reset: Ponovo inicijalizujte brojeve dijelova ove grupe
+      group_cuttingdiagram: Dijagram rezanja
+      group_labels: Ispis naljepnica
+      edit_material: "Izmjenite materijal '{{ material_name }}'"
+      expand_all: Prikaži slične dijelove
+      collapse_all: Sakrij slične dijelove
+    edit_part:
+      title: "Svojstva dijela '{{ name }}'"
+      title_multiple: Svojstva grupe dijelova
+      multiple_alert: "Uobičajena svojstva grupe od {{ part_count }} dijelova."
+      general: Uopšteno
+      edges: Kant trake
+      name: Opis
+      material: Materijal
+      cumulable: Sumirano
+      cumulable_help: |
+        Ako je ova opcija odabrana, **dužina** ili **širina** smatrat će se **dužinom jedinice** ili **širinom jedinice** pomnoženom s brojem pri sortiranju liste dijelova.
+      cumulable_0: Nije sabirljivo
+      cumulable_1: Sumirano po dužini
+      cumulable_2: Sumirano po širini
+      instance_count_by_part: Podesi
+      instance_count_by_part_help: |
+        Omogućuje vam brojanje dijelova u potrebnom broju **setova** umjesto broja jedinica u modelu. 
+        Dijelovi u setu moraju imati istu definiciju. 
+
+        *Primjer: Broji samo 1 komad za par klizača ladica.*
+      instance_count_by_part_1: 1 jedinica po dijelu
+      instance_count_by_part_2: 2 jedinice po dijelu
+      mass: Masa
+      mass_help: Masa dijela koristit će se prilikom generisanja **izvještaja**.
+      price: Cijena
+      price_help: Cijena dijela koristit će se prilikom generisanja **izvještaja**.
+      tags: Oznake
+      tags_help: |
+        *Oznake* omogućuju vam dodavanje prilagođenih ključnih riječi u svaku definiciju dijela. 
+        Možete dodati koliko god želite oznaka. 
+        Vidljivi dijelovi popisa dijelova mogu se zatim filtrirati na temelju tih oznaka.
+      tags_multiple_info: Prikazuju se samo uobičajene oznake
+      orientation: Orijentacija
+      orientation_locked_on_axis: Zaključavanje orijentacije na osi
+      orientation_locked_on_axis_help: |
+        Ako je odabrana ova opcija, opcija *Automatska orijentacija dijelova* neće imati utjecaja na ovaj dio. 
+
+        Otuda, u lokalnom koordinatnom sistemu: 
+        - *dužina* je na <span style='color:red'> crvena </span> os, 
+        - *širina* na <span style='color:green'> zelena </span> os i
+        - *debljina* na <span style='color:blue'> plava </span> osa
+      symmetrical: Onemogućite otkrivanje zrcalnog dijela na ovom dijelu
+      symmetrical_help: |
+        Ako je ovaj okvir označen, otkrivanje *zrcalnog dijela* neće imati utjecaja na ovaj dio.
+      size_increase: Prekoračenje dimenzije
+      size_increase_help: |
+        Prekoračenje dimenzije omogućava vam da povećate dimenzije pojedinog dijela. 
+        (*Primjer: Prekoračenje dimenzije za podnožje ili lajsnu koje treba prilagoditi prilikom montaže.*)
+      length_increase: Prekoračenje dužine
+      length_increase_help: Prekoračenje dimenzije se primjenjuje na konačnu dužinu da bi se definisala **sirova dužina**.
+      width_increase: Prekoračenje širine
+      width_increase_help: Prekoračenje dimenzije se primjenjuje na konačnu širinu kako bi se definisala **sirova širina**.
+      thickness_increase: Prekoračenje debljine
+      thickness_increase_help: Prekoračenje dimenzije se primjenjuje na konačnu debljinu kako bi se definisala **sirova debljina**.
+      axes: Osi
+      axes_help: Reorganizujte dimenzije tako da odgovaraju željenim bojama osi u vašem dijelu.
+      axes_tip: |
+        Imajte na umu da ako opcija *Automatsko orijentisanje dijelova* nije aktivna ili je dio *zaključan na svojim osima*, tada: 
+        - **dužina** se čita na <strong style='color:red'> crvena </strong> os, 
+        - **širina** na <strong style='color:green'> zelena </strong> os i 
+        - **debljina** na <strong style='color:blue'> plava </strong> os.
+      axes_origin_position_none: Ne mijenjajte ishodište
+      axes_origin_position_min: Postavite ishodište u ugao
+      axes_origin_position_center: Postavite ishodište u sredinu
+      axes_origin_position_min_center: Postavite ishodište na sredinu lica
+      over_length: Preko dužine
+      over_width: Preko širine
+      edge_disabled_help: Ova kant traka se ne može konfigurisati jer na ovoj ivici dijela u modelu nije otkrivena površina koja nosi materijal.
+      multiple_values: Višestruke vrijednosti
+    option:
+      auto_orient: Automatska orijentacija dijelova
+      auto_orient_help: |
+        Ako je odabrana ova opcija, 3 dimenzije dijelova se sortiraju tako da najveća vrijednost predstavlja *dužinu*, a najmanja *debljinu*. 
+
+        Inače, *dužina* se čita na <span style='color:red'> crvena </span> os, 
+        - *širina* na <span style='color:green'> zelena </span> os i 
+        - *debljina* na <span style='color:blue'> plava </span> osa
+      smart_material: "*Pametno* dodjeljivanje materijala"
+      smart_material_help: "Ako je ova opcija odabrana, dijelovima bez definisanog materijala može se dodijeliti materijal dodijeljen nekom od njihovih roditelja ili djeteta."
+      dynamic_attributes_name: Koristite atribut *Ime* dinamičkih komponenti
+      dynamic_attributes_name_help: |
+        Ako je odabrana ova opcija, oznaka dijelova izvući će se iz atributa *Ime*, ako je definisana.
+
+        <i class='ladb-opencutlist-icon-warning'></i> Dijelovi s ​​istom definicijom razdvojit će se ako atribut *Ime* nema istu vrijednost.
+      part_number_with_letters: Koristite slova za označavanje dijelova
+      part_number_with_letters_help: "Ako je ova opcija odabrana, dijelovi se označavaju slovima (A, B, C, ... Z, AA, AB, ...)."
+      part_number_sequence_by_group: Ponovno incijaliziujte označavanje dijelova za svaku grupu
+      part_number_sequence_by_group_help: "Ako je odabrana ova opcija, označavanje dijelova ponovo se inicijalizuje na 1 (ili A) za svaku grupu (popis dijelova iste vrste i debljine materijala)."
+      part_folding: Grupišite slične dijelove
+      part_folding_help: "Ako je ova opcija odabrana, dijelovi s **identičnom veličinom** i s **identičnim oznakama** bit će grupisani (sve dok prikaz ovog područja nije skriven)."
+      hide_entity_names: Sakrij imena instanci
+      hide_entity_names_help: "Ako je ova opcija odabrana, **imena instance** dijelova neće biti prikazana."
+      hide_tags: Sakrij oznake
+      hide_tags_help: "Ako je ova opcija odabrana, **oznake** neće biti prikazane."
+      hide_cutting_dimensions: Sakrij sirove dimenzije
+      hide_cutting_dimensions_help: "Ako je ova opcija odabrana, **sirove** dimenzije dijelova će biti sakrivene."
+      hide_bbox_dimensions: Sakrij gotove dimenzije
+      hide_bbox_dimensions_help: "Ako je ova opcija odabrana, **gotove** dimenzije dijelova bit će sakrivene."
+      hide_final_areas: Sakrij stvarnu površinu dijelova tipa *Sheet Good*
+      hide_final_areas_help: "Ako je ova opcija odabrana, **stvarna područja** dijelova tipa *Sheet Good* će biti sakrivena."
+      hide_edges: Sakrij stupce kant traka
+      hide_edges_help: "Ako je ova opcija odabrana, **stvarna područja** dijelova tipa *Sheet Good* će biti sakrivena."
+      minimize_on_highlight: Umanji nakon *'$t(tab.cutlist.highlight_part)...'*
+      minimize_on_highlight_help: "Ako je ova opcija odabrana, prozor OpenCutList bit će minimiziran kada se koristi funkcija *'$t(tab.cutlist.highlight_part)'*."
+      general: Uopšteno
+      part_order_strategy: Sortiranje dijelova
+      part_order_strategy_help: |
+        Promijenite redoslijed sljedećih svojstava da biste definisali strategiju sortiranja materijala s popisa. 
+        Svako svojstvo može se sortirati u <i class="ladb-opencutlist-icon-sort-asc"> </i> *uzlazni* ili <i class="ladb-opencutlist-icon-sort-desc"> </i> *silazni* redoslijed.
+      dimension_column_order_strategy: Redoslijed dimenzija
+      dimension_column_order_strategy_help: |
+        Organizujte sljedeća svojstva dimenzija da definišete redoslijed prikaza stupaca.
+      property_thickness: Debljina
+      property_length: Dužina
+      property_width: Širina
+      property_name: Opis
+      property_count: Količina
+      property_edge_pattern: Broj kant traka
+      tags: Oznake
+      tags_help: Prilagođena lista oznaka predloženih u prozoru svojstava dijela.
+      tags_placeholder: Dodajte oznaku
+    list:
+      filters: Filtriraj
+      filters_warning_0: "Ovaj filter maskira sve dijelove!"
+      filters_warning: "Ovaj filtar prikazuje samo **{{ count }}** dio od ukupno {{ total }}."
+      filters_warning_plural: "Ovaj filtar prikazuje samo **{{ count }}** dio od ukupno {{ total }}."
+      edge_material_names_filter: Filtriraj prema materijalu za kant trake
+      tags_filter: Filtriraj po oznakama
+      dimensions_help: Razumijevanje dimenzija...
+      summary: Sažetak
+      material_type: Tip
+      material_thickness: Materijal / debljina
+      part_count: Količina
+      area: Područje
+      area_short: Područje
+      volume: Volumen
+      number: Broj
+      name: Opis
+      count: Količina
+      cutting: Sirova
+      bbox: Završeno
+      final: Aktuelno
+      total_cutting: Σ Sirova
+      total_final: Σ Aktuelno
+      length: Dužina
+      length_short: Duž.
+      width: Širina
+      width_short: Šir.
+      thickness: Debljina
+      thickness_short: Deb.
+      edges: Kantovanje
+    export:
+      title: Izvoz u CSV format
+      info_0: |
+        Pomoću ove funkcije možete izvesti *listu dijelova* u datoteku [CSV] (https://en.wikipedia.org/wiki/Comma-separated_values).
+      options: Izvezi opcije
+      options_customize: Prilagođavanje
+      option_source: Izvor
+      option_source_summary: '$t(tab.cutlist.list.summary)'
+      option_source_cutlist: '$t(tab.cutlist.title)'
+      option_source_instances_list: Popis instanci
+      option_col_sep: Separator
+      option_col_sep_tab: Tabulator
+      option_col_sep_comma: Zarez
+      option_col_sep_semicolon: Tačka, zarez
+      option_encoding: Kodiranje
+      number: Broj
+      path: Putanja
+      instance_name: Instance
+      definition_name: Definicija
+      name: Opis
+      total_cutting_length: Dužina - sirova
+      total_cutting_area: Površina - sirova
+      total_cutting_volume: Volumen - sirovi
+      total_final_area: Površina - konačna
+      cutting_length: Dužina - sirova
+      cutting_width: Širina - sirova
+      cutting_thickness: Debljina - sirova
+      bbox_length: Dužina - konačna
+      bbox_width: Širina - konačna
+      bbox_thickness: Debljina - konačna
+      final_area: Površina - konačno
+      count: Količina
+      part_count: Broj dijelova
+      material_type: Tip
+      material_thickness: Materijal / debljina
+      material_name: Materijal
+      entity_names: Imena instanci
+      tags: Oznake
+      edge_ymin: Dužina ruba 1
+      edge_ymax: Dužina ruba 2
+      edge_xmin: Širina ruba 1
+      edge_xmax: Širina ruba 2
+      warning:
+        visible_only: "*Dijelovi unutar skrivenih grupa vašeg popisa dijelova neće se izvesti*."
+    report:
+      title: Izvještaj
+      info_0: |
+        Ova funkcionalnost omogućuje vam generisanje izvještaja o **masama** i **troškovima** od **sirovog materijala** potrebnih za proizvodnju dijelova sadržanih u *popisu dijelova*.
+      options_general: Uopšteno
+      option_solid_wood_coefficient: Sirovi omjer građe
+      option_solid_wood_coefficient_help: Koristi se za označavanje umnožavajućeg faktora primijenjenog na bruto zapreminu izmjerenu za materijale tipa "**Puno drvo**".
+      raw_materials: Sirovi materijali
+      coefficient: Koeficijent
+      total: Ukupno
+      total_mass: Σ Masa
+      total_cost: Σ Troškovi
+      total_count: Količina
+      total_volume: Σ Volumen
+      total_area: Σ Površina
+      total_length: Σ Dužina
+      error:
+        entry_error: "*{{ material_name }} / {{ std_dimension }}*:**{{ count }} error**."
+        entry_error_plural: "*{{ material_name }} / {{ std_dimension }}* : **{{ count }} errors**."
+      warning:
+        visible_only: U obzir se uzimaju samo dijelovi sadržani u **vidljivim grupama**.
+    cuttingdiagram:
+      title: Dijagram rezanja
+      options_material: Materijal
+      options_config: Konfiguracija
+      options_display: Prikaz
+      option_bar_folding: Grupišite slične dijelove
+      option_bar_folding_0: false
+      option_bar_folding_1: true
+      option_bar_folding_help: Grupišite ploče koje imaju iste dijelove i rezove.
+      option_sheet_folding: Grupišite slične panele
+      option_sheet_folding_0: false
+      option_sheet_folding_1: true
+      option_sheet_folding_help: Grupišite panele koji imaju iste dijelove i rezove.
+      option_hide_part_list: Popis dijelova
+      option_hide_part_list_1d_0: Prikazuje se za svaku ploču
+      option_hide_part_list_2d_0: Prikazuje se za svaki panel
+      option_hide_part_list_1: Maskirano
+      option_hide_part_list_1d_help: Prikažite ili maskirajte listu dijelova za svaku ploču.
+      option_hide_part_list_2d_help: Prikažite ili maskirajte listu dijelova za svaki panel.
+      option_origin_corner: Položaj ishodišta
+      option_origin_corner_1d_0: Lijevo
+      option_origin_corner_1d_1: Desno
+      option_origin_corner_2d_0: Gornji lijevi ugao
+      option_origin_corner_2d_1: Donji lijevi ugao
+      option_origin_corner_2d_2: Gornji desni ugao
+      option_origin_corner_2d_3: Donji desni ugao
+      option_origin_corner_1d_help: Određuje položaj koordinatnog ishodišta za prikaz dijelova na drvenoj građi.
+      option_origin_corner_2d_help: "Određuje položaj koordinatnog ishodišta za prikaz dijelova na pločama. "
+      option_full_width_diagram: Prikaz pune širine
+      option_full_width_diagram_0: false
+      option_full_width_diagram_1: true
+      option_full_width_diagram_help: "Ako je ova opcija aktivna, dijagrami rezanja prikazuju se prema dostupnoj širini. Inače, njihova širina definisana je faktorom skaliranja ovisno o svim dijagramima."
+      option_wrap_length: Duljina (Wrap Board) ploče
+      option_wrap_length_help: Maksimalna dužina nakon koje će ploča biti omotana preko više linija.
+      option_hide_cross: Preseci
+      option_hide_cross_0: Dimenzije i presjeci
+      option_hide_cross_1: Samo dimenzije
+      option_hide_cross_help: Prikazuje ili skriva presjek koji označava dijelove definirane kao urezi na dijagramu.
+      option_highlight_primary_cuts: Primarni rezovi
+      option_highlight_primary_cuts_0: Samo prelaz
+      option_highlight_primary_cuts_1: Uvijek vidljivo
+      option_highlight_primary_cuts_help: Omogućuje vam da istaknete primarne rezove.
+      option_saw_kerf: Debljina oštrice
+      option_saw_kerf_help: Širina materijala uklonjenog rezanjem lista pile.
+      option_trimming: Veličina obrezivanja
+      option_trimming_help_1d: Količina materijala na svakom kraju ploče koja će se tretirati kao otpad.
+      option_trimming_help_2d: Količina materijala na svakom kraju ploče koja će se tretirati kao otpad.
+      option_optimization: Nivo optimizacije
+      option_optimization_help: "Nivo optimizacije definiše broj izračunatih mogućnosti, a time i vrijeme računanja."
+      option_optimization_0: Srednja
+      option_optimization_1: Napredno
+      option_stacking: Željeni pravac
+      option_stacking_help: "Smjer slaganja dijelova koji imaju zajedničku dužinu ili širinu, po panelu ako ih je potrebno više."
+      option_stacking_0: Bez postavki
+      option_stacking_1: Uzdužno
+      option_stacking_2: Po širini
+      option_stacking_3: Sve mogućnosti
+      option_std_bar: Standardna ploča
+      option_std_bar_help: |
+        Odaberite standardnu ​​ploču koja će se duplicirati tako da sadrži sve dijelove. 
+        Ova lista definisana je u polju **$t(tab.materials.edit_material.std_lengths)** materijala.
+        Uredi materijal '{{ material_name }}' za ažuriranje ove liste.
+      option_std_bar_add: Dodajte dužinu ...
+      option_std_bar_none: Nema
+      option_scrap_bar_lengths: Ostatci ploča
+      option_scrap_bar_lengths_placeholder: dužina x količina; ...
+      option_scrap_bar_lengths_help: |
+        Navedite ostatke od ploča koje treba prvo uzeti u obzir u planu rezanja. 
+        Očekivani format: **L**x**Q**, gdje je **L** *dužina* reza i **Q** količina.
+        Količina nije obavezna. 
+        *Veličine bez jedinica smatraju se jedinicama modela.*
+      option_std_sheet: Standardna ploča
+      option_std_sheet_help: |
+        Odaberite standardni panel koji će se duplicirati kako bi se izračunao najbolji mogući položaj. 
+        Ova lista je definisana u polju **$t(tab.materials.edit_material.std_sizes)** materijala.
+        Uredi materijal '{{ material_name }}' za popunjavanje ove liste.
+      option_std_sheet_add: Dodajte veličinu panela ...
+      option_std_sheet_none: Nema
+      option_scrap_sheet_sizes: Preseci
+      option_scrap_sheet_sizes_placeholder: dužina x širina x količina; ...
+      option_scrap_sheet_sizes_help: |
+        Navedite svu rezanu robu koju biste željeli uzeti u obzir na dijagramu rezanja. 
+        Očekivani format: **L**x**W**x**Q**, gdje **L** i **W** predstavljaju *dužinu* i *širinu* panela i **Q** količinu. 
+        Količina nije obavezna. 
+        *Veličine bez jedinica smatraju se jedinicama modela.*
+      tooltip:
+        scroll_to_block_1d: Pomaknite se do prve ploče
+        scroll_to_block_2d: Pomaknite se do prvog panela
+      list:
+        unplaced_parts: Nepostavljeni dijelovi
+        summary: Sažetak
+        count: Količina
+        bar: Ploča
+        sheet: Panel
+        length: Dužina
+        width: Širina
+        total_length: Σ dužina
+        total_area: Σ površina
+        total_part_count: Σ Dijelova
+        total_used: Ukupno iskorišteno
+        trimming: Obrezivanje
+        total_length_cuts: Dužina rezova
+        efficiency: Efikasnost
+        leftover: Ostaci
+        cut: Izreži
+        cut_final: Primarni rez (nivo 1)
+        cut_through: Primarni rez (nivo 2)
+        bar_type_0: Standardne veličine dimenzija
+        bar_type_1: Izrezano
+        sheet_type_0: Standardna veličina ploče
+        sheet_type_1: Isječeno
+        unused: Neiskorišteno
+        parts: "{{ count }} dio"
+        parts_plural: "{{ count }} dijelovi"
+        settings: Podešavanja
+      error:
+        no_bar: Standardna ploča nije bila ispravno konfigurisana i nisu definisani ostatci.
+        parameters: Parametri su netačni. Veličina obrezivanja veća je od 25% najduže ploče.
+        no_parts: Nema dijela.
+        no_sheet: Standardne veličine panela su pogrešno konfigurisane i nisu dostupni nikakvi rezovi.
+        no_placement_possible: "Nije moguće postaviti element (veličina obrezivanja prevelika, standardna ploča premala, rez testere prevelik, ...)."
+        bad_error: "Algoritamska greška, kontaktirajte programere, imate zanimljiv slučaj."
+        unplaced_parts: "**1 dio** nije moguće postaviti, jer je prevelik."
+        unplaced_parts_plural: "Postoje **{{ count }} dijelovi** koji se ne mogu smjestiti jer su preveliki da bi mogli stati."
+      warning:
+        selection_only: Ovaj dijagram rezanja ograničen je na **odabrane dijelove**.
+        cutting_dimensions: |
+          Ovaj dijagram rezanja koristi **sirove** dimenzije dijelova.
+        cutting_dimensions_increase_1d: |
+          * Ove sirove dimenzije su konfigurisane na materijalu '{{ material_name }}': prekoračenje dužine (**{{ length_increase }}**).*
+        cutting_dimensions_increase_2d: |
+          *Ove sirove dimenzije su konfigurisane na materijalu '{{ material_name }}': prekoračenje dužine (**{{ length_increase }}**) i prekoračenje širine (**{{ width_increase }}**).*
+        cutting_dimensions_edge_decrement: |
+          *Dimenzije smanjene za debljinu kant trake. *<i class='ladb-opencutlist-icon-edge-decremented'></i>
+    labels:
+      title: Oznake
+      options_layout: Izgled
+      options_settings: Konfiguracija
+      size: Stvarna veličina naljepnice
+      add_element: Dodajte element
+      remove_element: Ukloni
+      option_page: Veličina papira
+      option_page_format: Format
+      option_page_format_portrait: Uspravno
+      option_page_format_landscape: Vodoravno
+      option_page_format_custom: Prilagođeno
+      option_page_width: Širina
+      option_page_height: Visina
+      option_margin: Margine
+      option_margin_top: Vrh/Gore
+      option_margin_right: Desno
+      option_margin_bottom: Dno/Dolje
+      option_margin_left: Lijevo
+      option_spacing: Veličina razmaka
+      option_spacing_h: Horizontalno
+      option_spacing_v: Vertikalno
+      option_grid: Naljepnica po stranici
+      option_col_count: Kolone
+      option_row_count: Redovi
+      option_cutting_marks: Oznake rezanja
+      option_cutting_marks_0: Nema
+      option_cutting_marks_1: Odštampano
+      option_formula: Ime polja
+      option_size: Dimenzija
+      option_anchor: Sidro
+      option_anchor_start: Početak
+      option_anchor_middle: Sredina
+      option_anchor_end: Kraj
+      option_color: Boja
+      formula:
+        part_number: Broj
+        part_name: Opis
+        part_cutting_size: Grube dimenzije
+        part_cutting_length: Gruba dužina
+        part_cutting_width: Gruba širina
+        part_size: Dimenzija
+        part_length: Dužina
+        part_width: Širina
+        part_tags: Oznake
+        part_batch: Batch
+        thumbnail_proportional: Proporcionalna sličica
+        thumbnail_square: Kvadratna sličica
+        group_material: Materijal / debljina
+        group_material_name: Ime materijala
+        group_std_dimension: Standardne dimenzije
+        filename: Ime datoteke
+        model_name: Ime modela
+        page_label: Naziv scene
+        length_unit: Jedinica
+        generated_at: Datum i vrijeme
+      error:
+        invalid_size: Uneseni konfiguracijski parametri ne dopuštaju postavljanje valjane veličine naljepnice.
+      warning:
+        selection_only: Ove su oznake ograničene samo na **odabrane dijelove**
+    error:
+      no_model: Nijedan model nije otvoren. Morat ćete mi dati više informacija;)
+      no_entities: Vaš model je prazan. Morat ćete mi dati više informacija;)
+      no_component_in_selection: U vašem odabiru nije otkrivena nijedna instanca vidljive komponente.
+      no_component_in_model: U vašoj sceni nije otkrivena nijedna instanca vidljive komponente.
+      failed_to_write_export_file: "Nije uspjelo snimanje datoteke. **{{ error }}**"
+      unknow_part: Odabrani dio ne postoji na popisu dijelova.
+      obsolete_cutlist: "Nemoguće, lista dijelova je zastarjela. Osvjžite je."
+    warning:
+      partial_cutlist: "Ova lista dijelova je djelomični prikaz vašeg modela, jer se temelji samo na odabiru dijelova."
+      no_typed_materials_in_model: "Ovaj model ne koristi nijedan definisani materijal (**Puno drvo**, **Pločasti materijali** ili ** Dimenzionalni **)."
+      no_typed_materials_in_selection: "U odabiru se ne koristi nikakav definisani materijal (**Masivno drvo**, **Pločasti materijali** ili **Dimenzionalni**)."
+      export_empty: Vaš izbor za izvoz ne sadrži nijedan dio.
+    success:
+      exported_to: "Uspješan izvoz u {{ export_path }}."
+    tip:
+      no_component: |
+        Dijelovi koji se uključuju na *listu dijelova* moraju biti primjerci **komponente**. 
+        Ako koristite samo grupe, pretvorite ih u komponente. 
+        Korištenjem komponenata za dijelove, oni se mogu replicirati bez dupliciranja.
+      no_typed_materials: "Primjeni materijal na dijelove koji će biti uključeni u popis dijelova i na kartici definišite svojstva ovog materijala (**Masivno drvo**, **Pločasti materijali** ili **Dimenzionisani**). <i class=\"ladb-opencutlist-icon-materials\"> </i> **Materijali**."
+    obsolete_base: "Da biste bili sinkronizovani, morate ponovno generisati popis dijelova."
+  materials:
+    label: Materijali
+    title: Materijali
+    new: Novi materijal
+    type_0: Nedefinisano
+    type_1: Masivno drvo
+    type_2: Pločasti materijali
+    type_3: Dimenzioni
+    type_4: Kantovanje
+    type_5: Montaža
+    tooltip:
+      type_0: Tip materijala $t(tab.materials.type_0)
+      type_1: Tip materijala $t(tab.materials.type_1)
+      type_2: Tip materijala $t(tab.materials.type_2)
+      type_3: Tip materijala $t(tab.materials.type_3)
+      type_4: Tip materijala $t(tab.materials.type_4)
+      type_5: Tip materijala $t(tab.materials.type_5)
+      grained_0: '$t(tab.materials.edit_material.grained_0)'
+      grained_1: '$t(tab.materials.edit_material.grained_1)'
+      grain_direction: Smjer šare
+      colorized: Ovaj ton primijenit će se na teksturu ovog materijala kada je izveden u modelu
+      texture_colorized: Definitivno kombinirajte ovaj ton na slici teksture
+      edit: "Izimjenite svojstva '{{ name }}'"
+      set_current: |
+        Odaberite '{{ name }}'
+        *Koristiti dvoklik*
+    menu:
+      import_from_skm: Uvezite materijal (.skm)
+      purge_unused: Obrišite nekorištene materijale
+    new_material:
+      title: Kreirajte materijal
+      name: Ime
+      name_warning: Pogrešno ime
+      color: Boja
+      color_warning: Pogrešna boja
+      type: Tip
+    edit_material:
+      title: "Svojstva materijala '{{ name }}'"
+      general: Uopšteno
+      texture: Tekstura
+      name: Ime
+      type: Tip
+      cut_options: Parametri rezanja
+      attributes: Atributi
+      thickness: Debljina
+      length_increase: Prekoračenje dužine
+      length_increase_help: Prekoračenje dužine se dodaje na konačnu dužinu da bi se definisala **sirova dužina**.
+      width_increase: Prekoračenje širine
+      width_increase_help: Prekoračenje širine se dodaje na konačnu širinu da bi se definisala **sirova širina**.
+      thickness_increase: Prekoračenje debljine
+      thickness_increase_help: Prekoračenje debljine se dodaje na konačnu debljinu da bi se definisala **sirova debljina**.
+      std_lengths: Standardne dužine
+      std_lengths_placeholder: dužina ; ...
+      std_lengths_help: |
+        Standardne dužine ploča. 
+        *Veličine bez jedinica smatraju se da su u jedinicama modela.*
+      std_widths: Standardne širine
+      std_widths_placeholder: širina ; ...
+      std_widths_help: |
+        Standardne širine kant traka. 
+        *Širine bez jedinica smatraju se da su u jedinicama modela.*
+      std_thicknesses: Standardne debljine
+      std_thicknesses_placeholder: debljina ; ...
+      std_thicknesses_help: |
+        Dostupne **stvarne** okvirne debljine. 
+        *Veličine bez jedinica smatraju se da su u jedinicama modela.*
+      std_sections: Standardni presjeci
+      std_sections_placeholder: širine x debljine; ...
+      std_sections_help: |
+        Očekivani format: **W**x**T**, pri čemu **W** i **T** predstavljaju **stvarnu** *širinu* i *debljinu* komada. 
+        *Veličine bez oznaka jedinica smatraju se u jedinicama modela.*
+      std_sizes: Standardne veličine panela
+      std_sizes_placeholder: dužina x širina ; ...
+      std_sizes_help: |
+        Očekivani format: **L**x**W**, pri čemu **L** i **W** predstavljaju **stvarnu** *dužinu* i *širinu* panela. *Veličine bez oznaka jedinica smatraju se u jedinicama modela.*
+      grained: Pravac zrna/šare
+      grained_help: Konfiguracija smjera zrna/šare materijala.
+      grained_0: Nema šare
+      grained_1: Šara ide u pravcu dužine
+      edge_decremented: Smanji
+      edge_decremented_help: Omogućava vam da naznačite da li se dimenzije dijelova moraju smanjiti za debljinu kant trake.
+      edge_decremented_0: Bez umanjenja
+      edge_decremented_1: Smanji za debljinu kant trake
+      volumic_mass: Gustoća
+      volumic_mass_help: Omogućuje vam definisanje gustine (specifične mase) materijala.
+      std_prices: Cijena
+      std_prices_help: Omogućuje vam definisanje cijene za sve veličine kao i za svaku standardnu ​​veličinu materijala.
+      std_prices_dim_placeholder: Odaberite veličinu
+      std_prices_add: Dodajte cijenu
+      texture_width: Širina
+      texture_height: Visina
+      export_to_skm: Izvezi (.skm)
+    import_from_skm:
+      title: Uvezi .skm datoteku
+    export_to_skm:
+      title: Izvoz u .skm datoteku
+    option:
+      material_order_strategy: Sortiranje materijala
+      material_order_strategy_help: |
+        Promijenite redoslijed sljedećih svojstava da biste definisali strategiju sortiranja materijala s popisa. 
+        Svako svojstvo može se sortirati u <i class="ladb-opencutlist-icon-sort-asc"> </i> *uzlazno* ili <i class="ladb-opencutlist-icon-sort-desc"> </i> *silazni* redoslijed.
+      property_type: Tip
+      property_name: Ime
+    remove:
+      message: |
+        Uklonit ćete materijal **{{ material_name }}** sa svog modela.
+        Potvrdite za nastavak.
+    error:
+      no_model: Nijedan model nije otvoren. Morat ćete mi dati više informacija;)
+      no_materials: Vaš model ne sadrži nikakve materijale.
+      material_not_found: Nije pronađen materijal.
+      failed_import_skm_file: "Došlo je do greške prilikom uvoza iz .skm datoteke. **{{ error }}**"
+      failed_export_skm_file: "Došlo je do greške prilikom izvoza u .skm datoteku. **{{ error }}**"
+      failed_removing_material: "Došlo je do greške prilikom suzbijanja ovog materijala. **{{ error }}**"
+    success:
+      exported_to: "Uspješan izvoz u {{ export_path }}."
+    obsolete_base: "Da biste bili sinkronizovani, morate ažurirati popis materijala."
+  importer:
+    label: Uvezi
+    title: Uvezi dijelove
+    help: |
+      Ova stranica vam omogućava uvoz dijelova (definisanih pravokutnim okvirom za ograničavanje) u vaš model iz datoteke [CSV](https://en.wikipedia.org/wiki/Comma-separated_values). 
+      Tada možete koristiti značajke *OpenCutList* za dijelove koje je generisao softver koji nije *SketchUp*. 
+      Kliknite dugme **Otvori CSV datoteku** za početak..
+    open_csv: Otvorite CSV datoteku
+    import_to_model: Uvezi u model
+    load:
+      title: Učitavanje CSV datoteku
+      info_0: |
+        Odaberite opcije potrebne za ispravno čitanje datoteke: 
+        **{{ filename }}**.
+      info_1: |
+        *Jedinica konfigurisana u modelu je: **{{ unit }}**. 
+        Ova jedinica će se koristiti za dimenzije za koje jedinica nije navedena *.
+      options: Učitavanje opcija
+      option_col_sep: Separator
+      option_col_sep_tab: Tabulator
+      option_col_sep_comma: Zarez
+      option_col_sep_semicolon: Tačka, zarez
+      option_first_line_headers: Zaglavlje
+      option_first_line_headers_0: Podaci
+      option_first_line_headers_1: Naslovi stupaca
+    import:
+      title: Uvezi dijelove u model
+      info_0: |
+        Uvozit ćete **{{ count }} dijelova** u model. 
+        Ovaj će dio biti postavljen na ishodište glavne scene.
+      info_0_plural: |
+        Spremate se da uvezete **{{ count }} dijelova** u model. 
+        Ti će dijelovi biti naslagani počevši od ishodišta glavne scene.
+      info_1: Kliknite **Uvezi** da biste potvrdili radnju.
+      options: |
+        Model već sadrži *dijelove*, *definicije* ili *materijale*. 
+        Odaberite opcije uvoza koje su vam potrebne.
+      option_remove_all_?: "Šta dalje?"
+      option_remove_all_false: Dodajte dijelove postojećim
+      option_remove_all_true: Uklonite postojeće!
+      option_keep_definitions_settings: Zadrži podešavanja
+      option_keep_materials_settings: Zadrži postavke materijala
+    column:
+      unused: Neiskorišteno
+      mandatory: Obavezna polja
+      optional: Opciona polja
+      name: Opis
+      count: Količina
+      bbox_length: Dužina
+      bbox_width: Širina
+      bbox_thickness: Debljina
+      material: Materijal
+      tags: Oznake
+    tooltip:
+      errors: Ovaj dio se neće uvesti jer je izazvao sljedeće greške
+      warnings: Ovaj će se dio uvesti, ali je dao sljedeća upozorenja
+    error:
+      no_model: Nijedan model nije otvoren. Nije moguće uvesti dijelove u prazan model;)
+      file_not_found: "Datoteka nije pronađena: **{{ filename }}**"
+      bad_extension: "Datoteka *{{ filename }}* nema ekstenziju **.CSV** ili **.TSV**."
+      failed_to_load_csv_file: |
+        Nije moguće učitati CSV datoteku: **{{ error }}**
+        *Provjerite jeste li odabrali ispravan separator polja.*
+      empty_file: Datoteka izgleda prazna ili je nije moguće interpretirati.
+      no_importable_part: Nijedan dio se ne može uvesti. Dodijelite obavezna polja odgovarajućim stupcima.
+      invalid_name: Pogrešan opis
+      invalid_length: Pogrešna dužina
+      invalid_width: Pogrešna širina
+      invalid_thickness: Pogrešna debljina
+      failed_to_import: Uvoz nije uspio.
+    warning:
+      invalid_count: Neispravan broj
+      invalid_material: Nesipravan materijal
+    success:
+      imported_title: Uvoz je uspješno završen
+      imported_body: "{{ count }} dio/dijelova je uspješno uvezen!"
+      imported_body_plural: "{{ count }} dijelova je uspješno uvezeno!"
+    obsolete_base: "Da biste ostali sinkronizovani, morate ponovo učitati CSV datoteku."
+  tutorials:
+    label: Uputstvo
+    title: Uputstvo
+    help: |
+      Ovdje pronađite nepotpunu listu videozapisa koje je zajednica napravila kako se upotrebljava *OpenCutList*.
+    submit: Pošaljite videozapis
+    submit_info: |
+      Snimili ste video koji predstavlja upotrebu **OpenCutList** i želite da se on pojavi ovdje? 
+      Javite nam tako što ćete nam poslati poruku na **opencutlist@lairdubois.fr**!
+
+      *Video mora biti javno postavljen i hostovan na YouTubeu*.
+    error:
+      fail_to_load_list: Nije moguće učitati popis videozapisa.
+  news:
+    label: Novosti
+    title: Novosti
+    help: |
+      Najnovije vijesti od *OpenCutList*.
+    comment: Komentar
+    error:
+      fail_to_load_list: Nije moguće učitati listu vijesti.
+  forum:
+    label: Forum
+    title: Forum
+    help: |
+      Ovaj forum omogućava vam razmjenu poruka sa korisničkom zajednicom i timom *OpenCutList*.
+    create_conversation: Započnite temu
+    reply: Odgovori
+    tags: Oznake
+    redirection: |
+      Bit ćete preusmjereni na **Open Collective** platformu koja je domaćin ovom forumu za diskusiju. 
+      Da biste *započeli razgovore* ili *odgovorili*, morat ćete otvoriti nalog i prijaviti se. 
+      *Besplatno je, bez obaveza i jednostavno potrebna je samo e-mail adresa. 
+
+      *Prijavite se za nastavak.
+    error:
+      fail_to_load_list: Nije moguće učitati listu tema.
+  sponsor:
+    label: Sponzor
+    title: Sponzor
+    description: |
+      **OpenCutList** je *Open Source* softver koji korisnici podržavaju putem <a href="https://opencollective.com/" target="_ blank">Open Collective</a> platforme.
+      Podržite ovaj projekat davanjem novčanog doprinosa!
+    contribute: Doprinesi
+    backers: "{{ count }} podržali finansijski"
+    backers_plural: "{{ count }} podržali finansijski"
+    ad: "Da li vam se sviđa OpenCutList?"
+    objective: Cilj
+    objective_slogan: OpenCutList smo svi mi
+    objective_title:
+      default: Ciljevi
+    objective_details:
+      default: |
+        Stalno poboljšanje *OpenCutList* nam je važno i projekt će i dalje trebati vašu pomoć za svoje sljedeće ažuriranje **3.0**!
+    objective_crowdfunding: |
+      Razvoj ove nove funkcionalnosti izvršit će se putem **participativnog financiranja** i započet će kada se postigne njegov **financijski cilj**.
+    objective_thanks: |
+      Hvala vam na doprinosu!
+    objective_funded_progress: "finansirano u iznosu od {{ progress }}%"
+  settings:
+    label: Postavke
+    title: Postavke
+    global_settings: Globalne postavke
+    language: Jezik
+    zoom: Veličina fonta
+    zoom_normal: Normalno
+    zoom_small: Malo
+    zoom_tiny: Sitno
+    size_and_position: Veličina i položaj prozora
+    model_settings: Postavke modela
+    length_unit: Jedinica dužine
+    length_format: Format
+    length_format_0: Decimalno
+    length_format_1: Arhitektonski
+    length_format_2: Inženjering
+    length_format_3: Djelomični
+    length_precision: Preciznost
+    suppress_units_display: Prikaži jedinicu dužine za svaku vrijednost
+    mass_unit: Jedinica mase
+    currency_symbol: Simbol valute
+    menu:
+      dump_global_presets: Snimanje podešavanja
+      dump_model_presets: Snimanje podešavanja modela
+      reset_global_presets: Ponovno pokretanje unaprijed postavljenih podešavanja
+      reset_global_presets_confirm: |
+        Namjeravate resetovati sve svoje spremljene *OpenCutList* unaprijed postavljena podešavanja. 
+        Ova je akcija konačna. **Sva će se unaprijed postavljena podešavanja izgubiti.** 
+        Potvrdite za nastavak.
+      reset_global_presets_success: |
+        *OpenCutList* podešavanja resetovana. 
+        Da bi se promjene uzele u obzir, morate **zatvoriti** i **ponovo otvoriti** prozor OpenCutList.
+      reset_model_presets: Ponovno učitavanje podešavanja modela
+      reset_model_presets_confirm: |
+        Spremate se resetovati sva *OpenCutList* tvornička podešavanja za trenutni model. 
+        Ova je akcija konačna. **Sva podešavanja će se vratiti na zadane vrijednosti.** 
+        Potvrdite za nastavak.
+      reset_model_presets_success: |
+        *OpenCutList* podešavanja resetovana. 
+        Da bi se promjene uzele u obzir, morate **zatvoriti** i **ponovo otvoriti** prozor OpenCutList.
+  about:
+    label: O
+    title: O
+    version: Verzija
+    credits: Tehničke zasluge
+    credits_authors: |
+      *OpenCutList* razvijaju [Boris Beaulant](https://www.lairdubois.fr/@borisbeaulant) i [Martin Müller](https://www.lairdubois.fr/@mobilarte). *Lista svih [contributors](https://github.com/lairdubois/lairdubois-opencutlist-sketchup-extension/graphs/contributors)*.
+    credits_translators: |
+      Translations:
+      - [Martin Müller](https://www.lairdubois.fr/@mobilarte) (*English*, *German*)
+      - Vladimir Badulya (*Russian*)
+      - Pierluigi Colombo (*Italian*)
+      - Nayton Sanches Barbosa, corrected and revised by [Carlos Maciel ELT](https://www.inglesonline.pro.br) (*Portuguese*)
+      - [Leonardo Romero Giménez](https://latablamarilla.com/) (*Spanish*)
+      - [Radek Rýznar](https://onlinesketchup.cz) (*Czech*)
+      - [Jarek Ostaszewski](https://www.domidrewno.pl), Greg Gregosky, Patryk Grzyb, Andrzej Smyk and Dominik Szybisz (*Polish*)
+      - Sergey Isupov (*Hebrew*), RTL interface not yet supported
+      - SOUL Issam (*Arabic*), RTL interface not yet supported
+    credits_description: |
+      The developpment of this extension is linked to the sharing plateform project [L'Air du Bois](https://www.lairdubois.fr).
+      This extension is *Open Source* as well and available under [GNU GPLv3](https://github.com/lairdubois/lairdubois-opencutlist-sketchup-extension/blob/master/LICENSE) license on [GitHub](https://github.com/lairdubois/lairdubois-opencutlist-sketchup-extension).
+    credits_runtime: Vrijeme rada
+    credits_development: Razvoj
+    credits_vendors: |
+      Avantura ne bi bila moguća bez rada autora sljedećih Open Source komponenata:
+    credits_thanks: |
+      Posebna zahvala ide: 
+      - [JetBrains] (https://www.jetbrains.com) za podršku ovom projektu putem njihove [Besplatne licence za otvoreni izvor] (https://www.jetbrains.com/buy /opensource/).
+      - [Transifex] (https://www.transifex.com) za podršku projektima otvorenog koda.
+      - [GitBook] (https://www.gitbook.com) za podršku projektima otvorenog koda.
+tool:
+  highlight:
+    transparency: Transparentnost
+    zoom_extents: Proširenja zuma
