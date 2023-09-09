@@ -62,7 +62,7 @@
                                     "slug " +
                                     "title " +
                                     "createdAt " +
-                                    "fromCollective { " +
+                                    "fromAccount { " +
                                         "slug " +
                                         "name " +
                                         "imageUrl " +
@@ -195,6 +195,10 @@
         // Bind buttons
         $('#ladb_forum_redirection_continue', $modal).on('click', function () {
             callback();
+
+            // hide modal
+            $modal.modal('hide');
+
             return false;
         });
 

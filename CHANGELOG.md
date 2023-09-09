@@ -2,12 +2,176 @@ CHANGELOG
 =========
 
 This changelog references the relevant changes (bug and security fixes) done
-in 2.x, 1.x and 0.x versions.
+in 5.x, 4.x, 3.x, 2.x, 1.x and 0.x versions.
 
-* 2.0.1 (WIP)
+* 5.0.2 (2023-06-20)
+
+  * Fixed Architecture dimension parser
+  * Fixed Reset standard bar or sheet configured on cutting diagram 1D or 2D if it no longer exists on material
+  * Fixed Escape special characters in material names
+  * Improved Export Cutlist "Copy" feature now puts a TSV string to clipboard
+  * Improved Ukrainian terms
+  * Improved Russian terms
+
+* 5.0.1 (2023-05-22)
+
+  * Added `to_fbm` function to VolumeWrapper
+  * Improved Smart Tool element picker
+  * Improved cutting diagram dimensions display
+  * Fixed hide all Draw buttons if WebGL is not supported
+  * Fixed import freeze when the model is empty
+  * Fixed Export to Layout freeze (SketchUp < 2022) by replacing ComponentDefinition::save_copy use by ComponentDefinition::save_as
+
+* 5.0.0 (2023-05-11)
+
+  * Added **Ukrainian** language (thanks to Kostyantyn and Andriy)
+  * Added new **Drawing** module with exploded view and export to *Layout* (SketchUp 2018+ only)
+  * Added new **Veneer Material Type**
+  * Added new **Smart Paint** tool (rewrite of previous version) + new icon
+  * Added new **Smart Axes** tool + new icon
+  * Added module to *export* and *import* **presets** to and from json file
+  * Added new property to sort labels according to cutting diagram bins
+  * Added used and unused proportion display in Estimate summary and details
+  * Added feature to duplicate material including all attributes
+  * Added left and right arrow shortcut keys to change current material in Smart Paint tool
+  * Added hide edge preview option in 2D cutting diagram (default = true)
+  * Added layers (SketchUp tags) column to part and instance list exports
+  * Added focus SketchUp window after selecting tool (SketchUp 2021.1+)
+  * Removed **Dutch** language due to lack of support
+  * Renamed Reports to Estimate
+  * Renamed Tags to Badges
+  * Improved materials property dialog : It is now possible to add, change and clear texture on a material
+  * Improved color pickers : It's now possible to select custom color in picker (SketchUp 2021+)
+  * Saved last material export / import and part export used folder 
+  * Fixed cutting diagram bins number to be displayed even if _Group Similar Panels_ option is ON
+  * Fixed cutting diagram 2D edge drawing to correspond to counter-clockwise rotation of part's name
+  * Fixed missed exported edges std dimensions on folded parts
+  * Fixed missed oversize asterisk indicator in cutting diagram parts lists
+  * Improved part's material detection by ignoring edges banding and veneer material types applied on faces
+  * Improved summary cells: unavailable cells in parts list summary are hatched instead of displaying "-" character
+  * Improved UX : Added "escape" key to 1. close modals, 2. minimize OpenCutList dialog
+  * Improved UX : Added Double click behavior on material button of the Smart Paint Tool to edit the corresponding material
+
+* 4.1.3 (2023-02-28)
+
+  * Added teaser "Drawing" button
+
+* 4.1.3 (2023-02-28)
+
+  * Added teaser "Drawing" button.
+
+* 4.1.2 (2023-01-27)
+
+  * Fixed forum loading error due to Open Collective API changes
+
+* 4.1.1 (2023-01-05)
+
+  * Fixed highlight part tool error when part's material doesn't have type
+
+* 4.1.0 (2023-01-03)
+
+  * Added **Vietnamese** language (thanks to Nguyen Ngoc Tan for joining the translators team)
+  * Tweaks in 2D cutting diagram algorithm
+  * Added sort tab in Labels options
+  * Added material type variable to part list and instance list export
+  * Fixed wrong exported cutting length and width when edge reduction - on instances list
+  * Fixed smart paint tool selection from materials tab (Windows)
+  * Fixed highlight part paint tool to ignore edges parts
+  * Fixed smart paint tool crash when switching model
+  * Improved leftovers dimensions display in 1D cutting diagrams
+
+* 4.0.1 (2022-10-06)
+
+  * Fixed wrong exported cutting length and width when edge reduction
+
+* 4.0.0 (2022-09-21)
+
+  * Added **SmartPaint tool**
+  * Added cutlist **export customization**
+  * Added copy to clipboard from Export preview
+  * Added cutting diagram 1D progress bar
+  * Added cutting diagram 2D progress bar
+  * Added generate cutlist menu item (ready to configure a custom keyboard shortcut)
+  * Added progress feedback on generate cutlist and list materials
+  * Added page description to printed part list
+  * Added re-load material texture
+  * Added reset all model prices (materials and parts) feature
+  * Added news reactions icons
+  * Improved disabled edge cell display in part list
+  * Now only standard sheet and bar use dim prices in reports
+  * Merged instance names in grouped parts
+  * Improved ruby i18n string getter to support `$()`
+  * Fixed edge std size display
+  * Fixed report crash when sheet good or dimensional material don't have a standard size
+  * Removed deprecated use of `URI.escape`
+
+* 3.0.2 (2022-02-27)
+
+  * Fixed TextArea auto height scroll bug
+  * Fixed a few translation errors
+  * Added label size 8
+
+* 3.0.1 (2021-12-11)
+
+  * Added translator language "zz" (English with Transifex line numbers) - Only available in DEV environment
+  * Now automatically store OpenCutList dialog size and position on resize and move when using SketchUp >= 2021.1
+  * Save default _mass_unit_ and _currency_symbol_ to model even if it is not modified from default values
+  * Improved document filename when printing to PDF
+  * Improved selection warning feedbacks in cutlist, cutting diagrams, labels and reports
+  * Improved 'enter' key catch for validation in modal's textinputs
+  * Fixed cutting diagram part list sort when using letter for part's number
+  * Fixed area and volume summary
+
+* 3.0.0 (2021-11-14)
+
+  * Added **Docs** button to access online documentation : https://docs.opencutlist.org
+  * Added capability to consider a part as multiple layers along its thickness
+  * Added Description display on parts
+  * Added Number or Name part's identifier option on cutting diagrams
+  * Added a global cutlist option to disable mirrored part detection
+  * Added primary cuts summary below cutting diagrams if *always visible* option is activated
+  * Added retina screen support for highlight part tool
+  * Added *top* anchors position for label's elements
+  * Added *Description* field to labels elements list
+  * Added a new tab in cutlist part property modal to groups material dependent properties
+  * Added buttons to store and remove custom colors values from color inputs
+  * Improved 2D cutting diagram selection strategy
+  * Improved arrow display in labels part thumbnail
+  * Improved tags render on labels from single line to one tag by line
+  * Fixed display units from Preferences when using fractional inches
+  * Fixed bug when preset's name contains numbers only
+  * Fixed text input reset value
+  * Fixed stored part number increment if letter and greater than 'Z'
+
+* 2.1.1 (2021-08-02)
+
+  * Added thickness fields to labels
+  * Added total cut length in cutting diagram summary
+  * Added model description in printable headers if it is defined
+  * Fixed forum conversation tag filter
+  * Fixed bug in preset when names contains quote
+  * Improved dimensions display for small parts in cutting diagrams
+  * Leading/trailing spaces of material names removed during import
+
+* 2.1.0 (2021-05-28)
+
+  * Added labels start offset
+  * Added entity named path field in Labels
+  * Added print margin option in settings tab
+  * Cleaner drawing of the arrow in the highlight tool for front and back view
+  * Better handling of summable length/width in the parts list. _Rough dimensions are shown when part is summable, even if the part has no oversize to make the sorting order more obvious._
+
+* 2.0.1 (2021-04-13)
 
   * Global and Model preset are now sorted
-  
+  * Added Ignore grain direction part attribute
+  * Added edges fields to Labels
+  * Added tags in cutting diagram part list
+  * Added edges in cutting diagram 2D part list
+  * Improved cutting diagram 2d dimensions display
+  * Fixed export skp and skm path on win platform
+  * Fixed offcut bug (Issue #285)
+
 * 2.0.0 (2021-03-23)
 
   * Added printable **Labels** feature

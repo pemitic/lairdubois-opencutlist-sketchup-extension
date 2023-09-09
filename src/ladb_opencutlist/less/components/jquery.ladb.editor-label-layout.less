@@ -1,0 +1,58 @@
+//
+// Editor Label Layout
+//
+
+.ladb-editor-label-layout {
+
+  .ladb-editor-label-layout-size {
+    text-align: center;
+    padding-bottom: 5px;
+    font-size: 80% ;
+    color: #999;
+    min-height: 30px;
+  }
+
+  .ladb-editor-label-layout-preview {
+    text-align: center;
+  }
+
+  .ladb-editor-label-layout-buttons {
+    text-align: center;
+    padding: 10px;
+  }
+
+  .ladb-editor-label-layout-form {
+    text-align: center;
+  }
+
+  svg {
+    border: 1px solid #ddd;
+    box-shadow: 3px 3px 10px #999;
+
+    &:focus {
+      outline: none;
+      border-color: @ladb-global-color-focus;
+    }
+
+    .ladb-label-element {
+      cursor: move;
+      user-select: none;
+    }
+
+    rect.selection {
+      stroke: none;
+    }
+
+    g.active {
+
+      rect.selection {
+        stroke: @ladb-global-color-focus;
+        fill: @ladb-global-color-focus;
+        fill-opacity: 0.1;
+      }
+
+    }
+
+  }
+
+}

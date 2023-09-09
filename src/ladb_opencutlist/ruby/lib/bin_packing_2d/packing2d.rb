@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 module Ladb::OpenCutList
   module BinPacking2D
-
     # Number of bytes of computer running code
     # from https://gist.github.com/pithyless/9738125
-    N_BYTES = [42].pack("i").size
+    N_BYTES = [42].pack('i').size
 
     # Number of bits.
     N_BITS = N_BYTES * 16
@@ -11,7 +12,7 @@ module Ladb::OpenCutList
     # Largest integer on this platform. This is actually wrong since
     # ruby merged Fixnum and Bignum into Integer. We just want a rather
     # large number.
-    MAX_INT = 2 ** (N_BITS - 2) - 1
+    MAX_INT = (2**(N_BITS - 2)) - 1
 
     # Working precision to compare decimal inches (this represents around
     # 0.00254 mm)
@@ -29,27 +30,31 @@ module Ladb::OpenCutList
     # With less than this Boxes, use BEST_X_SMALL to keep Packers.
     MAX_BOXES_TIME = 30
 
-    # Bin has illegal size <= 0, has been ignored.
-    WARNING_ILLEGAL_SIZED_BIN = 0
-    # Box has illegal size <= 0, has been ignored.
-    WARNING_ILLEGAL_SIZED_BOX = 1
-
     # No error.
     ERROR_NONE = 0
     # Timeout error.
-    ERROR_TIMEOUT = 1
-    # Error when no bin for packing available.
-    ERROR_NO_BIN = 2
+    ERROR_NO_BIN = 1
     # Error when no boxes for packing available.
-    ERROR_NO_BOX = 3
+    ERROR_NO_BOX = 2
+    # Error in parameters.
+    ERROR_PARAMETERS = 3
     # Error when no placement possible, e.g. boxes larger than bin.
     ERROR_NO_PLACEMENT_POSSIBLE = 4
     # Error that needs further debugging.
     ERROR_BAD_ERROR = 5
-    # Error in parameters.
-    ERROR_PARAMETERS = 6
-    # Error in input.
+    # Error in step by step run
+    ERROR_STEP_BY_STEP = 6
+    # Error invalid input
     ERROR_INVALID_INPUT = 7
+
+    # A large saw kerf warning.
+    WARNING_SAW_KERF_LARGE = 0
+    # A large trimsize warning.
+    WARNING_TRIM_SIZE_LARGE = 1
+    # A box with zero or negative length.
+    WARNING_ILLEGAL_SIZED_BOX = 2
+    # A bin with zero or negative length.
+    WARNING_ILLEGAL_SIZED_BIN = 3
 
     # Type of standard bin.
     BIN_TYPE_AUTO_GENERATED = 0
@@ -67,20 +72,29 @@ module Ladb::OpenCutList
     PRESORT_AREA_DECR = 3
     # Sort by perimeter decreasing.
     PRESORT_PERIMETER_DECR = 4
-    # Sort by longest side increasing.
+    # Sort by longest side decreasing.
     PRESORT_LONGEST_SIDE_DECR = 5
-    # Sort by shortest side increasing.
+    # Sort by shortest side decreasing.
     PRESORT_SHORTEST_SIDE_DECR = 6
-    PRESORT = ["input", "width", "length", "area", "longest", "shortest", "perimeter"]
+    # Sort by largest difference decreasing
+    PRESORT_SMALLEST_DIFF_DECR = 7
+    # Sort by largest difference decreasing
+    PRESORT_LARGEST_DIFF_DECR = 8
+    # NOT used for now!
+    PRESORT_ALTERNATING_LENGTHS = 9
+    PRESORT_ALTERNATING_WIDTHS = 10
+    PRESORT = ['input', 'width', 'length', 'area', 'perimeter', 'longest',
+               'shortest', 'diff', 'altlength', 'altwidth'].freeze
 
     # Score heuristics for fitting boxes into bins.
     SCORE_BESTAREA_FIT = 0
     SCORE_BESTSHORTSIDE_FIT = 1
     SCORE_BESTLONGSIDE_FIT = 2
     SCORE_WORSTAREA_FIT = 3
-    SCORE_WORSTSHORTSIDE_FIT = 4
-    SCORE_WORSTLONGSIDE_FIT = 5
-    SCORE = [" best area", "short side", "long side", "worst area", "worst short side", "worst long side"]
+    SCORE_BESTWIDTH_FIT = 4
+    SCORE_BESTLENGTH_FIT = 5
+    SCORE = ['best area', 'short side', 'long side', 'worst area',
+             'best width', 'best length'].freeze
 
     # Splitting strategies defining the order of the guillotine cuts.
     SPLIT_SHORTERLEFTOVER_AXIS = 0
@@ -91,17 +105,19 @@ module Ladb::OpenCutList
     SPLIT_LONGER_AXIS = 5
     SPLIT_HORIZONTAL_FIRST = 6
     SPLIT_VERTICAL_FIRST = 7
-    SPLIT = ["shorter leftover", "longer leftover", "min. area", "max. area", "shorter axis", "longer axis", "horizontal_first", "vertical_first"]
+    SPLIT = ['shorter leftover', 'longer leftover', 'min. area', 'max. area',
+             'shorter axis', 'longer axis', 'horizontal_first',
+             'vertical_first'].freeze
 
     # Do not try to stack boxes.
     STACKING_NONE = 0
     # Stack boxes lengthwise by grouping common widths.
     STACKING_LENGTH = 1
-    # Stack boxes widthwise by grouping common lengths.
+    # Stack boxes width-wise by grouping common lengths.
     STACKING_WIDTH = 2
     # Stack none, length and width.
     STACKING_ALL = 3
-    STACKING = ["do not care", "lengthwise", "widthwise", "stacking all"]
+    STACKING = ['do not care', 'lengthwise', 'widthwise', 'stacking all'].freeze
 
     # Orientation of a box. Better for sorting than boolean value.
     NOT_ROTATED = 0
@@ -110,7 +126,14 @@ module Ladb::OpenCutList
     # Optimization levels.
     OPT_MEDIUM = 0
     OPT_ADVANCED = 1
-    OPTIMIZATION = ["light", "advanced"]
+    OPTIMIZATION = ['light', 'advanced'].freeze
+
+    # Cut types.
+    TRIMMING_CUT = 0
+    BOUNDING_CUT = 1
+    INTERNAL_THROUGH_CUT = 2
+    INTERNAL_CUT = 3
+
     #
     # Exception raised in this module.
     #
@@ -137,12 +160,9 @@ module Ladb::OpenCutList
       #
       def dbg(msg, debug = false)
         # Assuming @options exists.
-        if debug
-          puts(msg)
-        elsif !@options.nil? && @options.debug
-          puts(msg)
-        end
-        STDOUT.flush
+        return if @options.nil?
+
+        puts("#{msg}\n") if debug || @options.debug
       end
     end
   end

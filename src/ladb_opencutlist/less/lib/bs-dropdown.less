@@ -4,14 +4,18 @@
 
 .dropdown-menu {
 
-  > li.dropdown-item-danger > a {
-    color: @ladb-brand-danger;
+  > li.dropdown-item-danger:not(.disabled) {
 
-    &:hover,
-    &:focus {
-      text-decoration: none;
-      color: #fff;
-      background-color: @ladb-brand-danger;
+    > a {
+      color: @ladb-brand-danger;
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+        color: #fff;
+        background-color: @ladb-brand-danger;
+      }
+
     }
 
   }
@@ -30,6 +34,7 @@
     padding-bottom: 8px;
     padding-top: 8px;
     color: #555;
+    display: flex;
 
     &.dropdown-header-top {
       margin-top: -5px;
@@ -38,6 +43,10 @@
     &.dropdown-header-middle {
       margin-top: 10px;
       border-top: 1px solid #ddd;
+    }
+
+    & > .dropdown-header-body {
+      flex-grow: 1;
     }
 
   }

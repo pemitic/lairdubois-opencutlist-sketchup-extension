@@ -21,6 +21,9 @@ module Ladb::OpenCutList
       Plugin.instance.register_command("materials_update") do |material_data|
         update_command(material_data)
       end
+      Plugin.instance.register_command("materials_duplicate") do |material_data|
+        duplicate_command(material_data)
+      end
       Plugin.instance.register_command("materials_remove") do |material_data|
         remove_command(material_data)
       end
@@ -36,14 +39,20 @@ module Ladb::OpenCutList
       Plugin.instance.register_command("materials_get_texture_command") do |material_data|
         get_texture_command(material_data)
       end
+      Plugin.instance.register_command("materials_load_texture_command") do ||
+        load_texture_command
+      end
       Plugin.instance.register_command("materials_add_std_dimension_command") do |settings|
         add_std_dimension_command(settings)
       end
-      Plugin.instance.register_command("materials_set_current_command") do |settings|
-        set_current_command(settings)
+      Plugin.instance.register_command("materials_smart_paint_command") do |settings|
+        smart_paint_command(settings)
       end
       Plugin.instance.register_command("materials_purge_unused") do ||
         purge_unused_command
+      end
+      Plugin.instance.register_command("materials_reset_prices") do ||
+        reset_prices_command
       end
 
     end
@@ -100,6 +109,16 @@ module Ladb::OpenCutList
       worker.run
     end
 
+    def duplicate_command(material_data)
+      require_relative '../worker/materials/materials_duplicate_worker'
+
+      # Setup worker
+      worker = MaterialsDuplicateWorker.new(material_data)
+
+      # Run !
+      worker.run
+    end
+
     def remove_command(material_data)
       require_relative '../worker/materials/materials_remove_worker'
 
@@ -150,6 +169,16 @@ module Ladb::OpenCutList
       worker.run
     end
 
+    def load_texture_command
+      require_relative '../worker/materials/materials_load_texture_worker'
+
+      # Setup worker
+      worker = MaterialsLoadTextureWorker.new
+
+      # Run !
+      worker.run
+    end
+
     def add_std_dimension_command(settings) # Waiting settings = { :material_name => MATERIAL_NAME, :std_dimension => STD_DIMENSION }
       require_relative '../worker/materials/materials_add_std_dimension_worker'
 
@@ -160,21 +189,31 @@ module Ladb::OpenCutList
       worker.run
     end
 
-    def set_current_command(settings)
-      require_relative '../worker/materials/materials_set_current_worker'
+    def smart_paint_command(settings)
+      require_relative '../worker/materials/materials_smart_paint_worker'
 
       # Setup worker
-      worker = MaterialsSetCurrentWorker.new(settings)
+      worker = MaterialsSmartPaintWorker.new(settings)
 
       # Run !
       worker.run
     end
 
-    def purge_unused_command()
+    def purge_unused_command
       require_relative '../worker/materials/materials_purge_unused_worker'
 
       # Setup worker
       worker = MaterialsPurgeUnusedWorker.new
+
+      # Run !
+      worker.run
+    end
+
+    def reset_prices_command
+      require_relative '../worker/materials/materials_reset_prices_worker'
+
+      # Setup worker
+      worker = MaterialsResetPricesWorker.new
 
       # Run !
       worker.run

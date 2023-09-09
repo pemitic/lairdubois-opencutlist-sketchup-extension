@@ -14,24 +14,30 @@
     };
     LadbTextinputNumberWithUnit.prototype = new LadbTextinputAbstract;
 
-    LadbTextinputNumberWithUnit.DEFAULTS = {
-        defaultUnit: '',
+    LadbTextinputNumberWithUnit.DEFAULTS = $.extend(LadbTextinputAbstract.DEFAULTS, {
         units: null
-    };
+    });
 
-    LadbTextinputNumberWithUnit.prototype.reset = function () {
+    LadbTextinputNumberWithUnit.prototype.resetUnit = function () {
 
         this.unit = this.options.defaultUnit;
         if (this.$spanUnit) {
             this.$spanUnit.html(this.getUnitLabel(this.unit));
         }
 
+    };
+
+    LadbTextinputNumberWithUnit.prototype.reset = function () {
+        this.resetUnit();
         LadbTextinputAbstract.prototype.reset.call(this);
     };
 
     LadbTextinputNumberWithUnit.prototype.val = function (value) {
         if (value === undefined) {
             var val = this.$element.val();
+            if (val !== undefined) {
+                val = val.trim();
+            }
             return val ? val + ' ' + this.unit : '';
         }
 
@@ -79,7 +85,7 @@
         }
     };
 
-    LadbTextinputNumberWithUnit.prototype.appendLeftTools = function ($toolContainer) {
+    LadbTextinputNumberWithUnit.prototype.appendLeftTools = function ($toolsContainer) {
         var that = this;
 
         var $span = $('<span />')
@@ -91,7 +97,7 @@
             $.each(unitGroup, function (key, value) {
                 $dropdown.append(
                     $('<li />')
-                        .append ('<a href="#">' + value + '</a></li>')
+                        .append('<a href="#">' + value + '</a></li>')
                         .on('click', function () {
                             $span.html(value);
                             that.unit = key;
@@ -102,12 +108,11 @@
         });
         this.$spanUnit = $span;
 
-        $toolContainer.append($('<div class="ladb-textinput-tool btn-group" />')
+        $toolsContainer.append($('<div class="ladb-textinput-tool btn-group" />')
             .append(
                 $('<button type="button" class="btn btn-infield btn-xs dropdown-toggle" data-toggle="dropdown" />')
                     .append($span)
-                    .append('&nbsp;')
-                    .append('<span class="caret" />')
+                    .append(this.options.units.length > 1 ? '&nbsp;<span class="caret" />' : '')
             )
             .append($dropdown)
         );
@@ -116,11 +121,10 @@
 
     LadbTextinputNumberWithUnit.prototype.init = function () {
         LadbTextinputAbstract.prototype.init.call(this);
-        var that = this;
 
         var value = this.$element.val();
         if (!value) {
-            this.reset();
+            this.resetUnit();
         }
 
     };

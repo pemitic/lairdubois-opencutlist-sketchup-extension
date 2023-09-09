@@ -1,15 +1,14 @@
 {% extends 'core/_modal.twig' %}
 
 {% set id = 'ladb_core_modal_prompt' %}
-{% set noDefaultClose = true %}
 {% set noHeader = title is null %}
 
 {% block bodyInner %}
     <p>{{ text }}</p>
-    <input type="text" id="ladb_prompt_input" class="form-control">
+    <input type="text" id="ladb_prompt_input" class="form-control" value="{{ value|escape('html') }}">
 {% endblock %}
 
-{% block footerInner %}
-    <button type="button" class="btn btn-default" data-dismiss="modal">{{ 'default.cancel'|i18next }}</button>
-    <button type="button" id="ladb_prompt_btn_validate" class="btn btn-primary" data-dismiss="modal" disabled>{{ 'default.validate'|i18next }}</button>
+{% block footerRightInner %}
+    <button class="btn btn-default" data-dismiss="modal">{{ 'default.cancel'|i18next }}</button>
+    <button id="ladb_prompt_btn_validate" class="btn btn-{{ options.validateBtnType|default('primary') }} btn-validate-modal">{% if options.validateBtnIcon is defined %}<i class="ladb-opencutlist-icon-{{ options.validateBtnIcon }}"></i> {% endif %}{{ options.validateBtnLabel|default('default.validate'|i18next) }}</button>
 {% endblock %}

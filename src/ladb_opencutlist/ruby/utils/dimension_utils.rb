@@ -50,7 +50,7 @@
 
     include Singleton
 
-    attr_accessor :decimal_separator, :length_unit
+    attr_accessor :decimal_separator, :length_unit, :length_format, :length_precision
 
     LENGTH_MIN_PRECISION = 3
 
@@ -58,7 +58,7 @@
     LIST_SEPARATOR = ';'.freeze
     DXD_SEPARATOR = 'x'.freeze
 
-    @separator
+    @decimal_separator
     @length_unit
     @length_format
     @length_precision
@@ -106,11 +106,6 @@
 
     # -----
 
-    def from_fractional(i)
-     input_split = (i.split('/').map( &:to_i ))
-     Rational(*input_split)
-    end
-
     def model_units_to_inches(i)
       case @length_unit
       when MILLIMETER
@@ -154,141 +149,80 @@
       end
     end
 
-    # Take a fraction and try to simplify it by turning:
-    # 1. x/0 into x
-    # 2. 0/x into 0
-    #
-    def simplify(i)
-      i = i.to_s
-      match = i.match(/^(\d*)\/(\d*)$/)
-      if match
-        num, den = match.captures
-        if num == '0'
-          return '0'
-        elsif den == '1'
-          return num
-        else
-          return i
-        end
-      else
-        i
-      end
-    end
-
     # Take a single dimension as a string and
     # 1. add units if none are present, assuming that no units means model units
-    # 2. prepend zero if just unit given (may happen!)
-    # 3. add units if none
-    # 4. convert garbage into 0
+    # 2. convert garbage into 0
     #
-    def str_add_units(i)
-      return '0' + unit_sign if i.nil? || i.empty?
-      i = i.strip
-      nu = ""
-      sum = 0
-      if i.is_a?(String)
-        if match = i.match(/^(~?\s*)(\d*(([.,])\d*)?)?\s*(#{UNIT_SYMBOL_MILLIMETER}|#{UNIT_SYMBOL_CENTIMETER}|#{UNIT_SYMBOL_METER}|#{UNIT_SYMBOL_FEET}|#{UNIT_SYMBOL_INCHES})?$/)
-          one, two, three, four, five = match.captures
-          if five.nil?
-            nu = one + two + unit_sign
-          elsif two.empty? and three.nil?  # two could not be nil
-            nu = one + "0" + five
-          else
-            nu = one + two + five
-            #nu = nu.sub(/"/, '\"') # four will not be escaped in this case
-          end
-          if !four.nil?
-            nu.sub!(four, @decimal_separator)
-          end
-        elsif match = i.match(/^~?\s*(((\d*([.,]\d*)?)(\s*\')?)?\s+)?((\d*)\s+)?(\d*\/\d*)?(\s*\")?$/)
-          one, two, three, four, five, six, seven, eight, nine = match.captures
-          if three.nil? && six.nil?
-            nu = simplify(from_fractional(eight)).to_s + '"'
-            #sum = from_fractional(eight).to_f
-          elsif seven.nil? && five.nil?
-            nu = three + " " + eight + '"'
-            #sum = three.to_f + from_fractional(eight).to_f
-          elsif seven.nil? && five == "'"
-            nu = three + "' " + eight + '"'
-            #sum = 12*three.to_f + from_fractional(eight).to_f
-          else
-            nu = three + "' " + seven + " " + eight + '"'
-            #sum = 12*three.to_f + six.to_f + from_fractional(eight).to_f
-          end
-        else
-          nu = '0' + unit_sign # garbage becomes 0
-        end
+    def str_add_units(s)
+      return '0' if !s.is_a?(String) || s.is_a?(String) && s.empty?
+
+      s = s.strip
+      s = s.gsub(/,/, @decimal_separator) # convert separator to native
+      s = s.gsub(/\./, @decimal_separator) # convert separator to native
+
+      unit_present = false
+      if (match = s.match(/^-*(?:[0-9.\/~']+\s*)+(m|cm|mm|\'|\"|yd)\s*$/))
+        unit, = match.captures
+        # puts("parsed unit = #{unit} in #{s}")
+        s = s.gsub(/\s*#{unit}\s*/, "#{unit}") # Remove space around unit
+        unit_present = true
       end
-      nu
+      begin # Try to convert to length
+        x = s.to_l
+        return '0' if x == 0
+      rescue => e
+        # puts("OCL [dimension input error]: #{e}")
+        s = '0'
+      end
+      unless unit_present
+        # puts("default unit = #{unit_sign} in #{s}")
+        s += unit_sign
+      end
+      s
     end
 
-    # Takes a single dimension as a string and converts it into a decimal inch
-    # returns the float as a string
-    def str_to_ifloat(i)
-     i = i.sub(/~/, '') # strip approximate sign away
-     i = i.strip
-     sum = 0
-      # make sure the entry is a string and starts with the proper magic
-      if i.is_a?(String)
-        if match = i.match(/^(\d*([.,]\d*)?)?\s*(#{UNIT_SYMBOL_MILLIMETER}|#{UNIT_SYMBOL_CENTIMETER}|#{UNIT_SYMBOL_METER}|#{UNIT_SYMBOL_FEET}|#{UNIT_SYMBOL_INCHES})?$/)
-          one, two, three = match.captures
-          #puts "i = #{'%7s' % i} => decimal/integer number::  #{'%7s' % one}   #{'%7s' % three}"
-          one = one.sub(/,/, '.')
-          one = one.to_f
-          if three.nil?
-            sum = model_units_to_inches(one)
-          elsif three == UNIT_SYMBOL_MILLIMETER
-            sum = one / 25.4
-          elsif three == UNIT_SYMBOL_CENTIMETER
-            sum = one / 2.54
-          elsif three == UNIT_SYMBOL_METER
-            sum = one / 0.0254
-          elsif three == UNIT_SYMBOL_FEET
-            sum = 12 * one
-          elsif three == UNIT_SYMBOL_INCHES
-            sum = one
-          end
-        elsif match = i.match(/^(((\d*([.,]\d*)?)(\s*\')?)?\s+)?((\d*)\s+)?(\d*\/\d*)?(\s*\")?$/)
-          one, two, three, four, five, six, seven, eight, nine = match.captures
-          if three.nil? && six.nil?
-            #puts "i = #{'%15s' % i} => fractional+unit:: #{'%7s' % eight}  #{nine}"
-            sum = from_fractional(eight).to_f
-          elsif seven.nil? && five.nil?
-            #puts "i = #{'%15s' % i} => inch+fractional+unit #{'%7s' % three} #{'%7s' % eight} #{nine}"
-            sum = three.to_f + from_fractional(eight).to_f
-          elsif seven.nil? && five == "'"
-            #puts "i = #{'%15s' % i} => feet+fractional+unit:: #{'%7s' % three} #{four} #{'%7s' % seven} #{eight} #{nine}"
-            sum = 12 * three.to_f + from_fractional(eight).to_f
-          else
-            #puts "i = #{'%15s' % i} => feet+inch+fractional+unit:: #{'%7s' % three} #{five} #{'%7s' % seven}#{'%7s' % eight} #{nine}"
-            sum = 12 * three.to_f + six.to_f + from_fractional(eight).to_f
-            sum = sum.to_f # force number to be a float, may not be necessary!
-          end
-        else
-          sum = 0 # garbage always becomes 0
-        end
+    # Takes a single dimension as a string and converts it into a
+    # decimal inch.
+    # Returns the float as a string
+    #
+    def str_to_ifloat(s)
+      return '0' if !s.is_a?(String) || s.is_a?(String) && s.empty?
+
+      s = s.sub(/~/, '') # strip approximate sign away
+      s = s.strip
+      s = s.gsub(/,/, @decimal_separator) # convert separator to native
+      s = s.gsub(/\./, @decimal_separator) # convert separator to native
+
+      # Make sure the entry starts with the proper magic
+      s = s.gsub(/\s*\/\s*/, '/') # remove blanks around /
+      begin
+        f = (s.to_l).to_f
+        return '0' if f == 0
+        s = f.to_s
+      rescue => e
+        # puts("OCL [dimension input error]: #{e}")
+        return '0'
       end
-      sum = sum.to_s.sub(/\./, @decimal_separator)
-      sum + UNIT_SYMBOL_INCHES
+      s.gsub(/\./, @decimal_separator) + UNIT_SYMBOL_INCHES
     end
 
     # Takes a single number in a string and converts it to a string
     # in Sketchup internal format (inches, decimal) with unit sign
     #
-    def str_to_istr(i)
-      str_to_ifloat(i)
+    def str_to_istr(s)
+      str_to_ifloat(s)
     end
 
     # Splits a string in the form d;d;...
-    # into single d's and applies the function f to each element
+    # into single d's and applies the function fn to each element
     # returns the concatenated string in the same format
     #
-    def d_transform(i, f)
+    def d_transform(i, fn)
       return '' if i.nil?
       a = i.split(LIST_SEPARATOR)
       r = []
       a.each do |e|
-        r << send(f, e)
+        r << send(fn, e)
       end
       r.join(LIST_SEPARATOR)
     end
@@ -302,10 +236,10 @@
     end
 
     # Splits a string in the form dxd;dxd;...
-    # into single d's and applies the function f to each element
+    # into single d's and applies the function fn to each element
     # returns the concatenated string in the same format
     #
-    def dxd_transform(i, f)
+    def dxd_transform(i, fn)
       return '' if i.nil?
       a = i.split(LIST_SEPARATOR)
       r = []
@@ -313,7 +247,7 @@
         ed = e.split(DXD_SEPARATOR)
         ed[0] = '0' if ed[0].nil? || ed[0].empty?
         ed[1] = '0' if ed[1].nil? || ed[1].empty?
-        r << (send(f, ed[0]) + ' ' + DXD_SEPARATOR + ' ' + send(f, ed[1]))
+        r << (send(fn, ed[0]) + ' ' + DXD_SEPARATOR + ' ' + send(fn, ed[1]))
       end
       r.join(LIST_SEPARATOR)
     end
@@ -336,10 +270,10 @@
     end
 
     # Splits a string in the form dxq;dxq;...
-    # into single d's and applies the function f to each element. q stay unchanged.
+    # into single d's and applies the function fn to each element. q stay unchanged.
     # returns the concatenated string in the same format
     #
-    def dxq_transform(i, f)
+    def dxq_transform(i, fn)
       return '' if i.nil?
       a = i.split(LIST_SEPARATOR)
       r = []
@@ -347,7 +281,7 @@
         ed = e.split(DXD_SEPARATOR)
         ed[0] = '0' if ed[0].nil? || ed[0].empty?
         ed[1] = '0' if ed[1].nil? || ed[1].empty? || ed[1].strip.to_i < 1
-        r << (send(f, ed[0]) + (ed[1] == '0' ? '' : ' ' + DXD_SEPARATOR + ed[1].strip))
+        r << (send(fn, ed[0]) + (ed[1] == '0' ? '' : ' ' + DXD_SEPARATOR + ed[1].strip))
       end
       r.join(LIST_SEPARATOR)
     end
@@ -440,7 +374,7 @@
 
     # Take a float containing a length in inch
     # and convert it to a string representation according to the
-    # local unit settings.
+    # model unit settings.
     #
     def format_to_readable_length(f)
       if f.nil?
@@ -448,7 +382,7 @@
       end
       if model_unit_is_metric
         multiplier = 0.0254
-        precision = [3, @length_precision].max
+        precision = [2, @length_precision].max
         unit_strippedname = UNIT_STRIPPEDNAME_METER
       else
         multiplier = 1 / 12.0
@@ -460,7 +394,7 @@
 
     # Take a float containing an area in inch²
     # and convert it to a string representation according to the
-    # local unit settings.
+    # model unit settings.
     #
     def format_to_readable_area(f2)
       if f2.nil?
@@ -468,7 +402,7 @@
       end
       if model_unit_is_metric
         multiplier = 0.0254**2
-        precision = [3, @length_precision].max
+        precision = [2, @length_precision].max
         unit_strippedname = UNIT_STRIPPEDNAME_METER_2
       else
         multiplier = 1 / 144.0
@@ -480,15 +414,15 @@
 
     # Take a float containing a volume in inch³
     # and convert it to a string representation according to the
-    # local unit settings and the material_type (for Board Foot).
+    # model unit settings and the material_type (for Board Foot).
     #
-    def format_to_readable_volume(f3, material_type)
+    def format_to_readable_volume(f3, material_type = nil)
       if f3.nil?
         return nil
       end
       if model_unit_is_metric
         multiplier = 0.0254**3
-        precision = [3, @length_precision].max
+        precision = [2, @length_precision].max
         unit_strippedname = UNIT_STRIPPEDNAME_METER_3
       else
         if material_type == MaterialAttributes::TYPE_SOLID_WOOD
@@ -502,6 +436,48 @@
         end
       end
       UnitUtils.format_readable(f3 * multiplier, unit_strippedname, precision, precision)
+    end
+
+    # -----
+
+    # Take a Length object and returns is float representation
+    # in current model unit.
+    def length_to_model_unit_float(length)
+      return nil unless length.is_a?(Length)
+      case @length_unit
+      when INCHES
+        length.to_inch
+      when FEET
+        length.to_feet
+      when YARD
+        length.to_yard
+      when MILLIMETER
+        length.to_mm
+      when CENTIMETER
+        length.to_cm
+      when METER
+        length.to_m
+      end
+    end
+
+    # Take a float value that represent a length in current
+    # model unit and convert it to a Length object.
+    def model_unit_float_to_length(f)
+      return nil unless f.is_a?(Float)
+      case @length_unit
+      when INCHES
+        f.to_l
+      when FEET
+        f.feet.to_l
+      when YARD
+        f.yard.to_l
+      when MILLIMETER
+        f.mm.to_l
+      when CENTIMETER
+        f.cm.to_l
+      when METER
+        f.m.to_l
+      end
     end
 
   end

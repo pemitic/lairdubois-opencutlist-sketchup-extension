@@ -1,0 +1,48 @@
+//
+// Editor Export
+//
+
+.ladb-editor-export {
+
+  .ladb-editor-export-columns {
+    border: 1px solid #ccc;
+
+    .ladb-editor-export-columns-header {
+      background: #eee;
+      color: #000;
+      border-bottom: 1px solid #ccc;
+      text-align: center;
+      padding: 5px;
+    }
+
+    .ladb-editor-export-columns-sortable {
+      margin: 0;
+      padding: 10px;
+      min-height: 30vh;
+      max-height: 30vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+
+      .ladb-editor-export-column-item-title {
+        display: inline-block;
+        overflow-x: clip;
+        text-overflow: ellipsis;
+      }
+
+    }
+
+  }
+
+  .ladb-editor-export-buttons {
+    text-align: center;
+    padding: 10px;
+
+    .dropdown-menu {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+  }
+
+}

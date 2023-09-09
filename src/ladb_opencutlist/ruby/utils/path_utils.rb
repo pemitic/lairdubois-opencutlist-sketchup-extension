@@ -1,10 +1,8 @@
 module Ladb::OpenCutList
 
-  require_relative 'model_utils'
-
   class PathUtils
 
-    SEPARATOR = '>'
+    SEPARATOR = '>'.freeze
 
     # -- Serialization --
 
@@ -21,7 +19,7 @@ module Ladb::OpenCutList
       path = []
       entity_ids = serialized_path.split(SEPARATOR)
       entity_ids.each { |entity_id|
-        entity = ModelUtils::find_entity_by_id(Sketchup.active_model, entity_id.to_i)
+        entity = Sketchup.active_model.find_entity_by_id(entity_id.to_i)
         if entity
           path.push(entity)
         else
@@ -31,12 +29,28 @@ module Ladb::OpenCutList
       path
     end
 
+    # -- Named --
+
+    def self.get_named_path(path, ignore_empty_names = true, ignored_leaf_count = 1)  # path is Array<ComponentInstance>
+      return nil if path.nil?
+      path_names = []
+      path.first(path.size - ignored_leaf_count).each { |entity|
+        if ignore_empty_names
+          path_names.push(entity.name) unless entity.name.empty?  # ignore empty names
+        else
+          path_names.push(entity.name.empty? ? "##{entity.entityID}#{entity.is_a?(Sketchup::ComponentInstance) ? " <#{entity.definition.name}>" : ''}" : entity.name)
+        end
+      }
+      path_names  # Array<String>
+    end
+
     # -- Geom --
 
     def self.get_transformation(path)
+      return nil if path.nil? || path.empty?
       transformation = Geom::Transformation.new
       path.each { |entity|
-        transformation *= entity.transformation
+        transformation *= entity.transformation if entity.is_a?(Sketchup::ComponentInstance) || entity.is_a?(Sketchup::Group)
       }
       transformation
     end

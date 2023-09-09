@@ -1,26 +1,26 @@
 # Development Environment Setup Instructions
 
-To be able to rebuild the plugin, you will first need to install a few tools. The plugin itself is written in **JavaScript** and **ruby**, but the distribution archive `dist/ladb_toolbox.rbz` is built by a **gulp** task.
+To rebuild the plugin, you will first need to install a few tools. The plugin itself is written in **JavaScript** and **ruby**, but the distribution archive `dist/ladb_opencutlist.rbz` is built by a **gulp** task.
 
-The required tools and steps for successfully building this plugin are described hereafter.
+The following describes the tools and steps required to successfully create this plugin.
 
 ## 1. Getting **Node.js** and **npm**
 
 Download and install [Node.js](https://nodejs.org/en/download/) - *the asynchronous event driven JavaScript runtime*. This will include [npm](https://www.npmjs.com/) - *the package manager for JavaScript*.
 
-Read this short note about [Installing Node](https://docs.npmjs.com/getting-started/installing-node) and make sure you have the latest version of **npm**:
+Read this short note about [Installing Node](https://docs.npmjs.com/getting-started/installing-node) and make sure you have the latest version of **npm**.
 
 ``` bash
     $ node -v
-    v14.15.2
+    v20.1.0
     $ npm -v
-    6.14.8
+    9.6.4
     $ npm install npm@latest -g
     $ npm -v
-    6.14.9
+    9.6.6
 ```
 
-On Windows you may also have to install `gulp-cli` to be able to run **gulp** from the command line:
+On Windows you *may* also have to install `gulp-cli` to be able to run **gulp** from the command line.
 
 ``` bash
      $ npm install gulp-cli -g
@@ -28,7 +28,7 @@ On Windows you may also have to install `gulp-cli` to be able to run **gulp** fr
 
 ## 2. Getting the Source Code
 
-The best way to get project sources is to clone them from the GitHub repository. For that you need to have [Git](https://git-scm.com/) installed on your computer.
+The best way to get the project sources is to clone them from the GitHub repository. We assume that you have [Git](https://git-scm.com/) installed on your computer.
 This is the preferred way, because updates will be easy to fetch and incorporate into your code.
 
 Move to your project parent folder. Adapt it to your needs and environment.
@@ -43,18 +43,19 @@ And clone the project from sources.
      $ git clone git@github.com:lairdubois/lairdubois-opencutlist-sketchup-extension.git
 ```
 
-Change to the project directory:
+Change to the project directory.
 
 ``` bash
      $ cd lairdubois-opencutlist-sketchup-extension
 ```
 
-In the future, if you want to retrieve origin sources updates, just execute the git pull command from your project directory.
-Caution, changing files will generate conflicts that you will need to resolve.
+In the future, if you want to retrieve updates to the sources, execute the git pull command from your project directory.
 
 ``` bash
      $ git pull origin master
 ```
+
+**Caution**, changing files will generate conflicts that you will have to resolve.
 
 ## 3. Installing Dependencies
 
@@ -64,25 +65,25 @@ From the project directory, change to the `build/` directory. We have placed a `
     $ cd build
     $ npm install
 ```
-What about warnings? You may get some warnings. `gulp-less depends on `request` (to be fixed) and many modules rely on `fsevents`, which is only intended for OSX file events.
+What about warnings? You may get some warnings. `gulp-less` depends on `request` (to be fixed) and many modules rely on `fsevents`, which is only intended for OSX file events.
 
 ## 4. Compiling Templates And Distribution Archive
 
-Templates in the `src/ladb_opencutlist/(less|yaml|twig)` directories are compiled by a **gulp** task. If you change any of these files, you will need to recompile the templates:
+Templates in the `src/ladb_opencutlist/(less|yaml|twig)` directories are compiled by a **gulp** task. If you change any of these files, you will need to recompile the templates.
 
 ``` bash
     $ cd build
     $ gulp compile
 ```
 
-If you wish to build the archive [ladb_opencutlist.rbz](../dist/ladb_opencutlist.rbz), then:
+If you wish to build the archive [ladb_opencutlist.rbz](../dist/ladb_opencutlist.rbz), run these commands.
 
 ``` bash
     $ cd build
     $ gulp build
 ```
 
-If you wish to build the archive [ladb_opencutlist-dev.rbz](../dist/ladb_opencutlist-dev.rbz), then:
+If you wish to build the development archive, run these commands.
 
 ``` bash
     $ cd build
@@ -93,6 +94,8 @@ The default behavior of the **gulp** task (without argument) is to *compile* and
 
 ## 5. Adding a New Language
 
+Note: If you just want to add a new language to **OpenCutList** and you would like to volunteer for the translation, then becoming a translator via [Transifex](https://www.transifex.com/opencutlist/opencutlist/) is a much better way. Your translation may help other users and you will get assistance from the **OpenCutList** team.
+
 Adding a new translation file is simple. Just add a new `.yml` file into the `src/yaml/i18n` directory by duplicating `fr.yml` (or any other file) and changing all the values into the desired language.
 The first entry in the file should have the key `_label` corresponding to a label for the new language.
 
@@ -100,9 +103,7 @@ After compiling the project (see 4.), your new language will appear in the **Pre
 
 Note: this does **NOT** change the SketchUp language. It may even support a language not supported by SketchUp.
 
-Note: If you just want to add a new language to **OpenCutList** and you would like to volunteer for the translation, then becoming a translator via [Transifex](https://www.transifex.com/opencutlist/opencutlist/) is a much better way. Your translation may help other users and you will get assistance from the **OpenCutList** team.
-
-## 6. Run OpenCutList from Dev Project Folder
+## 6. Use OpenCutList from the Source Folder
 
 ### Prerequisite
 
@@ -115,11 +116,15 @@ First, install [AS On-Demand Ruby / Extension Loader](https://alexschreyer.net/p
 
 After installing the AS On-Demand Ruby Extension, go to the **Extensions** menu, select **Ruby / Extension Loader** and **Load single Ruby file / extension (RB)**.
 
-![AS On-Demand Ruby Extension Menu](img/capture-asmenu.png)
+<p align="center">
+<img src="img/capture-asmenu.png" width="644px" alt="AS On-Demand Ruby Extension Menu">
+</p>
 
-Browse to and select the `main.rb` ruby file from the source folder of **OpenCutList**.
+Browse to and select the `ladb_opencutlist.rb` ruby file from the source folder of **OpenCutList**.
 
-![AS On-Demand Ruby Extension File](img/capture-asmain.png)
+<p align="center">
+<img src="img/capture-asmain.png" width="644px" alt="AS On-Demand Ruby Extension File">
+</p>
 
 That's it. You can now play with **OpenCutList**.
 
@@ -127,8 +132,9 @@ That's it. You can now play with **OpenCutList**.
 
 #### Ruby Code Changes
 
-**SketchUp loads ruby files once and does not access them thereafter**. To reflect the changes to the ruby code without reloading SketchUp, you must reload the files that were changed (not `main.rb` if it was not modified).
-Caution! if static or methods definitions were changed, you must restart SketchUp and process from scratch.
+**SketchUp loads ruby files once and does not access them thereafter**. To reflect the changes to the ruby code without reloading SketchUp, you must reload the files that were changed (not `ladb_opencutlist.rb` if it was not modified).
+
+Caution! if static or method definitions were changed, you must restart SketchUp and process from scratch.
 
 #### Yaml or Twig Changes
 

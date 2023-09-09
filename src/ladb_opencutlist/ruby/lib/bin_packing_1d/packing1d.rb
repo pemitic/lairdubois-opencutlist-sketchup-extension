@@ -1,20 +1,10 @@
-module Ladb::OpenCutList
+# frozen_string_literal: true
 
+module Ladb::OpenCutList
   #
   # Module implementing 1D BinPacking
   #
   module BinPacking1D
-
-    # Number of bytes of computer running code
-    # from https://gist.github.com/pithyless/9738125
-    N_BYTES = [42].pack('i').size
-
-    # Number of bits
-    N_BITS = N_BYTES * 16
-
-    # Largest integer on this platform
-    MAX_INT = 2**(N_BITS - 2) - 1
-
     #
     # Error used by Timer when execution of algorithm
     # takes too long (defined in Option).
@@ -22,25 +12,20 @@ module Ladb::OpenCutList
     class TimeoutError < StandardError
     end
 
-    # Type of a new bin.
-    BIN_TYPE_NEW = 0
-    # Type of leftover/scrap bin.
-    BIN_TYPE_LO = 1
-
     # No errors during packing.
     ERROR_NONE = 0
-    # Solution may not be optimal.
-    ERROR_SUBOPT = 1
-    # No bins available for packing.
-    ERROR_NO_BIN = 2
-    # Bad parameter
+    # Error when no bin for packing available.
+    ERROR_NO_BIN = 1
+    # Error when no boxes for packing available.
+    ERROR_NO_BOX = 2
+    # Error in parameters.
     ERROR_PARAMETERS = 3
-    # Catch for bad errors with unknown cause.
-    ERROR_BAD_ERROR = 4
-    # No boxes available to pack.
-    ERROR_NO_BOX = 5
-    # Error when subsetsum takes too long.
-    ERROR_TIMEOUT = 6
+    # Error when no placement possible, e.g. boxes larger than bin.
+    ERROR_NO_PLACEMENT_POSSIBLE = 4
+    # Error that needs further debugging.
+    ERROR_BAD_ERROR = 5
+    # Error in step by step run
+    ERROR_STEP_BY_STEP = 6
 
     # A large saw kerf warning.
     WARNING_SAW_KERF_LARGE = 0
@@ -50,27 +35,35 @@ module Ladb::OpenCutList
     WARNING_ILLEGAL_SIZED_BOX = 2
     # A bin with zero or negative length.
     WARNING_ILLEGAL_SIZED_BIN = 3
-    # A suboptimal algorithm was used.
-    WARNING_ALGORITHM_FFD = 4
+    # Error when subset sum takes too long.
+    WARNING_TIMEOUT = 4
+    # Solution may not be optimal (not reliable).
+    WARNING_SUBOPTIMAL = 6
 
     # If trimsize/saw kerf > SIZE_WARNING_FACTOR*largest leftover.
     SIZE_WARNING_FACTOR = 0.25
 
-    # Default allocated computation time in seconds.
+    # Default allocated computation time in seconds for DP algorithm.
     MAX_TIME = 3
 
     # Epsilon precision for comparison.
     # Smaller than this is considered zero.
     EPS = 0.0001
 
-    # With more than this number of parts, we split into
-    # groups and optimize each group.
-    MAX_PARTS = 80
+    # With more than this number of parts, parts will
+    # be split into groups and each group optimized on its own.
+    MAX_PARTS = 250
 
-    # Algorithm used is subset sum.
-    ALG_SUBSET_SUM = 1
-    # Algorithm used is FFD.
-    ALG_FFD = 2
+    # Algorithm used is a modified Subset Sum.
+    ALG_SUBSET_OPT_V1 = 1
+    ALG_SUBSET_OPT_V2 = 2
+    # Algorithm used is first fit decreasing (FFD).
+    ALG_FFD = 3
+
+    # Type of a new bin.
+    BIN_TYPE_AUTO_GENERATED = 0
+    # Type of leftover/scrap bin.
+    BIN_TYPE_USER_DEFINED = 1
 
     #
     # Exception raised in this module.
@@ -79,10 +72,9 @@ module Ladb::OpenCutList
     end
 
     #
-    # Top level class (abstract class)
+    # Bin Packing in 1D
     #
     class Packing1D
-
       # Program options, passed to most subclasses.
       attr_accessor :options
 
@@ -98,13 +90,11 @@ module Ladb::OpenCutList
       # Prints a message when debug option is on or
       # when called with option true.
       #
-      def dbg(msg, dbg=false)
+      def dbg(msg, debug = false)
         # assuming @options exists
-        if dbg
-          puts msg + "\n"
-        else
-          puts msg + "\n" if @options.debug
-        end
+        return if @options.nil?
+
+        puts("#{msg}\n") if debug || @options.debug
       end
     end
   end

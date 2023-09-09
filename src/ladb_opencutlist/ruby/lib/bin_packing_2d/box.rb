@@ -1,12 +1,12 @@
-module Ladb::OpenCutList::BinPacking2D
+# frozen_string_literal: true
 
+module Ladb::OpenCutList::BinPacking2D
   #
   # Implements an element to pack into a Bin.
   #
   class Box
-
     # Position of this Box inside the enclosing Bin.
-    attr_reader :x, :y
+    attr_reader :x_pos, :y_pos
 
     # Length this Box.
     attr_reader :length
@@ -23,20 +23,31 @@ module Ladb::OpenCutList::BinPacking2D
     # Reference to an external object. This value is kept during optimization.
     attr_reader :data
 
+    # Component ID. Unique sortable key per items sharing the same definition.
+    attr_reader :cid
+
     #
     # Initializes a new Box, ensure that it has a length and width > 0.
     #
-    def initialize(length, width, rotatable, data)
-      @x = 0
-      @y = 0
+    def initialize(length, width, rotatable, cid = 1, data = nil)
+      @x_pos = 0
+      @y_pos = 0
       @length = length * 1.0
       @width = width * 1.0
 
-      raise(Packing2DError, "Trying to initialize a box with zero or negative length/width!") if @length <= 0.0 || @width <= 0.0
+      raise(Packing2DError, 'Trying to initialize a box with zero or negative length/width!') \
+        if @length <= 0.0 || @width <= 0.0
 
       @rotatable = rotatable
       @rotated = false
       @data = data
+      # Component id (cid) is used to keep boxes together
+      # that have identical dimensions, but different definitions.
+      @cid = if cid.nil?
+               1
+             else
+               cid
+             end
     end
 
     #
@@ -50,39 +61,39 @@ module Ladb::OpenCutList::BinPacking2D
     # Returns true if the Box was rotated.
     #
     def rotated?
-      return @rotated
+      @rotated
     end
 
     #
     # Rotates the Box by 90 deg. if option permits.
     #
     def rotate
-      if @rotatable
-        # Only rotate if length and width are different, otherwise does not
-        # make sense.
-        if (@length - @width).abs > EPS
-          @width, @length = [@length, @width]
-          @rotated = !@rotated
-        end
-      end
+      return unless @rotatable || (@length - @width).abs < EPS
+
+      # Only rotate if length and width are different, otherwise does not
+      # make sense.
+      @width, @length = [@length, @width]
+      @rotated = !@rotated
     end
 
     #
     # Sets the position of this Box inside a Bin when placed into a Leftover by Packer.
     #
-    def set_position(x, y)
-      @x = x
-      @y = y
-      raise(Packing2DError, "Trying to initialize a box with negative x or y!") if @x < 0.0 || @y < 0.0
+    def set_position(x_pos, y_pos)
+      @x_pos = x_pos
+      @y_pos = y_pos
+      raise(Packing2DError, 'Trying to initialize a box with negative x or y!') if @x_pos < 0.0 || @y_pos < 0.0
     end
 
     #
     # Checks if this Box would fit into a rectangle given by length and width.
     #
     def fits_into?(length, width)
-      # EPS tolerance because of conversion from mm to decimal inches!
+      # EPS tolerance because of SketchUp conversion from mm to decimal inches!
       return true if length - @length >= -EPS && width - @width >= -EPS
+
       return true if @rotatable && width - @length >= -EPS && length - @width >= -EPS
+
       false
     end
 
@@ -104,7 +115,7 @@ module Ladb::OpenCutList::BinPacking2D
     end
 
     #
-    # Returns true if this Box is equal to another Box.
+    # Returns true if this Box is equal to other Box.
     #
     def equal?(other)
       return true if other.nil?
@@ -117,14 +128,29 @@ module Ladb::OpenCutList::BinPacking2D
     end
 
     #
+    # Returns true if this Box is strictly greater than other Box.
+    #
+    def greater?(other)
+      return true if other.nil?
+
+      return true if (@length >= other.length) && (@width >= other.width)
+
+      return true if @rotatable && (@width >= other.length) && (@length >= other.width)
+
+      false
+    end
+
+    #
     # Return true if this Box is "very" different from another Box, e.g. 10% difference in both directions.
     #
-    def different?(box)
-      return true if box.nil?
+    def different?(other)
+      return true if other.nil?
 
-      return true if (@length - box.length).abs > box.length * DIFF_PERCENTAGE_BOX || (@width - box.width).abs > box.width * DIFF_PERCENTAGE_BOX
+      return true if (@length - other.length).abs > other.length * DIFF_PERCENTAGE_BOX || \
+                     (@width - other.width).abs > other.width * DIFF_PERCENTAGE_BOX
 
-      return true if @rotatable && ((@length - box.width).abs >= box.length * DIFF_PERCENTAGE_BOX || (@width - box.length).abs >= box.width * DIFF_PERCENTAGE_BOX)
+      return true if @rotatable && ((@length - other.width).abs >= other.length * DIFF_PERCENTAGE_BOX || \
+                                    (@width - other.length).abs >= other.width * DIFF_PERCENTAGE_BOX)
 
       false
     end
@@ -133,17 +159,10 @@ module Ladb::OpenCutList::BinPacking2D
     # Debugging!
     #
     def to_str
-      "box : #{"%5d" % object_id} [#{"%9.2f" % @x}, #{"%9.2f" % @y}, " \
-      "#{"%9.2f" % @length}, #{"%9.2f" % @width}], " \
-      "rotated = #{@rotated}[rotatable=#{@rotatable}]"
-    end
-
-    #
-    # Debugging!
-    #
-    def to_octave
-      "rectangle(\"Position\", [#{@x},#{@y},#{@length},#{@width}], " \
-      "\"Facecolor\", blue); # box"
+      s = "box : #{format('%5d', object_id)} [#{format('%9.2f', @x_pos)}, "
+      s += "#{format('%9.2f', @y_pos)}, #{format('%9.2f', @length)}, "
+      s += "#{format('%9.2f', @width)}], "
+      s + "rotated = #{@rotated}[rotatable=#{@rotatable}]"
     end
   end
 end

@@ -16,6 +16,10 @@ LadbTextinputAbstract.DEFAULTS = {
     resetValue: ''
 };
 
+LadbTextinputAbstract.prototype.focus = function () {
+    this.$element.focus();
+};
+
 LadbTextinputAbstract.prototype.disable = function () {
     this.$element.prop('disabled', true);
     this.$resetBtn.hide();
@@ -35,6 +39,10 @@ LadbTextinputAbstract.prototype.reset = function () {
 
 LadbTextinputAbstract.prototype.val = function (value) {
     return this.$element.val(value);
+};
+
+LadbTextinputAbstract.prototype.isMultiple = function () {
+    return this.$element.data('multiple') === true;
 };
 
 /////
@@ -62,10 +70,11 @@ LadbTextinputAbstract.prototype.appendRightTools = function ($toolsContainer) {
     var that = this;
 
     var $resetBtn =
-        $('<div class="ladb-textinput-tool ladb-textinput-tool-btn ladb-btn-reset" tabindex="-1"><i class="ladb-opencutlist-icon-clear"></i></div>')
+        $('<div class="ladb-textinput-tool ladb-textinput-tool-btn ladb-btn-reset" tabindex="-1" data-toggle="tooltip" title="' + i18next.t('core.component.textinput.reset') + '"><i class="ladb-opencutlist-icon-clear"></i></div>')
             .on('click', function() {
                 that.reset();
                 $(this).blur();
+                that.focus();
             })
     ;
     $toolsContainer.append($resetBtn);
@@ -112,6 +121,31 @@ LadbTextinputAbstract.prototype.init = function () {
             });
         });
 
+    }
+
+    // Multiple value
+    if (this.$element.data('multiple')) {
+
+        // Set placeholder if value are multiple
+        this.$element.attr('placeholder', i18next.t('tab.cutlist.edit_part.multiple_values'));
+
+        // Remove placeholder and set multiple to false on value edited
+        this.$element.on('input change', function () {
+            that.$element
+                .attr('placeholder', ' ')
+                .data('multiple', false)
+            ;
+        });
+
+    }
+
+    if (this.$element.attr('placeholder') === undefined) {
+        this.$element.attr('placeholder', ' ');
+    }
+
+    // Disabled ?
+    if (this.$element.prop('disabled')) {
+        this.disable();
     }
 
 };

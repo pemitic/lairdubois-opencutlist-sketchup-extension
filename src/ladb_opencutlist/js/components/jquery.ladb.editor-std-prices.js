@@ -233,8 +233,19 @@
                 for (i = 0; i < stds.stdWidths.length; i++) {
                     stdsA[stds.stdWidths[i]] = stds.stdWidths[i];
                 }
+                for (i = 0; i < stds.stdLengths.length; i++) {
+                    stdsB[stds.stdLengths[i]] = stds.stdLengths[i];
+                }
                 this.defaultUnit = '$_' + that.options.lengthUnitStrippedname;
-                enabledUnitKeys = [ '$_m', '$_ft' ];
+                enabledUnitKeys = [ '$_m', '$_ft', '$_i' ];
+                break;
+
+            case 6: /* TYPE_VENEER */
+                for (i = 0; i < stds.stdSizes.length; i++) {
+                    stdsA[stds.stdSizes[i]] = stds.stdSizes[i];
+                }
+                this.defaultUnit = '$_' + that.options.lengthUnitStrippedname + '2';
+                enabledUnitKeys = [ '$_m2', '$_m3', '$_ft2', '$_ft3', '$_ft2', '$_i' ];
                 break;
 
         }
@@ -254,7 +265,7 @@
             });
         }
 
-        // Convert stds to inch fload representation
+        // Convert stds to inch float representation
         rubyCallCommand('core_length_to_float', stdsA, function (responseA) {
 
             $.each(responseA, function (k, v) {

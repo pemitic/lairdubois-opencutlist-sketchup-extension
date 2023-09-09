@@ -5,16 +5,22 @@
 {% block headerToolsInner %}
     {{ parent() }}
     <div class="btn-group">
-        <button id="ladb_btn_menu" class="no-print btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="ladb-opencutlist-icon-submenu"></i> <span class="caret"></span></button>
+        <button id="ladb_btn_menu" class="no-print btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="ladb-opencutlist-icon-preset"></i> {{ 'core.preset.manage'|i18next }} <span class="caret"></span></button>
         <ul class="dropdown-menu dropdown-menu-right">
-            <li class="dropdown-header dropdown-header-top">Debug</li>
-            <li><a id="ladb_item_dump_global_presets" href="#">{{ 'tab.settings.menu.dump_global_presets'|i18next }}</a></li>
-            <li><a id="ladb_item_dump_model_presets" href="#">{{ 'tab.settings.menu.dump_model_presets'|i18next }}</a></li>
+            <li><a id="ladb_item_export_global_presets" href="#">{{ 'tab.settings.presets.export_global_presets'|i18next }}...</a></li>
+            <li><a id="ladb_item_import_global_presets" href="#">{{ 'tab.settings.presets.import_global_presets'|i18next }}...</a></li>
             <li class="divider"></li>
-            <li class="dropdown-item-danger"><a id="ladb_item_reset_global_presets" href="#">{{ 'tab.settings.menu.reset_global_presets'|i18next }}...</a></li>
-            <li class="dropdown-item-danger"><a id="ladb_item_reset_model_presets" href="#">{{ 'tab.settings.menu.reset_model_presets'|i18next }}...</a></li>
+            <li class="dropdown-item-danger"><a id="ladb_item_reset_global_presets" href="#">{{ 'tab.settings.presets.reset_global_presets'|i18next }}...</a></li>
+            <li class="dropdown-item-danger"><a id="ladb_item_reset_model_presets" href="#">{{ 'tab.settings.presets.reset_model_presets'|i18next }}...</a></li>
+            {% if capabilities.is_dev %}
+                <li class="dropdown-header dropdown-header-middle">Debug</li>
+                <li><a id="ladb_item_dump_global_presets" href="#">{{ 'tab.settings.presets.dump_global_presets'|i18next }}</a></li>
+                <li><a id="ladb_item_dump_model_presets" href="#">{{ 'tab.settings.presets.dump_model_presets'|i18next }}</a></li>
+            {% endif %}
         </ul>
     </div>
+    &nbsp;
+    <button class="btn btn-default" data-help-page="settings"><i class="ladb-opencutlist-icon-help"></i></button>
 {% endblock %}
 
 
@@ -23,7 +29,6 @@
         <div class="col-xs-6">
             <div id="ladb_settings_panel_global" class="panel panel-default">
                 <div class="panel-heading">
-                    <button id="ladb_btn_reset" class="btn btn-default btn-xs pull-right"><i class="ladb-opencutlist-icon-reset"></i> {{ 'default.reset_to_app_defaults'|i18next }}</button>
                     <strong>{{ 'tab.settings.global_settings'|i18next }}</strong>
                 </div>
                 <div class="panel-body">
@@ -38,31 +43,24 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <button id="ladb_btn_reset" class="btn btn-default btn-xs pull-right"><i class="ladb-opencutlist-icon-reset"></i> {{ 'default.reset_to_app_defaults'|i18next }}</button>
                         <label>{{ 'tab.settings.language'|i18next }}</label>
                         <select id="ladb_select_language" class="form-control">
-                            {% set preferedLanguage = null %}
+                            <option value="auto" data-content="<span style='color: #ccc; font-style: italic;'>{{ 'tab.settings.language_auto'|i18next }}</span>"></option>
+                            <option data-divider="true"></option>
                             {% for language in capabilities.available_languages %}
-                                {% if capabilities.locale starts with language %}
-                                    {% set preferedLanguage = language %}
-                                {% endif %}
-                            {% endfor %}
-                            {% if preferedLanguage %}
-                                <option value="{{ preferedLanguage }}" data-content="<span class='ladb-language-prefix'>{{ preferedLanguage|upper }}</span>{{ ('language.'~preferedLanguage)|i18next }}"></option>
-                                <option data-divider="true"></option>
-                            {% endif %}
-                            {% for language in capabilities.available_languages if language != preferedLanguage %}
                                 <option value="{{ language }}" data-content="<span class='ladb-language-prefix'>{{ language|upper }}</span>{{ ('language.'~language)|i18next }}"></option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-group hide">
-                        <label>{{ 'tab.settings.zoom'|i18next }}</label>
-                        <select id="ladb_select_zoom" class="form-control"{% if not compatible_with('body.zoom') %} disabled{% endif %}>
-                            <option value="100%">{{ 'tab.settings.zoom_normal'|i18next }}</option>
-                            <option value="90%">{{ 'tab.settings.zoom_small'|i18next }}</option>
-                            <option value="79%">{{ 'tab.settings.zoom_tiny'|i18next }}</option>
+                    <div class="form-group">
+                        <label>{{ 'tab.settings.print_margin'|i18next }}</label>
+                        <select id="ladb_select_print_margin" class="form-control">
+                            <option value="0">{{ 'tab.settings.print_margin_normal'|i18next }}</option>
+                            <option value="1">{{ 'tab.settings.print_margin_small'|i18next }}</option>
                         </select>
                     </div>
+                    <hr />
                     <div class="form-group">
                         <label>{{ 'tab.settings.size_and_position'|i18next }}</label>
                         <div class="ladb-fake-dialog">

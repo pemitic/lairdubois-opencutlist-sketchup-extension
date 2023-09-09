@@ -3,16 +3,16 @@
 {% block headerToolsInner %}
     <div class="ladb-capabilities-host-infos pull-right">
         <ul>
-            <li><strong>Sketchup {{ capabilities.sketchup_is_pro ? 'Pro' : 'Make' }}</strong> {{ capabilities.sketchup_version }}</li>{% if capabilities.is_64bit %}<li>64 bits</li>{% endif %}<li><strong>Ruby</strong> {{ capabilities.ruby_version }}</li><li>{{ capabilities.current_os }}</li><li>{{ capabilities.locale }}</li>
+            <li><strong>Sketchup {{ capabilities.sketchup_is_pro ? 'Pro' : 'Make' }}</strong> {{ capabilities.sketchup_version }}</li>{% if capabilities.is_64bit %}<li>64 bits</li>{% endif %}<li><strong>Ruby</strong> {{ capabilities.ruby_version }}</li>{% if capabilities.chrome_version %}<li><strong>Chrome</strong> {{ capabilities.chrome_version }}</li>{% endif %}<li>{{ capabilities.platform_name }}</li><li>{{ capabilities.locale }}</li>
         </ul>
     </div>
 {% endblock %}
 
 {% block containerInner %}
-    <img src="../img/icon-114x114.png" class="pull-right">
+    <img src="../img/icon.svg" width="114" class="pull-right">
     <h3>{{ 'tab.about.version'|i18next }}</h3>
     <p>
-        <span class="ladb-capabilities-version">{{ capabilities.version }}</span>&nbsp;/&nbsp;<span class="ladb-capabilities-language">{{ capabilities.language }}</span>&nbsp;&nbsp;<small class="ladb-capabilities-build">( build: {{ capabilities.build }} )</small><a href="https://github.com/lairdubois/lairdubois-opencutlist-sketchup-extension/blob/master/CHANGELOG.md" target="_blank" class="ladb-changelog-link">CHANGELOG</a>
+        <span class="ladb-capabilities-version">{{ capabilities.version }}</span>&nbsp;/&nbsp;<span class="ladb-capabilities-language">{{ capabilities.language }}</span>&nbsp;&nbsp;<small class="ladb-capabilities-build">( build: {{ capabilities.build }} )</small><a id="ladb_link_changelog" href="#" class="ladb-changelog-link">CHANGELOG</a>
     </p>
     <h3>{{ 'tab.about.credits'|i18next }}</h3>
     <p>{{ 'tab.about.credits_authors'|i18next }}</p>
@@ -42,14 +42,17 @@
                             <span class="label label-default">CSS</span>
                         </li>
                         <li>
-                            <a href="https://silviomoreto.github.io/bootstrap-select/"
-                               target="_blank">Bootstrap-select</a>
+                            <a href="https://silviomoreto.github.io/bootstrap-select/" target="_blank">Bootstrap-select</a>
                             <span class="label label-default">JS</span>
                             <span class="label label-default">CSS</span>
                         </li>
                         <li>
-                            <a href="http://sliptree.github.io/bootstrap-tokenfield"
-                               target="_blank">Bootstrap-tokenfield</a>
+                            <a href="http://sliptree.github.io/bootstrap-tokenfield" target="_blank">Bootstrap-tokenfield</a>
+                            <span class="label label-default">JS</span>
+                            <span class="label label-default">CSS</span>
+                        </li>
+                        <li>
+                            <a href="https://seiyria.com/bootstrap-slider/" target="_blank">Bootstrap-slider</a>
                             <span class="label label-default">JS</span>
                             <span class="label label-default">CSS</span>
                         </li>
@@ -62,11 +65,16 @@
                             <span class="label label-default">JS</span>
                         </li>
                         <li>
-                            <a href="http://i18next.com/" target="_blank">i18next</a>
+                            <a href="https://www.i18next.com" target="_blank">i18next</a>
                             <span class="label label-default">JS</span>
                         </li>
                         <li>
                             <a href="http://ned.im/noty/" target="_blank">Noty</a>
+                            <span class="label label-default">JS</span>
+                            <span class="label label-default">CSS</span>
+                        </li>
+                        <li>
+                            <a href="https://codemirror.net" target="_blank">CodeMirror</a>
                             <span class="label label-default">JS</span>
                             <span class="label label-default">CSS</span>
                         </li>
@@ -79,16 +87,17 @@
                             <span class="label label-default">Ruby</span>
                         </li>
                         <li>
-                            <a href="https://github.com/rubysolo/dentaku" target="_blank">dentaku</a>
-                            <span class="label label-default">Ruby</span>
-                        </li>
-                        <li>
                             <a href="https://www.flaticon.com/" target="_blank">flaticon.com</a>
                             <span class="label label-default">SVG</span>
                         </li>
                         <li>
                             <a href="https://www.countryflags.com/" target="_blank">Countryflags.com</a>
                             <span class="label label-default">PNG</span>
+                        </li>
+                        <li>
+                            <a href="https://threejs.org/" target="_blank">Three.js</a>
+                            <span class="label label-default">JS</span>
+                            <span class="label label-default">WebGL</span>
                         </li>
                     </ul>
 

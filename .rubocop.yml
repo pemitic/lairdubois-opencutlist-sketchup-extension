@@ -1,0 +1,35 @@
+#
+# run with "rubocop" from this directory (no arguments)
+# configuration documentation https://rubocop-sketchup.readthedocs.io/en/latest/
+# this config is similar to https://rubocop-sketchup.readthedocs.io/en/latest/basic_usage/
+# needs
+# $ gem install rubocop-sketchup
+# check the versions that were installed
+# $ gem list --local | grep rubocop
+# rubocop (1.48.1)
+# rubocop-ast (1.28.0)
+# rubocop-sketchup (1.4.0)
+#
+require: rubocop-sketchup
+
+AllCops:
+  SketchUp:
+    TargetSketchUpVersion: 2018
+  Exclude:
+    - test/*
+  DisabledByDefault: true
+
+SketchupDeprecations:
+  Enabled: true
+
+SketchupPerformance:
+  Enabled: true
+
+SketchupRequirements:
+  Enabled: true
+
+SketchupSuggestions:
+  Enabled: true
+
+SketchupBugs:
+  Enabled: true

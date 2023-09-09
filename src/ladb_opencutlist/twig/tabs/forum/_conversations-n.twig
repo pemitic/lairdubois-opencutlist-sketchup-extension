@@ -3,19 +3,19 @@
         <div class="ladb-forum-conversation-box" data-conversation-id="{{ conversation.id }}">
             <div class="ladb-forum-conversation-content">
                 <div class="media">
-                    <div class="media-left"><img src="{{ conversation.fromCollective.imageUrl }}" alt="{{ conversation.fromCollective.name }}" class="ladb-forum-conversation-author-avatar"></div>
+                    <div class="media-left"><img src="{{ conversation.fromAccount.imageUrl }}" alt="{{ conversation.fromAccount.name }}" class="ladb-forum-conversation-author-avatar"></div>
                     <div class="media-body">
                         <div class="ladb-forum-conversation-header">
                             <div class="ladb-forum-conversation-title">{{ conversation.title }}</div>
                             <div class="ladb-forum-conversation-subheader">
-                                <div class="ladb-forum-conversation-author"><a href="https://opencollective.com/{{ conversation.fromCollective.slug }}" target="_blank">{{ conversation.fromCollective.name }}</a></div>
-                                <div class="ladb-forum-conversation-age">{{ conversation.createdAt|date(('default.date_format'|i18next())) }}</div>
+                                <div class="ladb-forum-conversation-author"><a href="https://opencollective.com/{{ conversation.fromAccount.slug }}" target="_blank">{{ conversation.fromAccount.name }}</a></div>
+                                <div class="ladb-forum-conversation-age">{{ conversation.createdAt|date(('default.date_format'|i18next)) }}</div>
                             </div>
                         </div>
                         <div class="ladb-forum-conversation-summary">{{ conversation.summary|sanitize_links }}</div>
                         <ul class="ladb-forum-conversation-tags">
                             {% for tag in conversation.tags %}
-                                <li><a href="#" class="ladb-forum-tag{% if tag == tagFilter %} ladb-active{% endif %}" data-tag="{{ conversationsTag.tag }}">{{ tag }}</a></li>
+                                <li><a href="#" class="ladb-forum-tag{% if tag == tagFilter %} ladb-active{% endif %}" data-tag="{{ tag }}">{{ tag }}</a></li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -27,6 +27,6 @@
 {% endfor %}
 {% if nextPage %}
     <div class="text-center">
-        <button class="btn btn-default ladb-forum-next-page-btn"> {{ 'default.load_more'|i18next }}</button>
+        <button class="btn btn-default ladb-forum-next-page-btn"> {{ 'default.load_more'|i18next }}...</button>
     </div>
 {% endif %}

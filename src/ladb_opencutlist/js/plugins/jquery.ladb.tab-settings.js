@@ -27,6 +27,159 @@
         $('.ladb-reaload-msg-' + language, $reloadAlert).show();
     };
 
+    LadbTabSettings.prototype.bindExportImportGlobalPresetModal = function (actionName, presets, btnActionCallback) {
+        var that = this;
+
+        var $modal = that.appendModalInside('ladb_settings_modal_global_presets', 'tabs/settings/_modal-global-presets.twig', {
+            actionName: actionName,
+            presets: presets
+        });
+
+        // Fetch UI elements
+        var $btnSelectAll = $('#ladb_settings_btn_select_all', $modal);
+        var $btnUnselectAll = $('#ladb_settings_btn_unselect_all', $modal);
+        var $btnAction = $('#ladb_settings_btn_action', $modal);
+
+        var fnUpdateRow = function ($row, selected) {
+            if (selected === undefined) {    // Undefined  = toggle
+                $row.toggleClass('selected')
+                selected = $row.hasClass('selected');
+            } else {
+                if (selected) {
+                    $row.addClass('selected');
+                } else {
+                    $row.removeClass('selected');
+                }
+            }
+            var $i = $('i', $row);
+            if (selected) {
+                $i.addClass('ladb-opencutlist-icon-check-box-with-check-sign');
+                $i.removeClass('ladb-opencutlist-icon-check-box');
+            } else {
+                $i.removeClass('ladb-opencutlist-icon-check-box-with-check-sign');
+                $i.addClass('ladb-opencutlist-icon-check-box');
+            }
+        };
+        var fnUpdateActionStatus = function () {
+            $btnAction.prop('disabled', $('.ladb-preset-row.selected').length === 0);
+        }
+
+        // Bind buttons
+        $btnSelectAll.on('click', function () {
+            $('.ladb-preset-row', $modal).each(function () {
+                fnUpdateRow($(this), true);
+            });
+            fnUpdateActionStatus();
+            $(this).blur();
+            return false;
+        });
+        $btnUnselectAll.on('click', function () {
+            $('.ladb-preset-row', $modal).each(function () {
+                fnUpdateRow($(this), false);
+            });
+            fnUpdateActionStatus();
+            $(this).blur();
+            return false;
+        });
+        $btnAction.on('click', function () {
+
+            var pathsFilter = []
+            $('.ladb-preset-row', $modal).each(function () {
+                if ($(this).hasClass('selected')) {
+                    var path = $(this).data('path');
+                    pathsFilter.push(path);
+                }
+            });
+
+            btnActionCallback(pathsFilter);
+
+            // Hide modal
+            $modal.modal('hide');
+
+        });
+        $('.ladb-preset-row', $modal).on('click', function () {
+            fnUpdateRow($(this))
+            fnUpdateActionStatus();
+        });
+
+        fnUpdateActionStatus();
+
+        // Show modal
+        $modal.modal('show');
+
+    };
+
+    LadbTabSettings.prototype.exportGlobalPresets = function () {
+        var that = this;
+
+        rubyCallCommand('settings_get_global_presets', null, function (response) {
+
+            if ($.isEmptyObject(response)) {
+                that.dialog.notifyErrors([ 'tab.settings.presets.error.no_preset_to_export' ]);
+            } else {
+                that.bindExportImportGlobalPresetModal('export', response, function (pathsFilter) {
+
+                    rubyCallCommand('settings_export_global_presets_to_json', { paths_filter: pathsFilter }, function (response) {
+
+                        if (response.success) {
+                            that.dialog.notify(i18next.t('tab.settings.presets.export_global_presets_success'), 'success');
+                        }
+
+                    });
+
+                });
+            }
+
+        });
+
+    };
+
+    LadbTabSettings.prototype.importGlobalPresets = function () {
+        var that = this;
+
+        rubyCallCommand('settings_load_global_presets_from_json', null, function (response) {
+
+            if (!response.cancelled) {
+                if (response.errors) {
+                    that.dialog.notifyErrors(response.errors);
+                } else {
+
+                    if ($.isEmptyObject(response)) {
+                        that.dialog.notifyErrors([ 'tab.settings.presets.error.no_preset_to_import' ]);
+                    } else {
+                        that.bindExportImportGlobalPresetModal('import', response, function (pathsFilter) {
+
+                            for (var dictionary in response) {
+                                for (var section in response[dictionary]) {
+                                    for (var name in response[dictionary][section]) {
+                                        if (pathsFilter.includes(dictionary + '|' + section + '|' + name)) {
+                                            rubyCallCommand('core_set_global_preset', {
+                                                dictionary: dictionary,
+                                                section: section,
+                                                name: name,
+                                                values: response[dictionary][section][name]
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+
+                            that.dialog.alert(null, i18next.t('tab.settings.presets.import_global_presets_success'), function () {
+                                rubyCallCommand('core_dialog_hide');
+                            }, {
+                                okBtnLabel: i18next.t('default.close')
+                            });
+
+                        });
+                    }
+
+                }
+            }
+
+        });
+
+    };
+
     // Init /////
 
     LadbTabSettings.prototype.registerCommands = function () {
@@ -55,6 +208,12 @@
 
         // Menu /////
 
+        $('#ladb_item_export_global_presets', this.$element).on('click', function () {
+            that.exportGlobalPresets();
+        });
+        $('#ladb_item_import_global_presets', this.$element).on('click', function () {
+            that.importGlobalPresets();
+        });
         $('#ladb_item_dump_global_presets', this.$element).on('click', function () {
             rubyCallCommand('settings_dump_global_presets');
         });
@@ -62,9 +221,9 @@
             rubyCallCommand('settings_dump_model_presets');
         });
         $('#ladb_item_reset_global_presets', this.$element).on('click', function () {
-            that.dialog.confirm(i18next.t('default.caution'), i18next.t('tab.settings.menu.reset_global_presets_confirm'), function () {
+            that.dialog.confirm(i18next.t('default.caution'), i18next.t('tab.settings.presets.reset_global_presets_confirm'), function () {
                 rubyCallCommand('settings_reset_global_presets', null, function () {
-                    that.dialog.alert(null, i18next.t('tab.settings.menu.reset_global_presets_success'), function () {
+                    that.dialog.alert(null, i18next.t('tab.settings.presets.reset_global_presets_success'), function () {
                         rubyCallCommand('core_dialog_hide');
                     }, {
                         okBtnLabel: i18next.t('default.close')
@@ -75,9 +234,9 @@
             })
         });
         $('#ladb_item_reset_model_presets', this.$element).on('click', function () {
-            that.dialog.confirm(i18next.t('default.caution'), i18next.t('tab.settings.menu.reset_model_presets_confirm'), function () {
+            that.dialog.confirm(i18next.t('default.caution'), i18next.t('tab.settings.presets.reset_model_presets_confirm'), function () {
                 rubyCallCommand('settings_reset_model_presets', null, function () {
-                    that.dialog.alert(null, i18next.t('tab.settings.menu.reset_model_presets_success'), function () {
+                    that.dialog.alert(null, i18next.t('tab.settings.presets.reset_model_presets_success'), function () {
                         rubyCallCommand('core_dialog_hide');
                     }, {
                         okBtnLabel: i18next.t('default.close')
@@ -92,7 +251,6 @@
 
         var $btnReset = $('#ladb_btn_reset', this.$element);
         var $selectLanguage = $('#ladb_select_language', this.$element);
-        var $selectZoom = $('#ladb_select_zoom', this.$element);
         var $btnWidthUp = $('#ladb_btn_width_up', this.$element);
         var $btnWidthDown = $('#ladb_btn_width_down', this.$element);
         var $btnHeightUp = $('#ladb_btn_height_up', this.$element);
@@ -101,109 +259,108 @@
         var $btnLeftDown = $('#ladb_btn_left_down', this.$element);
         var $btnTopUp = $('#ladb_btn_top_up', this.$element);
         var $btnTopDown = $('#ladb_btn_top_down', this.$element);
+        var $selectPrintMargin = $('#ladb_select_print_margin', this.$element);
 
-        var fnUpdate = function () {
-
-            // Adjust min limits
-            that.dialog.capabilities.dialog_maximized_width = Math.max(580, that.dialog.capabilities.dialog_maximized_width);
-            that.dialog.capabilities.dialog_maximized_height = Math.max(480, that.dialog.capabilities.dialog_maximized_height);
-            that.dialog.capabilities.dialog_left = Math.max(0, that.dialog.capabilities.dialog_left);
-            that.dialog.capabilities.dialog_top = Math.max(0, that.dialog.capabilities.dialog_top);
+        var fnGlobalUpdate = function () {
 
             // Send to ruby
             rubyCallCommand('settings_dialog_settings', {
                 language: that.dialog.capabilities.language,
-                width: that.dialog.capabilities.dialog_maximized_width,
-                height: that.dialog.capabilities.dialog_maximized_height,
-                left: that.dialog.capabilities.dialog_left,
-                top: that.dialog.capabilities.dialog_top,
-                zoom: that.dialog.capabilities.dialog_zoom
+                print_margin: that.dialog.capabilities.dialog_print_margin
             });
 
         };
-
-        $selectLanguage
-            .val(this.dialog.capabilities.language)
-            .selectpicker(SELECT_PICKER_OPTIONS)
-        ;
-
-        $selectZoom.prop('disabled', $('body').hasClass('ie'));    // Disable zoom feature on IE
-        if (this.dialog.capabilities.dialog_zoom !== '100%') {
-            $selectZoom.show();
+        var fnGlobalFillInputs = function () {
+            $selectLanguage.selectpicker('val', that.dialog.capabilities.language);
+            $selectPrintMargin.selectpicker('val', that.dialog.capabilities.dialog_print_margin);
         }
-        $selectZoom
-            .val(this.dialog.capabilities.dialog_zoom)
-            .selectpicker(SELECT_PICKER_OPTIONS)
-        ;
+
+        $selectLanguage.selectpicker($.extend(SELECT_PICKER_OPTIONS, { size: that.dialog.capabilities.available_languages.length + 1 }));
+        $selectPrintMargin.selectpicker(SELECT_PICKER_OPTIONS);
+
+        fnGlobalFillInputs();
 
         // Bind
         $selectLanguage.on('change', function () {
             that.dialog.capabilities.language = $selectLanguage.val();
-            fnUpdate();
+            fnGlobalUpdate();
             that.showReloadAlert();
         });
-        $selectZoom.on('change', function () {
-            that.dialog.capabilities.dialog_zoom = $selectZoom.val();
-            fnUpdate();
+        $selectPrintMargin.on('change', function () {
+            that.dialog.capabilities.dialog_print_margin = parseInt($selectPrintMargin.val());
+            fnGlobalUpdate();
         });
         $btnReset.on('click', function () {
             $(this).blur();
             that.dialog.capabilities.language = 'auto';
-            that.dialog.capabilities.dialog_maximized_width = 1100;
-            that.dialog.capabilities.dialog_maximized_height = 640;
-            that.dialog.capabilities.dialog_left = 60;
-            that.dialog.capabilities.dialog_top = 100;
-            that.dialog.capabilities.dialog_zoom = '100%';
-            fnUpdate();
+            that.dialog.capabilities.dialog_print_margin = 0;
+            fnGlobalUpdate();
+            fnGlobalFillInputs();
             that.showReloadAlert();
             return false;
         });
         $btnWidthUp.on('click', function () {
             $(this).blur();
-            that.dialog.capabilities.dialog_maximized_width += 20;
-            fnUpdate();
+            rubyCallCommand('settings_dialog_inc_size', {
+                inc_width: 20,
+                inc_height: 0,
+            });
             return false;
         });
         $btnWidthDown.on('click', function () {
             $(this).blur();
-            that.dialog.capabilities.dialog_maximized_width -= 20;
-            fnUpdate();
+            rubyCallCommand('settings_dialog_inc_size', {
+                inc_width: -20,
+                inc_height: 0,
+            });
             return false;
         });
         $btnHeightUp.on('click', function () {
             $(this).blur();
-            that.dialog.capabilities.dialog_maximized_height += 20;
-            fnUpdate();
+            rubyCallCommand('settings_dialog_inc_size', {
+                inc_width: 0,
+                inc_height: 20,
+            });
             return false;
         });
         $btnHeightDown.on('click', function () {
             $(this).blur();
-            that.dialog.capabilities.dialog_maximized_height -= 20;
-            fnUpdate();
+            rubyCallCommand('settings_dialog_inc_size', {
+                inc_width: 0,
+                inc_height: -20,
+            });
             return false;
         });
         $btnLeftUp.on('click', function () {
             $(this).blur();
-            that.dialog.capabilities.dialog_left += 20;
-            fnUpdate();
+            rubyCallCommand('settings_dialog_inc_position', {
+                inc_left: 20,
+                inc_top: 0,
+            });
             return false;
         });
         $btnLeftDown.on('click', function () {
             $(this).blur();
-            that.dialog.capabilities.dialog_left -= 20;
-            fnUpdate();
+            rubyCallCommand('settings_dialog_inc_position', {
+                inc_left: -20,
+                inc_top: 0,
+            });
             return false;
         });
         $btnTopUp.on('click', function () {
             $(this).blur();
-            that.dialog.capabilities.dialog_top += 20;
-            fnUpdate();
+            rubyCallCommand('settings_dialog_inc_position', {
+                inc_left: 0,
+                inc_top: 20,
+            });
             return false;
         });
         $btnTopDown.on('click', function () {
             $(this).blur();
-            that.dialog.capabilities.dialog_top -= 20;
-            fnUpdate();
+            rubyCallCommand('settings_dialog_inc_position', {
+                inc_left: 0,
+                inc_top: -20,
+            });
             return false;
         });
 

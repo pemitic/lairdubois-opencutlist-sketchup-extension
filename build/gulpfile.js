@@ -1,5 +1,5 @@
 var gulp = require('gulp');
-var gulpif = require('gulp-if');
+var del = require('del');
 var minimist = require('minimist');
 var fs = require('fs');
 var ladb_twig_compile = require('./plugins/gulp-ladb-twig-compile');
@@ -15,6 +15,7 @@ var glob = require('glob');
 var yaml = require('js-yaml');
 var path = require('path');
 var cleanCSS = require('gulp-clean-css');
+var uglify = require('gulp-uglify');
 
 var knownOptions = {
     string: 'env',
@@ -22,6 +23,7 @@ var knownOptions = {
 };
 
 var options = minimist(process.argv.slice(2), knownOptions);
+var isProd = options.env.toLowerCase() === 'prod';
 
 // Convert less to .css files
 gulp.task('less_compile', function () {
@@ -36,6 +38,14 @@ gulp.task('css_minify', function () {
         .pipe(cleanCSS())
         .pipe(rename({ suffix: '.min' }))
         .pipe(gulp.dest('../src/ladb_opencutlist/css'));
+});
+
+// Minify lib .js files
+gulp.task('js_minify', function () {
+    return gulp.src('../src/ladb_opencutlist/js/lib/**/!(*.min).js')
+        .pipe(uglify())
+        .pipe(rename({ suffix: '.min' }))
+        .pipe(gulp.dest('../src/ladb_opencutlist/js/lib'));
 });
 
 // Convert twig runtime templates to .js precompiled files
@@ -53,7 +63,7 @@ gulp.task('i18n_compile', function () {
     var languageLabels = {};
     var languageReloadMsgs = {};
     var descriptions = {};
-    var ymlFiles = glob.sync('../src/ladb_opencutlist/yaml/i18n/*.yml');
+    var ymlFiles = glob.sync('../src/ladb_opencutlist/yaml/i18n/' + (isProd ? '!(zz)' : '*') + '.yml');
     ymlFiles.forEach(function (ymlFile) {
         var contents = fs.readFileSync(ymlFile);
         var ymlDocument = yaml.safeLoad(contents);
@@ -89,26 +99,44 @@ gulp.task('i18n_compile', function () {
         .pipe(gulp.dest('../src'))
         .pipe(touch());
 
-    return gulp.src('../src/ladb_opencutlist/yaml/i18n/*.yml')
+    // Clean previously generated i18n files
+    del('../src/ladb_opencutlist/js/i18n/*', {
+        force: true
+    });
+
+    return gulp.src('../src/ladb_opencutlist/yaml/i18n/' + (isProd ? '!(zz)' : '*') + '.yml')
         .pipe(ladb_i18n_compile(languageLabels, languageReloadMsgs))
         .pipe(gulp.dest('../src/ladb_opencutlist/js/i18n'));
 });
 
 // Compile dialog.twig to dialog-XX.html files - this permits to avoid dynamic loading on runtime
 gulp.task('i18n_dialog_compile', function () {
-    return gulp.src('../src/ladb_opencutlist/yaml/i18n/*.yml')
+
+    // Clean previously generated dialog files
+    del('../src/ladb_opencutlist/html/dialog-*', {
+        force: true
+    });
+
+    return gulp.src('../src/ladb_opencutlist/yaml/i18n/' + (isProd ? '!(zz)' : '*') + '.yml')
         .pipe(ladb_i18n_dialog_compile('../src/ladb_opencutlist/twig/dialog.twig'))
         .pipe(gulp.dest('../src/ladb_opencutlist/html'));
 });
 
 // Create the .rbz archive
 gulp.task('rbz_create', function () {
-    return gulp.src([
+    var blob = [
         'src/**/!(.DS_store|*.less|*.twig|!(*.min).css)',
         '!src/**/less/**',
         '!src/**/twig/**',
-    ], { cwd: '../'})
-        .pipe(gulpif(options.env.toLowerCase() === 'prod', zip('ladb_opencutlist.rbz'), zip('ladb_opencutlist-' + options.env.toLowerCase() + '.rbz')))
+    ];
+    // Exclude not minified .js libs
+    blob.push('!src/**/js/lib/!(*.min).js');
+    if (isProd) {
+        // Exclude zz debug language in prod environment
+        blob.push('!src/**/yaml/i18n/zz.yml');
+    }
+    return gulp.src(blob, { cwd: '../'})
+        .pipe(zip('ladb_opencutlist.rbz'))
         .pipe(gulp.dest('../dist'));
 });
 
@@ -119,7 +147,7 @@ gulp.task('version', function () {
 
     // Retrive version from package.json
     var pkg = JSON.parse(fs.readFileSync('./package.json'));
-    var version = pkg.version + (options.env.toLowerCase() === 'prod' ? '' : '-' + options.env.toLowerCase());
+    var version = pkg.version + (isProd ? '' : '-' + options.env.toLowerCase());
 
     // Compute build from current date
     var nowISO = (new Date()).toISOString();
@@ -127,9 +155,10 @@ gulp.task('version', function () {
 
     if (options.manifest || options.manifest === undefined) {
         // Update version property in manifest.json
-        gulp.src('../dist/manifest' + (options.env.toLowerCase() === 'prod' ? '' : '-' + options.env.toLowerCase()) + '.json')
+        gulp.src('../dist/manifest.json')
             .pipe(replace(/"version": "[0-9.]+(-[a-z]*)?"/g, '"version": "' + version + '"'))
             .pipe(replace(/"build": "[0-9]{12}?"/g, '"build": "' + build + '"'))
+            .pipe(replace(/"url": "[a-z:\/.\-]+"/g, '"url": "https://www.lairdubois.fr/opencutlist/download' + (isProd ? '' : '-' + options.env.toLowerCase()) + '"'))
             .pipe(gulp.dest('../dist'))
             .pipe(touch());
     }
@@ -154,7 +183,7 @@ gulp.task('version', function () {
         .pipe(touch());
 });
 
-gulp.task('compile', gulp.series('less_compile', 'css_minify', 'twig_compile', 'i18n_compile', 'i18n_dialog_compile'));
+gulp.task('compile', gulp.series('less_compile', 'css_minify', 'js_minify', 'twig_compile', 'i18n_compile', 'i18n_dialog_compile'));
 gulp.task('build', gulp.series('compile', 'version', 'rbz_create'));
 
 gulp.task('default', gulp.series('build'));

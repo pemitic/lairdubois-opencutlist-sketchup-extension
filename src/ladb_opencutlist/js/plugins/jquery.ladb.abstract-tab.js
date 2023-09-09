@@ -106,6 +106,9 @@ LadbAbstractTab.prototype.pushSlide = function ($slide, callback) {
     // Push in slides stack
     this._$slides.push($slide);
 
+    // Bind help buttons (if exist)
+    this.dialog.bindHelpButtonsInParent($slide);
+
     // Animation
     $slide.addClass('animated');
     $slide.switchClass('out', 'in', {
@@ -155,8 +158,9 @@ LadbAbstractTab.prototype.popSlide = function (noAnimation) {
             $poppedSlide.switchClass('in', 'out', {
                 duration: 300,
                 complete: function () {
-                    $poppedSlide.removeClass('animated');
-                    $poppedSlide.remove();
+                    $poppedSlide
+                        .removeClass('animated')
+                        .remove();
                 }
             });
         }
@@ -231,7 +235,7 @@ LadbAbstractTab.prototype.scrollSlideToTarget = function($slide, $target, animat
 
 // Modal /////
 
-LadbAbstractTab.prototype.appendModalInside = function (id, twigFile, renderParams, validateWithEnter) {
+LadbAbstractTab.prototype.appendModalInside = function (id, twigFile, renderParams) {
     var that = this;
 
     // Hide previously opened modal
@@ -239,11 +243,8 @@ LadbAbstractTab.prototype.appendModalInside = function (id, twigFile, renderPara
         this._$modal.modal('hide');
     }
 
-    // Render modal
-    this.$element.append(Twig.twig({ref: twigFile}).render(renderParams));
-
-    // Fetch UI elements
-    this._$modal = $('#' + id, this.$element);
+    // Create modal element
+    this._$modal = $(Twig.twig({ref: twigFile}).render(renderParams));
 
     // Add modal extra classes
     this._$modal.addClass('modal-inside');
@@ -255,28 +256,64 @@ LadbAbstractTab.prototype.appendModalInside = function (id, twigFile, renderPara
             .removeClass('modal-open')
             .css('padding-right', 0);
         that.$element.addClass('modal-open');
+        $('input[autofocus]', that._$modal).first().focus();
     });
     this._$modal.on('hidden.bs.modal', function () {
         $(this)
             .data('bs.modal', null)
             .remove();
         that.$element.removeClass('modal-open');
+        that._$modal = null;
     });
 
-    // Bind enter keyup on text input if configured
-    if (validateWithEnter) {
-        $('input[type=text]', that._$modal).on('keyup', function(e) {
-            if (e.keyCode === 13) {
-                e.preventDefault();
-                var $btnValidate = $('.btn-validate-modal', that._$modal).first();
-                if ($btnValidate && $btnValidate.is(':enabled')) {
-                    $btnValidate.click();
-                }
-            }
-        });
-    }
+    // Append modal
+    this.$element.append(this._$modal);
+
+    // Bind help buttons (if exist)
+    this.dialog.bindHelpButtonsInParent(this._$modal);
 
     return this._$modal;
+};
+
+LadbAbstractTab.prototype.hideModalInside = function () {
+    if (this._$modal) {
+        this._$modal.modal('hide');
+    }
+}
+
+// Print /////
+
+LadbAbstractTab.prototype.print = function (title, margin, size) {
+
+    if (title === undefined) {
+        title = 'OpenCutList';
+    }
+    // document.title = title;
+
+    if (margin === undefined) {
+        if (this.dialog.capabilities.dialog_print_margin === 1) {     /* 1 = Small */
+            margin = '0.25in 0.25in 0.5in 0.25in';
+        } else {
+            margin = '';
+        }
+    }
+
+    if (size === undefined) {
+        size = '';
+    }
+
+    // Retrieve and modifiy Page rule to set margin and size to desired one
+    var cssPageRuleStyle = document.styleSheets[0].cssRules[0].style;
+    cssPageRuleStyle.margin = margin;
+    cssPageRuleStyle.size = size;
+
+    // Print
+    window.print();
+
+    // Restore margin
+    cssPageRuleStyle.margin = '';
+    cssPageRuleStyle.size = '';
+
 };
 
 // Action /////

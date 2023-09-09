@@ -12,7 +12,9 @@
     var DOCS_URL = 'https://www.lairdubois.fr/opencutlist/docs';
     var DOCS_DEV_URL = 'https://www.lairdubois.fr/opencutlist/docs-dev';
 
-    var SETTING_KEY_COMPATIBILITY_ALERT_HIDDEN = 'core.compatibility_alert_hidden';
+    var CHANGELOG_URL = 'https://www.lairdubois.fr/opencutlist/changelog';
+    var CHANGELOG_DEV_URL = 'https://www.lairdubois.fr/opencutlist/changelog-dev';
+
     var SETTING_KEY_MUTED_UPDATE_BUILD = 'core.muted_update_build';
     var SETTING_KEY_LAST_LISTED_NEWS_TIMESTAMP = 'core.last_listed_news_timestamp';
 
@@ -32,23 +34,20 @@
             sketchup_version: options.sketchup_version,
             sketchup_version_number: options.sketchup_version_number,
             ruby_version: options.ruby_version,
-            current_os: options.current_os,
+            chrome_version: options.chrome_version,
+            platform_name: options.platform_name,
             is_64bit: options.is_64bit,
             user_agent: window.navigator.userAgent,
             locale: options.locale,
             language: options.language,
             available_languages: options.available_languages,
             decimal_separator: options.decimal_separator,
-            html_dialog_compatible: options.html_dialog_compatible,
+            webgl_available: options.webgl_available,
             manifest: options.manifest,
             update_available: options.update_available,
             update_muted: options.update_muted,
             last_news_timestamp: options.last_news_timestamp,
-            dialog_maximized_width: options.dialog_maximized_width,
-            dialog_maximized_height: options.dialog_maximized_height,
-            dialog_left: options.dialog_left,
-            dialog_top: options.dialog_top,
-            dialog_zoom: options.dialog_zoom,
+            dialog_print_margin: options.dialog_print_margin,
         };
 
         this.settings = {};
@@ -338,15 +337,29 @@
         return null;
     };
 
+    LadbDialog.prototype.getActiveTab = function () {
+        return this.$tabs[this.activeTabName];
+    };
+
+    LadbDialog.prototype.getActiveTabBtn = function () {
+        return this.$tabBtns[this.activeTabName];
+    };
+
+    LadbDialog.prototype.getTabPlugin = function ($tab) {
+        if ($tab) {
+            return $tab.data('ladb.tab.plugin');
+        }
+    };
+
     LadbDialog.prototype.unselectActiveTab = function () {
         if (this.activeTabName) {
 
             // Flag as inactive
-            this.$tabBtns[this.activeTabName].removeClass('ladb-active');
+            this.getActiveTabBtn().removeClass('ladb-active');
             $('[data-ladb-tab-name="' + this.activeTabName + '"]').removeClass('ladb-active');
 
             // Hide active tab
-            this.$tabs[this.activeTabName].hide();
+            this.getActiveTab().hide();
 
         }
     };
@@ -379,6 +392,9 @@
             // Setup tooltips & popovers
             this.setupTooltips();
             this.setupPopovers();
+
+            // Bind help buttons (if exist)
+            this.bindHelpButtonsInParent($tab);
 
             // Cache tab
             this.$tabs[tabName] = $tab;
@@ -444,7 +460,7 @@
                 callback($tab);
             } else {
 
-                var jQueryPlugin = $tab.data('ladb.tab.plugin');
+                var jQueryPlugin = this.getTabPlugin($tab);
                 if (jQueryPlugin && !jQueryPlugin.defaultInitializedCallbackCalled) {
                     jQueryPlugin.defaultInitializedCallback();
                 }
@@ -473,9 +489,10 @@
     };
 
     LadbDialog.prototype.executeCommandOnTab = function (tabName, command, parameters, callback, keepTabInBackground) {
+        var that = this;
 
         var fnExecute = function ($tab) {
-            var jQueryPlugin = $tab.data('ladb.tab.plugin');
+            var jQueryPlugin = that.getTabPlugin($tab);
             if (jQueryPlugin) {
                 jQueryPlugin.executeCommand(command, parameters, callback);
             }
@@ -513,10 +530,13 @@
 
     LadbDialog.prototype.startProgress = function (maxSteps) {
 
-        this.$progress = $(Twig.twig({ref: 'core/_progress.twig'}).render());
-        this.$progressBar = $('.progress-bar', this.$progress);
         this.progressMaxSteps = Math.max(1, maxSteps);
         this.progressStep = 0;
+
+        this.$progress = $(Twig.twig({ref: 'core/_progress.twig'}).render({
+            hiddenProgressBar: this.progressMaxSteps <= 1
+        }));
+        this.$progressBar = $('.progress-bar', this.$progress);
 
         $('body').append(this.$progress);
 
@@ -541,24 +561,30 @@
     // Modal /////
 
     LadbDialog.prototype.appendModal = function (id, twigFile, renderParams) {
+        var that = this;
 
         // Hide previously opened modal
         if (this._$modal) {
             this._$modal.modal('hide');
         }
 
-        // Render modal
-        this.$element.append(Twig.twig({ref: twigFile}).render(renderParams));
-
-        // Fetch UI elements
-        this._$modal = $('#' + id, this.$element);
+        // Create modal element
+        this._$modal = $(Twig.twig({ref: twigFile}).render(renderParams));
 
         // Bind modal
         this._$modal.on('hidden.bs.modal', function () {
             $(this)
                 .data('bs.modal', null)
                 .remove();
+            that._$modal = null;
+            $('input[autofocus]', that._$modal).first().focus();
         });
+
+        // Append modal
+        this.$element.append(this._$modal);
+
+        // Bind help buttons (if exist)
+        this.bindHelpButtonsInParent(this._$modal);
 
         return this._$modal;
     };
@@ -579,10 +605,11 @@
         var $btnUpgrade = $('#ladb_btn_upgrade', $modal);
         var $btnDownload = $('.ladb-btn-download', $modal);
         var $btnSponsor = $('#ladb_btn_sponsor', $modal);
+        var $linkChangelog = $('#ladb_link_changelog', $modal);
         var $progressBar = $('div[role=progressbar]', $modal);
 
         // Bind buttons
-        $btnIgnoreUpdate.on('click', function() {
+        $btnIgnoreUpdate.on('click', function () {
 
             that.mutedUpdateBuild = that.capabilities.manifest.build;
             that.setSetting(SETTING_KEY_MUTED_UPDATE_BUILD, that.mutedUpdateBuild);
@@ -604,7 +631,7 @@
             $modal.remove();
 
         });
-        $btnUpgrade.on('click', function() {
+        $btnUpgrade.on('click', function () {
 
             $panelInfos.hide();
             $panelProgress.show();
@@ -642,7 +669,7 @@
 
             return false;
         });
-        $btnDownload.on('click', function() {
+        $btnDownload.on('click', function () {
 
             // Open url
             rubyCallCommand('core_open_url', { url: that.capabilities.manifest && that.capabilities.manifest.url ? that.appendOclMetasToUrlQueryParams(that.capabilities.manifest.url) : EW_URL });
@@ -653,7 +680,7 @@
 
             return false;
         });
-        $btnSponsor.on('click', function() {
+        $btnSponsor.on('click', function () {
 
             // Open sponsor tab
             that.selectTab('sponsor');
@@ -664,6 +691,9 @@
 
             return false;
         });
+        $linkChangelog.on('click', function () {
+            rubyCallCommand('core_open_url', { url: that.getChangelogUrl() });
+        })
 
         // Show modal
         $modal.modal('show');
@@ -684,9 +714,14 @@
 
         // Bind buttons
         $btnOk.on('click', function() {
+
             if (callback) {
                 callback();
             }
+
+            // Hide modal
+            $modal.modal('hide');
+
         });
 
         // Show modal
@@ -708,9 +743,14 @@
 
         // Bind buttons
         $btnConfirm.on('click', function() {
+
             if (callback) {
                 callback();
             }
+
+            // Hide modal
+            $modal.modal('hide');
+
         });
 
         // Show modal
@@ -718,12 +758,14 @@
 
     };
 
-    LadbDialog.prototype.prompt = function (title, text, callback) {
+    LadbDialog.prototype.prompt = function (title, text, value, callback, options) {
 
         // Append modal
         var $modal = this.appendModal('ladb_core_modal_prompt', 'core/_modal-prompt.twig', {
             title: title,
-            text: text
+            text: text,
+            value: value,
+            options: options
         });
 
         // Fetch UI elements
@@ -737,16 +779,25 @@
 
         // Bind buttons
         $btnValidate.on('click', function() {
+
             if (callback) {
                 callback($input.val().trim());
             }
+
+            // Hide modal
+            $modal.modal('hide');
+
         });
+
+        // State
+        $btnValidate.prop('disabled', $input.val().trim().length === 0);
 
         // Show modal
         $modal.modal('show');
 
         // Bring focus to input
         $input.focus();
+        $input[0].selectionStart = $input[0].selectionEnd = $input.val().trim().length;
 
     };
 
@@ -758,7 +809,7 @@
             buttons = [];
         }
         if (undefined === timeout) {
-            timeout = 3000;
+            timeout = 5000;
         }
         var n = new Noty({
             type: type,
@@ -789,15 +840,19 @@
         }
     };
 
-    LadbDialog.prototype.setupTooltips = function () {
+    LadbDialog.prototype.notifySuccess = function (text, buttons) {
+        this.notify('<i class="ladb-opencutlist-icon-check-mark"></i> ' + text, 'success', buttons);
+    };
+
+    LadbDialog.prototype.setupTooltips = function ($element) {
         $('.tooltip').tooltip('hide'); // Assume that previouly created tooltips are closed
-        $('[data-toggle="tooltip"]').tooltip({
+        $('[data-toggle="tooltip"]', $element).tooltip({
             container: 'body'
         });
     };
 
-    LadbDialog.prototype.setupPopovers = function () {
-        $('[data-toggle="popover"]').popover({
+    LadbDialog.prototype.setupPopovers = function ($element) {
+        $('[data-toggle="popover"]', $element).popover({
             html: true
         });
     };
@@ -814,8 +869,62 @@
         });
     }
 
-    LadbDialog.prototype.appendOclMetasToUrlQueryParams = function (url) {
-        return url + '?v=' + this.capabilities.version + '&build=' + this.capabilities.build + '-' + (this.capabilities.is_rbz ? 'rbz' : 'src') + '&language=' + this.capabilities.language + '&locale=' + this.capabilities.locale;
+    LadbDialog.prototype.appendOclMetasToUrlQueryParams = function (url, params) {
+        url = url + '?v=' + this.capabilities.version + '&build=' + this.capabilities.build + '-' + (this.capabilities.is_rbz ? 'rbz' : 'src') + '&language=' + this.capabilities.language + '&locale=' + this.capabilities.locale;
+        if (params && (typeof params  === "object")) {
+            for (const property in params) {
+                url += '&' + property + '=' + params[property];
+            }
+        }
+        return url
+    }
+
+    LadbDialog.prototype.getDocsPageUrl = function (page) {
+        return this.appendOclMetasToUrlQueryParams(
+            this.capabilities.is_dev ? DOCS_DEV_URL : DOCS_URL,
+            (page && (typeof page  === "string")) ? { page: page } : null
+        );
+    }
+
+    LadbDialog.prototype.getChangelogUrl = function () {
+        return this.appendOclMetasToUrlQueryParams(
+            this.capabilities.is_dev ? CHANGELOG_DEV_URL : CHANGELOG_URL
+        );
+    }
+
+    LadbDialog.prototype.bindHelpButtonsInParent = function ($parent) {
+        var that = this;
+        let $btns = $('[data-help-page]', $parent);
+        $btns.on('click', function () {
+            let page = $(this).data('help-page');
+            $.getJSON(that.getDocsPageUrl(page ? page : ''), function (data) {
+                rubyCallCommand('core_open_url', data);
+            })
+                .fail(function () {
+                    that.notifyErrors([
+                        'core.docs.error.failed_to_load'
+                    ]);
+                })
+            ;
+            $(this).blur();
+        });
+    }
+
+    LadbDialog.prototype.copyToClipboard = function (text) {
+        // Create new element
+        var el = document.createElement('textarea');
+        // Set value (string to be copied)
+        el.value = text;
+        // Set non-editable to avoid focus and move outside of view
+        el.setAttribute('readonly', '');
+        el.style = { position: 'absolute', left: '-9999px' };
+        document.body.appendChild(el);
+        // Select text inside element
+        el.select();
+        // Copy text to clipboard
+        document.execCommand('copy');
+        // Remove temporary element
+        document.body.removeChild(el);
     }
 
     // Internals /////
@@ -830,21 +939,9 @@
                 that.selectTab(tabName);
             });
         });
-        $('#ladb_btn_close_compatibility_alert', that.$element).on('click', function () {
-            $('#ladb_compatibility_alert').hide();
-            that.compatibilityAlertHidden = true;
-            that.setSetting(SETTING_KEY_COMPATIBILITY_ALERT_HIDDEN, that.compatibilityAlertHidden);
-        });
-        $('#ladb_leftbar_btn_docs', this.$leftbar).on('click', function () {
 
-            // Show Objective modal
-            that.executeCommandOnTab('sponsor', 'show_objective_modal', { objectiveStrippedName: 'docs' }, null, true);
-
-            // $.getJSON(that.appendOclMetasToUrlQueryParams(that.capabilities.is_dev ? DOCS_DEV_URL : DOCS_URL), function (data) {
-            //     rubyCallCommand('core_open_url', data);
-            // });
-            return false;
-        });
+        // Bind "docs" button
+        this.bindHelpButtonsInParent(this.$leftbar);
 
         // Bind fake tabs
         $('a[data-ladb-tab-name]', this.$element).on('click', function() {
@@ -858,27 +955,93 @@
             that.checkNews();
         });
 
+        // Bind validate with enter on modals
+        $('body').on('keydown', function (e) {
+            if (e.keyCode === 27) {   // "escape" key
+
+                // Dropdown detection
+                if ($(e.target).hasClass('dropdown')) {
+                    return;
+                }
+
+                // CodeMirror dropdown detection
+                if ($(e.target).attr('aria-autocomplete') === 'list') {
+                    return;
+                }
+
+                // Bootstrap select detection
+                if ($(e.target).attr('role') === 'listbox' || $(e.target).attr('role') === 'combobox') {
+                    return;
+                }
+
+                // Try to retrieve the current top modal (1. from global dialog modal, 2. from active tab inner modal)
+                var $modal = null;
+                if (that._$modal) {
+                    $modal = that._$modal;
+                } else {
+                    var jQueryPlugin = that.getTabPlugin(that.getActiveTab());
+                    if (jQueryPlugin) {
+                        $modal = jQueryPlugin._$modal;
+                    }
+                }
+
+                if ($modal) {
+                    // A modal is shown, try to click on first "dismiss" button
+                    $('[data-dismiss="modal"]', $modal).first().click();
+                } else {
+                    // No modal, minimize the dialog
+                    that.minimize();
+                }
+
+            } else if (e.keyCode === 13) {   // Only intercept "enter" key
+
+                var $target = $(e.target);
+                if (!$target.is('input[type=text]')) {  // Only intercept if focus is on input[type=text] field
+                    return;
+                }
+                $target.blur(); // Blur target to be sure "change" event occur before
+
+                // Prevent default behavior
+                e.preventDefault();
+
+                // Try to retrieve the current top modal (1. from global dialog modal, 2. from active tab inner modal)
+                var $modal = null;
+                if (that._$modal) {
+                    $modal = that._$modal;
+                } else {
+                    var jQueryPlugin = that.getTabPlugin(that.getActiveTab());
+                    if (jQueryPlugin) {
+                        $modal = jQueryPlugin._$modal;
+                    }
+                }
+
+                if ($modal) {
+                    var $btnValidate = $('.btn-validate-modal', $modal).first();
+                    if ($btnValidate && $btnValidate.is(':enabled')) {
+                        $btnValidate.click();
+                    }
+                }
+
+            }
+        });
+
     };
 
     LadbDialog.prototype.init = function () {
         var that = this;
 
         this.pullSettings([
-                SETTING_KEY_COMPATIBILITY_ALERT_HIDDEN,
                 SETTING_KEY_MUTED_UPDATE_BUILD,
                 SETTING_KEY_LAST_LISTED_NEWS_TIMESTAMP
             ],
             function () {
 
-                that.compatibilityAlertHidden = that.getSetting(SETTING_KEY_COMPATIBILITY_ALERT_HIDDEN, false);
                 that.mutedUpdateBuild = that.getSetting(SETTING_KEY_MUTED_UPDATE_BUILD, null);
                 that.lastListedNewsTimestamp = that.getSetting(SETTING_KEY_LAST_LISTED_NEWS_TIMESTAMP, null);
 
                 // Add compatible_with twig function
                 Twig.extendFunction('compatible_with', function(value) {
                     switch (value) {
-                        case 'body.zoom':
-                            return !($('body').hasClass('ie') || $('body').hasClass('edge'));
                         case 'svg.height-auto':
                             return !($('body').hasClass('ie') || $('body').hasClass('edge'));
                     }
@@ -908,15 +1071,17 @@
                         maximumFractionDigits: 0
                     });
                 });
-                Twig.extendFilter('format_mass', function (value, options) {
-                    return value.toLocaleString(that.capabilities.language, {
-                        style: 'decimal',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }) + ' kg';
-                });
                 Twig.extendFilter('sanitize_links', function (value, options) {
                     return value.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1>/g, '<a href="$2" target="_blank">');
+                });
+                Twig.extendFilter('type_of', function (value) {
+                    return typeof value;
+                });
+                Twig.extendFilter('trim_tilde', function (value) {
+                    if (value.startsWith('~ ')) {
+                        return value.slice(2);
+                    }
+                    return value;
                 });
 
                 // Check if JS build number corresponds to Ruby build number
@@ -928,7 +1093,7 @@
                     // Render and append layout-locked template
                     that.$element.append(Twig.twig({ref: 'core/layout-zzz.twig'}).render());
 
-                    // Fetch usefull elements
+                    // Fetch useful elements
                     var $btnZzz = $('.ladb-zzz a', that.$element);
 
                     // Bind button
@@ -941,11 +1106,10 @@
                     // Render and append layout template
                     that.$element.append(Twig.twig({ref: 'core/layout.twig'}).render({
                         capabilities: that.capabilities,
-                        compatibilityAlertHidden: that.compatibilityAlertHidden,
                         tabDefs: that.options.tabDefs
                     }));
 
-                    // Fetch usefull elements
+                    // Fetch useful elements
                     that.$wrapper = $('#ladb_wrapper', that.$element);
                     that.$wrapperSlides = $('#ladb_wrapper_slides', that.$element);
                     that.$leftbar = $('#ladb_leftbar', that.$element).ladbLeftbar({ dialog: that });
@@ -975,18 +1139,20 @@
                     // Dev alert
                     var $devAlert = $('#ladb_dev_alert');
                     if ($devAlert.length > 0) {
-                        var devAlertTotalTime = 10000;
+                        var devAlertTotalTime = 20000;
                         var devAlertRemaining = devAlertTotalTime;
                         var fnDevAlertCountdown = function () {
-                            devAlertRemaining -= 100;
-                            $('.countdown-bar', $devAlert).css('width', Math.max((devAlertRemaining / devAlertTotalTime) * 100, 0) + '%');
-                            if (devAlertRemaining < 0) {
-                                $devAlert.hide();
-                                return;
+                            if ($devAlert.is(':visible')) {
+                                devAlertRemaining -= 200;
+                                $('.countdown-bar', $devAlert).css('width', Math.max((devAlertRemaining / devAlertTotalTime) * 100, 0) + '%');
+                                if (devAlertRemaining < 0) {
+                                    $devAlert.hide();
+                                    return;
+                                }
                             }
                             setTimeout(function () {
                                 window.requestAnimationFrame(fnDevAlertCountdown);
-                            }, 100);
+                            }, 200);
                         }
                         window.requestAnimationFrame(fnDevAlertCountdown);
                     }

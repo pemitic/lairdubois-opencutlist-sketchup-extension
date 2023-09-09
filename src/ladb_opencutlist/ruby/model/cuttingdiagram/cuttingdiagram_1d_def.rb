@@ -6,9 +6,9 @@ module Ladb::OpenCutList
 
     attr_accessor :errors, :warnings, :tips, :unplaced_part_defs, :options_def, :summary_def, :bar_defs
 
-    def initialize
+    def initialize(errors = [])
 
-      @errors = []
+      @errors = errors
       @warnings = []
       @tips = []
 
@@ -31,7 +31,7 @@ module Ladb::OpenCutList
 
   class Cuttingdiagram1dOptionsDef
 
-    attr_accessor :px_saw_kerf, :saw_kerf, :trimming, :bar_folding, :hide_part_list, :full_width_diagram, :hide_cross, :origin_corner, :wrap_length
+    attr_accessor :px_saw_kerf, :saw_kerf, :trimming, :bar_folding, :hide_part_list, :use_names, :full_width_diagram, :hide_cross, :origin_corner, :wrap_length
 
     def initialize
 
@@ -40,6 +40,7 @@ module Ladb::OpenCutList
       @trimming = 0
       @bar_folding = false
       @hide_part_list = false
+      @use_names = false
       @full_width_diagram = false
       @hide_cross = false
       @origin_corner = 0
@@ -59,7 +60,7 @@ module Ladb::OpenCutList
 
   class Cuttingdiagram1dSummaryDef
 
-    attr_accessor :total_used_count, :total_used_length, :total_used_part_count
+    attr_accessor :total_used_count, :total_used_length, :total_used_part_count, :total_cut_count, :total_cut_length, :overall_efficiency
     attr_reader :bar_defs
 
     def initialize
@@ -67,6 +68,11 @@ module Ladb::OpenCutList
       @total_used_count = 0
       @total_used_length = 0
       @total_used_part_count = 0
+
+      @total_cut_count = 0
+      @total_cut_length = 0
+
+      @overall_efficiency = 0
 
       @bar_defs = {}
 
@@ -108,7 +114,7 @@ module Ladb::OpenCutList
 
   class Cuttingdiagram1dBarDef
 
-    attr_accessor :type_id, :type, :count, :length, :width, :px_length, :px_width, :efficiency, :leftover_def
+    attr_accessor :type_id, :type, :count, :length, :width, :px_length, :px_width, :efficiency, :total_cut_length, :leftover_def
     attr_reader :slice_defs, :part_defs, :grouped_part_defs, :cut_defs
 
     def initialize
@@ -121,6 +127,7 @@ module Ladb::OpenCutList
       @px_length = 0
       @px_width = 0
       @efficiency = 0
+      @total_cut_length = 0
 
       @slice_defs = []
       @part_defs = []
@@ -188,7 +195,7 @@ module Ladb::OpenCutList
     def initialize(cutlist_part)
       @cutlist_part = cutlist_part
 
-      @_sorter = (cutlist_part.is_a?(FolderPart) && cutlist_part.number.to_i > 0) ? cutlist_part.number.to_i : cutlist_part.number,  # Use a special "_sorter" property because number could contains a "+" suffix
+      @_sorter = cutlist_part.number.to_i > 0 ? cutlist_part.number.to_i : cutlist_part.number.rjust(4)  # Use a special "_sorter" property because number could be a letter. In this case, rjust it.
 
       @count = 0
 

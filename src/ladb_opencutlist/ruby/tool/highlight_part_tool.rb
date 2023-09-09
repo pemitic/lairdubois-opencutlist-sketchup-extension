@@ -1,15 +1,20 @@
 module Ladb::OpenCutList
 
-  require_relative '../gl/gl_button'
+  require_relative '../lib/kuix/kuix'
+  require_relative '../helper/layer_visibility_helper'
+  require_relative '../helper/face_triangles_helper'
+  require_relative '../utils/point3d_utils'
   require_relative '../model/cutlist/cutlist'
 
-  class HighlightPartTool < CutlistObserver
+  class HighlightPartTool < Kuix::KuixTool
+
+    include LayerVisibilityHelper
+    include FaceTrianglesHelper
+    include CutlistObserverHelper
 
     COLOR_FACE = Sketchup::Color.new(255, 0, 0, 128).freeze
     COLOR_FACE_HOVER = Sketchup::Color.new(0, 62, 255, 200).freeze
     COLOR_FACE_HOVER_SMILAR = Sketchup::Color.new(0, 62, 255, 128).freeze
-    COLOR_TEXT_BG = Sketchup::Color.new(255, 255, 255, 191).freeze
-    COLOR_TEXT = Sketchup::Color.new(0, 0, 0, 255).freeze
     COLOR_DRAWING = Sketchup::Color.new(255, 255, 255, 255).freeze
     COLOR_DRAWING_AUTO_ORIENTED = Sketchup::Color.new(123, 213, 239, 255).freeze
 
@@ -35,6 +40,8 @@ module Ladb::OpenCutList
     FONT_TEXT = 'Verdana'
 
     def initialize(cutlist, group, parts, instance_count, maximize_on_quit)
+      super(true, true)
+
       @cutlist = cutlist
       @group = group
       @parts = parts
@@ -44,52 +51,19 @@ module Ladb::OpenCutList
       # Add tool as observer of the cutlist
       @cutlist.add_observer(self)
 
-      @text_line_1 = ''
-      @text_line_2 = ''
-      @text_line_3 = ''
-
-      # Define text options
-      @line_1_text_options = {
-          color: COLOR_TEXT,
-          font: FONT_TEXT,
-          size: Plugin.instance.current_os == :MAC ? 20 : 15,
-          align: TextAlignCenter
-      }
-      @line_2_text_options = {
-          color: COLOR_TEXT,
-          font: FONT_TEXT,
-          size: Plugin.instance.current_os == :MAC ? 12 : 8,
-          align: TextAlignCenter
-      }
-      @line_3_text_options = {
-          color: COLOR_TEXT,
-          font: FONT_TEXT,
-          size: Plugin.instance.current_os == :MAC ? 15 : 10,
-          align: TextAlignCenter
-      }
-      button_text_options = {
-          color: COLOR_TEXT,
-          font: FONT_TEXT,
-          size: Plugin.instance.current_os == :MAC ? 15 : 12,
-          align: TextAlignCenter
-      }
-
       @initial_model_transparency = false
-      @buttons = []
+
       @hover_part = nil
-      @hover_pick_path = nil
+      @picked_path = nil
 
       model = Sketchup.active_model
       if model
 
         view = model.active_view
 
-        @draw_defs = []
-
         # Compute draw defs
+        @draw_defs = []
         @parts.each { |part|
-
-          group = part.group
 
           draw_def = {
               :part => part,
@@ -104,14 +78,14 @@ module Ladb::OpenCutList
           part.def.instance_infos.each { |serialized_path, instance_info|
 
             # Compute instance faces triangles
-            draw_def[:face_triangles].concat(_compute_children_faces_tirangles(view, instance_info.entity.definition.entities, instance_info.transformation))
+            draw_def[:face_triangles].concat(_compute_children_faces_triangles(instance_info.entity.definition.entities, instance_info.transformation))
 
             # Compute back and front face arrows
-            if group.material_type != MaterialAttributes::TYPE_HARDWARE && group.material_type != MaterialAttributes::TYPE_UNKNOWN
+            if part.group.material_type != MaterialAttributes::TYPE_HARDWARE
 
               order = [ 1, 2, 3 ]
               if part.auto_oriented
-                instance_info.size.dimensions_to_normals.each_with_index do |(dimension, normal), index|
+                instance_info.size.dimensions_to_axes.each_with_index do |(dimension, normal), index|
                   normal == 'x' ? order[0] = index + 1 : normal == 'y' ? order[1] = index + 1 : order[2] = index + 1
                 end
               end
@@ -128,21 +102,107 @@ module Ladb::OpenCutList
 
         }
 
-        # Define buttons
-        @buttons.push(GLButton.new(view, Plugin.instance.get_i18n_string('tool.highlight.transparency'), 130, 50, 120, 40, button_text_options) do |flags, x, y, view|
-          view.model.rendering_options["ModelTransparency"] = !view.model.rendering_options["ModelTransparency"]
-        end)
-        @buttons.push(GLButton.new(view, Plugin.instance.get_i18n_string('tool.highlight.zoom_extents'), 260, 50, 120, 40, button_text_options) do |flags, x, y, view|
-          view.zoom_extents
-        end)
-
       end
+
+    end
+
+    # -- UI stuff --
+
+    def setup_entities(view)
+
+      @canvas.layout = Kuix::BorderLayout.new
+
+      unit = [ [ view.vpheight / 150, 8 ].min, 4 * UI.scale_factor ].max
+
+      panel = Kuix::Entity2d.new
+      panel.layout_data = Kuix::BorderLayoutData.new(Kuix::BorderLayoutData::SOUTH)
+      panel.layout = Kuix::BorderLayout.new
+      panel.padding.set_all!(unit)
+      panel.set_style_attribute(:background_color, Sketchup::Color.new(255, 255, 255, 200))
+      @canvas.append(panel)
+
+        # Labels
+
+        lbls = Kuix::Entity2d.new
+        lbls.layout_data = Kuix::BorderLayoutData.new(Kuix::BorderLayoutData::CENTER)
+        lbls.layout = Kuix::InlineLayout.new(false, unit, Kuix::Anchor.new(Kuix::Anchor::CENTER))
+        panel.append(lbls)
+
+          @lbl_1 = Kuix::Label.new
+          @lbl_1.text_size = unit * 4
+          lbls.append(@lbl_1)
+
+          @lbl_2 = Kuix::Label.new
+          @lbl_2.text_size = unit * 2
+          lbls.append(@lbl_2)
+
+          @lbl_3 = Kuix::Label.new
+          @lbl_3.text_size = unit * 3
+          lbls.append(@lbl_3)
+
+        # Buttons
+
+        btn_border = unit / 2
+        btn_min_width = unit * 30
+        btn_min_height = unit * 10
+        btn_bg_color = Sketchup::Color.new('white')
+        btn_bg_active_color = Sketchup::Color.new(200, 200, 200, 255)
+        btn_border_color = Sketchup::Color.new(220, 220, 220, 255)
+        btn_border_hover_color = Sketchup::Color.new(128, 128, 128, 255)
+        btn_border_selected_color = Sketchup::Color.new(0, 0, 255, 255)
+
+        btns = Kuix::Entity2d.new
+        btns.layout_data = Kuix::BorderLayoutData.new(Kuix::BorderLayoutData::EAST)
+        btns.layout = Kuix::InlineLayout.new(true, unit, Kuix::Anchor.new(Kuix::Anchor::BOTTOM_RIGHT))
+        panel.append(btns)
+
+          btn_1 = Kuix::Button.new
+          btn_1.layout = Kuix::BorderLayout.new
+          btn_1.border.set_all!(btn_border)
+          btn_1.min_size.set!(btn_min_width, btn_min_height)
+          btn_1.set_style_attribute(:background_color, btn_bg_color)
+          btn_1.set_style_attribute(:background_color, btn_bg_active_color, :active)
+          btn_1.set_style_attribute(:border_color, btn_border_color)
+          btn_1.set_style_attribute(:border_color, btn_border_hover_color, :hover)
+          btn_1.set_style_attribute(:border_color, btn_border_selected_color, :selected)
+          btn_1.on(:click) do |button|
+            view.model.rendering_options["ModelTransparency"] = !view.model.rendering_options["ModelTransparency"]
+            button.selected = view.model.rendering_options["ModelTransparency"]
+          end
+          btn_1.selected = view.model.rendering_options["ModelTransparency"]
+          btns.append(btn_1)
+
+            btn_1_lbl = Kuix::Label.new
+            btn_1_lbl.layout_data = Kuix::BorderLayoutData.new(Kuix::BorderLayoutData::CENTER)
+            btn_1_lbl.text = Plugin.instance.get_i18n_string('tool.highlight.transparency')
+            btn_1_lbl.text_size = unit * 3
+            btn_1.append(btn_1_lbl)
+
+          btn_2 = Kuix::Button.new
+          btn_2.layout = Kuix::BorderLayout.new
+          btn_2.border.set_all!(btn_border)
+          btn_2.min_size.set!(btn_min_width, btn_min_height)
+          btn_2.set_style_attribute(:background_color, btn_bg_color)
+          btn_2.set_style_attribute(:background_color, btn_bg_active_color, :active)
+          btn_2.set_style_attribute(:border_color, btn_border_color)
+          btn_2.set_style_attribute(:border_color, btn_border_hover_color, :hover)
+          btn_2.on(:click) do |button|
+            view.zoom_extents
+          end
+          btns.append(btn_2)
+
+            btn_2_lbl = Kuix::Label.new
+            btn_2_lbl.layout_data = Kuix::BorderLayoutData.new(Kuix::BorderLayoutData::CENTER)
+            btn_2_lbl.text = Plugin.instance.get_i18n_string('tool.highlight.zoom_extents')
+            btn_2_lbl.text_size = unit * 3
+            btn_2.append(btn_2_lbl)
 
     end
 
     # -- Tool stuff --
 
     def activate
+      super
       model = Sketchup.active_model
       if model
 
@@ -160,33 +220,14 @@ module Ladb::OpenCutList
     end
 
     def deactivate(view)
+      super
       onQuit(view)
-    end
-
-    def suspend(view)
-      view.invalidate
-    end
-
-    def resume(view)
-      view.invalidate
     end
 
     def draw(view)
 
       # Draw defs
       @draw_defs.each do |draw_def|
-
-        # Draw faces
-        face_color = draw_def[:face_color]
-        if @hover_part
-          if @hover_part == draw_def[:part]
-            face_color = COLOR_FACE_HOVER
-          elsif @hover_part.definition_id == draw_def[:part].definition_id
-            face_color = COLOR_FACE_HOVER_SMILAR
-          end
-        end
-        view.drawing_color = face_color
-        view.draw(GL_TRIANGLES, draw_def[:face_triangles])
 
         # Draw arrows
         view.line_width = 3
@@ -200,42 +241,28 @@ module Ladb::OpenCutList
           view.draw(GL_LINES, points)
         }
 
-      end
-
-      # Draw text lines and buttons (only if Sketchup > 2016)
-      if Sketchup.version_number >= 16000000
-        bg_height = 30 + (@text_line_2.empty? ? 0 : 20) + (@text_line_3.empty? ? 0 : 30)
-        _draw_rect(view, 0, view.vpheight - bg_height, view.vpwidth, bg_height, COLOR_TEXT_BG)
-        unless @text_line_1.nil?
-          view.draw_text(Geom::Point3d.new(view.vpwidth / 2, view.vpheight - 30 - (@text_line_2.empty? ? 0 : 20) - (@text_line_3.empty? ? 0 : 30), 0), @text_line_1, @line_1_text_options)
+        # Draw faces
+        face_color = draw_def[:face_color]
+        if @hover_part
+          if @hover_part == draw_def[:part]
+            face_color = COLOR_FACE_HOVER
+          elsif @hover_part.definition_id == draw_def[:part].definition_id
+            face_color = COLOR_FACE_HOVER_SMILAR
+          end
         end
-        unless @text_line_2.nil?
-          view.draw_text(Geom::Point3d.new(view.vpwidth / 2, view.vpheight - 20 - (@text_line_3.empty? ? 0 : 30), 0), @text_line_2, @line_2_text_options)
-        end
-        unless @text_line_3.nil?
-          view.draw_text(Geom::Point3d.new(view.vpwidth / 2, view.vpheight - 30, 0), @text_line_3, @line_3_text_options)
-        end
-        @buttons.each { |button|
-          button.draw(view)
-        }
+        view.drawing_color = face_color
+        view.draw(GL_TRIANGLES, draw_def[:face_triangles])
 
       end
 
+      super
     end
 
     # -- Menu --
 
-    if Sketchup.version.to_i < 15
-      # Compatible with SketchUp 2014 and older:
-      def getMenu(menu)
-        build_menu(menu)
-      end
-    else
-      # Only works with SketchUp 2015 and newer:
-      def getMenu(menu, flags, x, y, view)
-        _pick_hover_part(x, y, view) unless view.nil?
-        build_menu(menu, view)
-      end
+    def getMenu(menu, flags, x, y, view)
+      _pick_hover_part(x, y, view) unless view.nil?
+      build_menu(menu, view)
     end
 
     def build_menu(menu, view = nil)
@@ -245,13 +272,13 @@ module Ladb::OpenCutList
         item = menu.add_item("[#{@hover_part.number}] #{@hover_part.name}") {}
         menu.set_validation_proc(item) { MF_GRAYED }
         menu.add_separator
-        menu.add_item(Plugin.instance.get_i18n_string('tab.cutlist.edit_part_properties')) {
+        menu.add_item(Plugin.instance.get_i18n_string('core.menu.item.edit_part_properties')) {
           Plugin.instance.execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: '#{hover_part_id}', tab: 'general', dontGenerate: true }")
         }
-        menu.add_item(Plugin.instance.get_i18n_string('tab.cutlist.edit_part_axes_properties')) {
+        menu.add_item(Plugin.instance.get_i18n_string('core.menu.item.edit_part_axes_properties')) {
           Plugin.instance.execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: '#{hover_part_id}', tab: 'axes', dontGenerate: true }")
         }
-        item = menu.add_item(Plugin.instance.get_i18n_string('tab.cutlist.edit_part_size_increase_properties')) {
+        item = menu.add_item(Plugin.instance.get_i18n_string('core.menu.item.edit_part_size_increase_properties')) {
           Plugin.instance.execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: '#{hover_part_id}', tab: 'size_increase', dontGenerate: true }")
         }
         menu.set_validation_proc(item) {
@@ -263,8 +290,18 @@ module Ladb::OpenCutList
             MF_GRAYED
           end
         }
-        item = menu.add_item(Plugin.instance.get_i18n_string('tab.cutlist.edit_part_edges_properties')) {
+        item = menu.add_item(Plugin.instance.get_i18n_string('core.menu.item.edit_part_edges_properties')) {
           Plugin.instance.execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: '#{hover_part_id}', tab: 'edges', dontGenerate: true }")
+        }
+        menu.set_validation_proc(item) {
+          if hover_part_material_type == MaterialAttributes::TYPE_SHEET_GOOD
+            MF_ENABLED
+          else
+            MF_GRAYED
+          end
+        }
+        item = menu.add_item(Plugin.instance.get_i18n_string('core.menu.item.edit_part_faces_properties')) {
+          Plugin.instance.execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: '#{hover_part_id}', tab: 'faces', dontGenerate: true }")
         }
         menu.set_validation_proc(item) {
           if hover_part_material_type == MaterialAttributes::TYPE_SHEET_GOOD
@@ -282,45 +319,24 @@ module Ladb::OpenCutList
 
     # -- Events --
 
-    def onLButtonDown(flags, x, y, view)
-      @buttons.each { |button|
-        if button.onLButtonDown(flags, x, y, view)
-          return
-        end
-      }
-    end
-
     def onLButtonUp(flags, x, y, view)
-      @buttons.each { |button|
-        if button.onLButtonUp(flags, x, y, view)
-          return
-        end
-      }
+      return true if super
       _pick_hover_part(x, y, view)
       if @hover_part
         UI.beep
-        return
+        return true
       end
       _quit(view)
     end
 
     def onMouseMove(flags, x, y, view)
-      @buttons.each { |button|
-        if button.onMouseMove(flags, x, y, view)
-          return
-        end
-      }
-
+      return true if super
       _pick_hover_part(x, y, view)
-
     end
 
     def onMouseLeave(view)
+      return true if super
       _reset(view)
-    end
-
-    def onCancel(flag, view)
-      _quit(view)
     end
 
     def onQuit(view)
@@ -350,24 +366,36 @@ module Ladb::OpenCutList
 
         instance_count = part.instance_count_by_part * part.count - part.unused_instance_count
 
-        @text_line_1 = "[#{part.number}] #{part.name}"
-        @text_line_2 = part.tags.join(' | ')
-        @text_line_3 = "#{ part.length_increased ? '*' : '' }#{part.length.to_s} x #{ part.width_increased ? '*' : '' }#{part.width.to_s} x #{ part.thickness_increased ? '*' : '' }#{part.thickness.to_s}" +
+        @lbl_1.visible = true
+        @lbl_2.visible = !part.tags.empty?
+        @lbl_3.visible = true
+
+        @lbl_1.text = "[#{part.number}] #{part.name}"
+        @lbl_2.text = part.tags.join(' | ')
+        @lbl_3.text = "#{ part.length_increased ? '*' : '' }#{part.length.to_s} x #{ part.width_increased ? '*' : '' }#{part.width.to_s} x #{ part.thickness_increased ? '*' : '' }#{part.thickness.to_s}" +
             (part.final_area.nil? ? '' : " (#{part.final_area})") +
             " | #{instance_count.to_s} #{Plugin.instance.get_i18n_string(instance_count > 1 ? 'default.instance_plural' : 'default.instance_single')}" +
             " | #{(part.material_name.empty? ? Plugin.instance.get_i18n_string('tab.cutlist.material_undefined') : part.material_name)}"
 
       elsif @group
 
-        @text_line_1 = (@group.material_name.empty? ? Plugin.instance.get_i18n_string('tab.cutlist.material_undefined') : @group.material_name + (@group.std_dimension.empty? ? '' : ' / ' + @group.std_dimension))
-        @text_line_2 = ''
-        @text_line_3 = @instance_count.to_s + ' ' + Plugin.instance.get_i18n_string(@instance_count > 1 ? 'default.instance_plural' : 'default.instance_single')
+        @lbl_1.visible = true
+        @lbl_2.visible = false
+        @lbl_3.visible = true
+
+        @lbl_1.text = (@group.material_name.empty? ? Plugin.instance.get_i18n_string('tab.cutlist.material_undefined') : @group.material_name + (@group.std_dimension.empty? ? '' : ' / ' + @group.std_dimension))
+        @lbl_2.text = ''
+        @lbl_3.text = @instance_count.to_s + ' ' + Plugin.instance.get_i18n_string(@instance_count > 1 ? 'default.instance_plural' : 'default.instance_single')
 
       else
 
-        @text_line_1 = ''
-        @text_line_2 = ''
-        @text_line_3 = @instance_count.to_s + ' ' + Plugin.instance.get_i18n_string(@instance_count > 1 ? 'default.instance_plural' : 'default.instance_single')
+        @lbl_1.visible = false
+        @lbl_2.visible = false
+        @lbl_3.visible = true
+
+        @lbl_1.text = ''
+        @lbl_2.text = ''
+        @lbl_3.text = @instance_count.to_s + ' ' + Plugin.instance.get_i18n_string(@instance_count > 1 ? 'default.instance_plural' : 'default.instance_single')
 
       end
 
@@ -376,7 +404,7 @@ module Ladb::OpenCutList
     def _reset(view)
       if @hover_part
         @hover_part = nil
-        @hover_pick_path = nil
+        @picked_path = nil
         _update_text_lines
         view.invalidate
       end
@@ -394,68 +422,6 @@ module Ladb::OpenCutList
 
     end
 
-    # -- GL utils --
-
-    def _offset_toward_camera(view, *args)
-      if args.size > 1
-        return offset_toward_camera(args)
-      end
-      points = args.first
-      offset_direction = view.camera.direction.reverse!
-      points.map { |point|
-        point = point.position if point.respond_to?(:position)
-        # Model.pixels_to_model converts argument to integers.
-        size = view.pixels_to_model(2, point) * 0.01
-        point.offset(offset_direction, size)
-      }
-    end
-
-    def _transform_points(points, transformation)
-      return false if transformation.nil?
-      points.each { |point| point.transform!(transformation) }
-      true
-    end
-
-    def _compute_children_faces_tirangles(view, entities, transformation = nil)
-      triangles = []
-      entities.each { |entity|
-        if entity.is_a? Sketchup::Face and entity.visible?
-          triangles.concat(_compute_face_triangles(view, entity, transformation))
-        elsif entity.is_a? Sketchup::Group and entity.visible?
-          triangles.concat(_compute_children_faces_tirangles(view, entity.entities, transformation ? transformation * entity.transformation : entity.transformation))
-        elsif entity.is_a? Sketchup::ComponentInstance and entity.visible? and entity.definition.behavior.cuts_opening?
-          triangles.concat(_compute_children_faces_tirangles(view, entity.definition.entities, transformation ? transformation * entity.transformation : entity.transformation))
-        end
-      }
-      triangles
-    end
-
-    def _compute_face_triangles(view, face, transformation = nil)
-
-      # Thank you @thomthom for this piece of code ;)
-
-      if face.deleted?
-        return false
-      end
-
-      mesh = face.mesh(0) # POLYGON_MESH_POINTS
-      points = mesh.points
-
-      _offset_toward_camera(view, points)
-      _transform_points(points, transformation)
-
-      triangles = []
-      mesh.polygons.each { |polygon|
-        polygon.each { |index|
-          # Indicies start at 1 and can be negative to indicate edge smoothing.
-          # Must take this into account when looking up the points in our array.
-          triangles << points[index.abs - 1]
-        }
-      }
-
-      triangles
-    end
-
     def _path(bounds, offsets, loop, transformation, order = [ 1 , 2 , 3 ])
       origin = bounds.min
       points = []
@@ -471,19 +437,8 @@ module Ladb::OpenCutList
         end
         points << points.first.clone
       end
-      _transform_points(points, transformation)
+      Point3dUtils::transform_points(points, transformation)
       points
-    end
-
-    def _draw_rect(view, x, y, width, height, color)
-      @points = [
-          Geom::Point3d.new(        x ,          y , 0),
-          Geom::Point3d.new(x + width ,          y , 0),
-          Geom::Point3d.new(x + width , y + height , 0),
-          Geom::Point3d.new(        x , y + height , 0)
-      ]
-      view.drawing_color = color
-      view.draw2d(GL_QUADS, @points)
     end
 
     def _pick_hover_part(x, y, view)
@@ -494,7 +449,7 @@ module Ladb::OpenCutList
         @pick_helper.count.times { |pick_path_index|
 
           pick_path = @pick_helper.path_at(pick_path_index)
-          if pick_path == @hover_pick_path
+          if pick_path == @picked_path
             return  # Previously detected path, stop process to optimize.
           end
           if pick_path
@@ -513,7 +468,7 @@ module Ladb::OpenCutList
               part.def.entity_serialized_paths.each { |sp|
                 if serialized_path.start_with?(sp)
                   @hover_part = part
-                  @hover_pick_path = pick_path
+                  @picked_path = pick_path
                   _update_text_lines
                   view.invalidate
                   return

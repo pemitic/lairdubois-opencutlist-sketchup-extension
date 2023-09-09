@@ -5,9 +5,10 @@ module Ladb::OpenCutList
     MATERIALS_PALETTE = %w(#4F78A7 #EF8E2C #DE545A #79B8B2 #5CA34D #ECCA48 #AE78A2 #FC9CA8 #9B755F #BAB0AC)
 
     def initialize(settings, parts)
-      @remove_all = settings['remove_all']
-      @keep_definitions_settings = settings['keep_definitions_settings']
-      @keep_materials_settings = settings['keep_materials_settings']
+
+      @remove_all = settings.fetch('remove_all', false)
+      @keep_definitions_settings = settings.fetch('keep_definitions_settings', true)
+      @keep_materials_settings = settings.fetch('keep_materials_settings', true)
 
       @parts = parts
 
@@ -29,7 +30,7 @@ module Ladb::OpenCutList
       active_entities = model.active_entities
 
       # Start model modification operation
-      model.start_operation('OpenCutList - Importing Parts', true)
+      model.start_operation('OCL Importing Parts', true)
 
       # Remove all instances, definitions and materials if needed
       if @remove_all
@@ -93,9 +94,10 @@ module Ladb::OpenCutList
         # Retrieve material (or create it)
         material = nil
         unless part[:material].nil?
-          material = materials[part[:material]]
+          material_name = part[:material].strip
+          material = materials[material_name]
           unless material
-            material = materials.add(part[:material])
+            material = materials.add(material_name)
             material.color = MATERIALS_PALETTE[material_palette_index]
             material_palette_index = (material_palette_index + 1) % MATERIALS_PALETTE.length
           end
@@ -111,7 +113,7 @@ module Ladb::OpenCutList
 
         # Set part attributes
         definition_attributes = DefinitionAttributes.new(definition)
-        definition_attributes.orientation_locked_on_axis = true                 # Force part to be locked on its axis
+        definition_attributes.orientation_locked_on_axis = true           # Force part to be locked on its axis
         definition_attributes.tags = part[:tags] unless part[:tags].nil?  # Add labels if defined
         definition_attributes.write_to_attributes
 

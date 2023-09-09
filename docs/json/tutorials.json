@@ -9,6 +9,14 @@
       "country": "us"
     },
     {
+      "title": "The Best SketchUp CutList Plugin | OpenCutList",
+      "author": "MasterSketchUp",
+      "channel_id": "UCFBi30B8oBGrl48RdxgIiRA",
+      "video_id": "8f_R9Gzs4gU",
+      "language": "en",
+      "country": "us"
+    },
+    {
       "title": "Cutlists made easy! (Sketchup For Fitted Furniture Makers Part 6)",
       "author": "Alastair Johnson - Freebird",
       "channel_id": "UCETveVX7TPauIupxYz6sFtA",
@@ -17,10 +25,26 @@
       "country": "gb"
     },
     {
+      "title": "Use Cutting Lists for Fast Cabinet Making with SketchUp and Open Cutting List (OCL)",
+      "author": "Strawbyte Workshop",
+      "channel_id": "UCBOJKOXyquCa3_y1Yobpdng",
+      "video_id": "1P13BBYvap0",
+      "language": "en",
+      "country": "gb"
+    },
+    {
       "title": "Conférence de présentation OpenCutList au salon Habitat et Bois - Epinal 2019",
       "author": "Boris Beaulant",
       "channel_id": "UCYyhREQZuEIEH3mMuQZhofw",
       "video_id": "gW0FrYRItoc",
+      "language": "fr",
+      "country": "fr"
+    },
+    {
+      "title": "OpenCutList: Extension pour faire son devis, débit et calepinage dans SketchUp - Part01",
+      "author": "José Das Neves",
+      "channel_id": "UCKiabvM_K8ffshrq-uN5Ofg",
+      "video_id": "HsjndYJvqvs",
       "language": "fr",
       "country": "fr"
     },
@@ -42,7 +66,7 @@
     },
     {
       "title": "VLOG #30 - Stücklisten und Zuschnittpläne in SketchUp erstellen",
-      "author": "Heiko Reich",
+      "author": "Heiko Rech",
       "channel_id": "UCdDBCrj9qjy9BI18HWajEZg",
       "video_id": "dLoiFJI9LGQ",
       "language": "de",
@@ -53,6 +77,22 @@
       "author": "Johannes Boernsen",
       "channel_id": "UCZprK8lYFfavr2Farr_mCLw",
       "video_id": "55jhInrVzJU",
+      "language": "de",
+      "country": "de"
+    },
+    {
+      "title": "PERFEKTE Stückliste und Zuschnittpläne mit OpenCutList in SketchUp",
+      "author": "Bastelpause",
+      "channel_id": "UCLyTAiweszh7kmD5zbPi24A",
+      "video_id": "0hnhiksHr7g",
+      "language": "de",
+      "country": "de"
+    },
+    {
+      "title": "Opencutlist plugin (Sketchup)",
+      "author": "Tolzi",
+      "channel_id": "UCHzn1A4Xmi5XKl11ktOpE2w",
+      "video_id": "drI0vk2F_kI",
       "language": "de",
       "country": "de"
     },
@@ -105,6 +145,14 @@
       "country": "ru"
     },
     {
+      "title": "Как сделать раскрой и посчитать материал",
+      "author": "volkov.project",
+      "channel_id": "UCsCDXzHCQCrlSYzHvoOol-w",
+      "video_id": "j0bclvCNjg4",
+      "language": "ru",
+      "country": "ru"
+    },
+    {
       "title": "Master your SketchUp | SketchUp Woodwork Plugin",
       "author": "AECO Space",
       "channel_id": "UCOnWSBxeZcIa7dxiH3ma0ZQ",
@@ -119,14 +167,6 @@
       "video_id": "2Jh3jmp6Kms",
       "language": "cs",
       "country": "cz"
-    },
-    {
-      "title": "PERFEKTE Stückliste und Zuschnittpläne mit OpenCutList in SketchUp",
-      "author": "Bastelpause",
-      "channel_id": "UCLyTAiweszh7kmD5zbPi24A",
-      "video_id": "0hnhiksHr7g",
-      "language": "de",
-      "country": "de"
     }
   ]
 }
