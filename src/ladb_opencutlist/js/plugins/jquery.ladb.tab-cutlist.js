@@ -24,6 +24,7 @@
         this.filename = null;
         this.modelName = null;
         this.modelDescription = null;
+        this.modelActivePath = null;
         this.pageName = null;
         this.pageDescription = null;
         this.isEntitySelection = null;
@@ -102,6 +103,7 @@
                 var filename = response.filename;
                 var modelName = response.model_name;
                 var modelDescription = response.model_description;
+                var modelActivePath = response.model_active_path;
                 var pageName = response.page_name;
                 var pageDescription = response.page_description;
                 var isEntitySelection = response.is_entity_selection;
@@ -123,6 +125,7 @@
                 that.filename = filename;
                 that.modelName = modelName;
                 that.modelDescription = modelDescription;
+                that.modelActivePath = modelActivePath;
                 that.pageName = pageName;
                 that.pageDescription = pageDescription;
                 that.cutlistTitle = (modelName ? modelName : filename.replace(/\.[^/.]+$/, '')) + (pageName ? ' - ' + pageName : '');
@@ -156,6 +159,7 @@
                     filename: filename,
                     modelName: modelName,
                     modelDescription: modelDescription,
+                    modelActivePath: modelActivePath,
                     pageName: pageName,
                     pageDescription: pageDescription,
                     isEntitySelection: isEntitySelection,
@@ -870,6 +874,7 @@
                             filename: that.filename,
                             modelName: that.modelName,
                             modelDescription: that.modelDescription,
+                            modelActivePath: that.modelActivePath,
                             pageName: that.pageName,
                             pageDescription: that.pageDescription,
                             isEntitySelection: that.isEntitySelection,
@@ -1068,6 +1073,7 @@
                             filename: that.filename,
                             modelName: that.modelName,
                             modelDescription: that.modelDescription,
+                            modelActivePath: that.modelActivePath,
                             pageName: that.pageName,
                             pageDescription: that.pageDescription,
                             isEntitySelection: that.isEntitySelection,
@@ -1560,6 +1566,7 @@
                                 filename: that.filename,
                                 modelName: that.modelName,
                                 modelDescription: that.modelDescription,
+                                modelActivePath: that.modelActivePath,
                                 pageName: that.pageName,
                                 pageDescription: that.pageDescription,
                                 isEntitySelection: that.isEntitySelection,
@@ -3129,6 +3136,7 @@
                                             filename: that.filename,
                                             modelName: that.modelName,
                                             modelDescription: that.modelDescription,
+                                            modelActivePath: that.modelActivePath,
                                             pageName: that.pageName,
                                             pageDescription: that.pageDescription,
                                             isEntitySelection: that.isEntitySelection,
@@ -3142,6 +3150,7 @@
                                         // Fetch UI elements
                                         var $btnCuttingDiagram = $('#ladb_btn_cuttingdiagram', $slide);
                                         var $btnPrint = $('#ladb_btn_print', $slide);
+                                        var $btnExport = $('#ladb_btn_export', $slide);
                                         var $btnLabels = $('#ladb_btn_labels', $slide);
                                         var $btnClose = $('#ladb_btn_close', $slide);
 
@@ -3152,6 +3161,16 @@
                                         $btnPrint.on('click', function () {
                                             $(this).blur();
                                             that.print(that.cutlistTitle + ' - ' + i18next.t('tab.cutlist.cuttingdiagram.title'));
+                                        });
+                                        $btnExport.on('click', function () {
+
+                                            // Show Objective modal
+                                            that.dialog.executeCommandOnTab('sponsor', 'show_objective_modal', {
+                                                objectiveStrippedName: 'cuttingdiagram_export',
+                                                objectiveIcon: 'cuttingdiagram1d',
+                                                objectiveImage: 'sponsor-objective-export.png',
+                                            }, null, true);
+
                                         });
                                         $btnLabels.on('click', function () {
 
@@ -3452,6 +3471,7 @@
                                             filename: that.filename,
                                             modelName: that.modelName,
                                             modelDescription: that.modelDescription,
+                                            modelActivePath: that.modelActivePath,
                                             pageName: that.pageName,
                                             pageDescription: that.pageDescription,
                                             isEntitySelection: that.isEntitySelection,
@@ -3465,6 +3485,7 @@
                                         // Fetch UI elements
                                         var $btnCuttingDiagram = $('#ladb_btn_cuttingdiagram', $slide);
                                         var $btnPrint = $('#ladb_btn_print', $slide);
+                                        var $btnExport = $('#ladb_btn_export', $slide);
                                         var $btnLabels = $('#ladb_btn_labels', $slide);
                                         var $btnClose = $('#ladb_btn_close', $slide);
 
@@ -3475,6 +3496,16 @@
                                         $btnPrint.on('click', function () {
                                             $(this).blur();
                                             that.print(that.cutlistTitle + ' - ' + i18next.t('tab.cutlist.cuttingdiagram.title'));
+                                        });
+                                        $btnExport.on('click', function () {
+
+                                            // Show Objective modal
+                                            that.dialog.executeCommandOnTab('sponsor', 'show_objective_modal', {
+                                                objectiveStrippedName: 'cuttingdiagram_export',
+                                                objectiveIcon: 'cuttingdiagram2d',
+                                                objectiveImage: 'sponsor-objective-export.png',
+                                            }, null, true);
+
                                         });
                                         $btnLabels.on('click', function () {
 

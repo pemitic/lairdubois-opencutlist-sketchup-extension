@@ -4,6 +4,35 @@ CHANGELOG
 This changelog references the relevant changes (bug and security fixes) done
 in 5.x, 4.x, 3.x, 2.x, 1.x and 0.x versions.
 
+* 5.1.2 (2023-11-29)
+
+  * Added teaser cutting diagram "Export" button
+  
+* 5.1.1 (2023-10-30)
+
+  * Avoid negative dimensions input
+  
+* 5.1.0 (2023-10-18)
+
+  * Added **Dutch** language (thanks to Dany Dhondt, Eric Lugtigheid and Koen Dejonckheere)
+  * Added **Simplified Chinese** language (thanks to liutao91)
+  
+* 5.0.4 (2023-09-14)
+
+  * Fixed "Export to Layout" hang
+  
+* 5.0.3 (2023-09-13)
+
+  * Fixed the dimension parser that misinterpret decimal separator
+  * Fixed wrong counting of invalid sized parts in 2D
+  * Fixed Bottom right notification box no long print
+  * Reversed picker cursor
+  * Improved part material detection
+  * Improved tokenfield dimension regex
+  * Improved Smart Axes Tool "edit part" properties by selecting part entity
+  * Added active named path to printable headers
+  * Added compare functions to NumericWarapper
+
 * 5.0.2 (2023-06-20)
 
   * Fixed Architecture dimension parser
@@ -42,7 +71,7 @@ in 5.x, 4.x, 3.x, 2.x, 1.x and 0.x versions.
   * Renamed Tags to Badges
   * Improved materials property dialog : It is now possible to add, change and clear texture on a material
   * Improved color pickers : It's now possible to select custom color in picker (SketchUp 2021+)
-  * Saved last material export / import and part export used folder 
+  * Saved last material export / import and part export used folder
   * Fixed cutting diagram bins number to be displayed even if _Group Similar Panels_ option is ON
   * Fixed cutting diagram 2D edge drawing to correspond to counter-clockwise rotation of part's name
   * Fixed missed exported edges std dimensions on folded parts
