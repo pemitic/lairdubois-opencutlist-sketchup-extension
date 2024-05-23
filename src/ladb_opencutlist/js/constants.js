@@ -1,7 +1,7 @@
 // CONSTANTS
 // ======================
 
-var EXTENSION_BUILD = '202311161315';   // /!\ Auto-generated line, do not edit //
+var EXTENSION_BUILD = '202403210933';   // /!\ Auto-generated line, do not edit //
 
 // UI /////
 
@@ -27,6 +27,10 @@ var SORTABLE_OPTIONS = {
 
 var SLIDER_OPTIONS = {
     tooltip: 'hide'
+};
+
+var TEXTINPUT_COLOR_OPTIONS = {
+    resetValue: null
 };
 
 // GraphQL /////

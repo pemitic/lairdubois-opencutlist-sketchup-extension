@@ -23,7 +23,6 @@
     <button class="btn btn-default" data-help-page="settings"><i class="ladb-opencutlist-icon-help"></i></button>
 {% endblock %}
 
-
 {% block containerInner %}
     <div class="row">
         <div class="col-xs-6">
@@ -60,6 +59,13 @@
                             <option value="1">{{ 'tab.settings.print_margin_small'|i18next }}</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>{{ 'tab.settings.table_row_size'|i18next }}</label>
+                        <select id="ladb_select_table_row_size" class="form-control">
+                            <option value="0">{{ 'tab.settings.table_row_size_normal'|i18next }}</option>
+                            <option value="1">{{ 'tab.settings.table_row_size_compact'|i18next }}</option>
+                        </select>
+                    </div>
                     <hr />
                     <div class="form-group">
                         <label>{{ 'tab.settings.size_and_position'|i18next }}</label>
@@ -70,6 +76,7 @@
                             <button id="ladb_btn_top_down" class="btn btn-sm btn-default"><i class="ladb-opencutlist-icon-arrow-up"></i></button>
                             <button id="ladb_btn_left_up" class="btn btn-sm btn-default"><i class="ladb-opencutlist-icon-arrow-right"></i></button>
                             <button id="ladb_btn_left_down" class="btn btn-sm btn-default"><i class="ladb-opencutlist-icon-arrow-left"></i></button>
+                            <button id="ladb_btn_left_top_reset" class="btn btn-sm btn-default"><i class="ladb-opencutlist-icon-reset"></i></button>
                             <button id="ladb_btn_width_up" class="btn btn-sm btn-default"><i class="ladb-opencutlist-icon-plus"></i></button>
                             <button id="ladb_btn_width_down" class="btn btn-sm btn-default"><i class="ladb-opencutlist-icon-minus"></i></button>
                             <button id="ladb_btn_height_up" class="btn btn-sm btn-default"><i class="ladb-opencutlist-icon-plus"></i></button>
@@ -137,18 +144,44 @@
                         </div>
                     </section>
                     <hr>
-                    <section style="position: relative;">
-                        {% include 'components/_widget-preset.twig' with { 'top':0, 'right':0 } %}
-                        <div class="form-group">
-                            <label>{{ 'tab.settings.mass_unit'|i18next }}</label>
-                            <select id="ladb_model_select_mass_unit" class="form-control">
-                                <option data-content="{{ 'default.unit_mass_0'|i18next }}">0</option>
-                                <option data-content="{{ 'default.unit_mass_1'|i18next }}">1</option>
-                            </select>
+                    <section class="row">
+                        <div class="col-xs-12 text-right">
+                            {% include 'components/_widget-preset.twig' %}
                         </div>
-                        <div class="form-group">
-                            <label>{{ 'tab.settings.currency_symbol'|i18next }}</label>
-                            <input id="ladb_model_input_currency_symbol" class="form-control">
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label>{{ 'tab.settings.mass_unit'|i18next }}</label>
+                                <select id="ladb_model_select_mass_unit" class="form-control">
+                                    <option data-content="{{ 'default.unit_mass_0'|i18next }}">0</option>
+                                    <option data-content="{{ 'default.unit_mass_1'|i18next }}">1</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label>{{ 'tab.settings.mass_precision'|i18next }}</label>
+                                <select id="ladb_model_select_mass_precision" class="form-control">
+                                    <option data-content="0">0</option>
+                                    <option data-content="0{{ capabilities.decimal_separator }}0">1</option>
+                                    <option data-content="0{{ capabilities.decimal_separator }}00">2</option>
+                                    <option data-content="0{{ capabilities.decimal_separator }}000">3</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label>{{ 'tab.settings.currency_symbol'|i18next }}</label>
+                                <input id="ladb_model_input_currency_symbol" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label>{{ 'tab.settings.currency_precision'|i18next }}</label>
+                                <select id="ladb_model_select_currency_precision" class="form-control">
+                                    <option data-content="0">0</option>
+                                    <option data-content="0{{ capabilities.decimal_separator }}00">2</option>
+                                </select>
+                            </div>
                         </div>
                     </section>
                 </div>

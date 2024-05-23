@@ -1,6 +1,7 @@
 {% set terms = (elementDef.formula)|split('.') %}
 {% if terms[0] == 'thumbnail' %}
     {% set proportional = terms[1] == 'proportional' %}
+    {% set drawing = terms[2] == 'drawing' %}
     {% set areaSize = elementDef.size * minUnit %}
     {% if elementDef.anchor starts with 'middle' %}
         {% set transX = areaSize * -0.5 %}
@@ -17,37 +18,53 @@
     <rect class="ladb-label-element" x="{{ transX }}" y="{{ transY }}" width="{{ areaSize }}" height="{{ areaSize }}" fill="{% if noEmptyValue %}rgba(0,0,0,0.03){% else %}none{% endif %}" stroke="none" />
     {% set dashedStrokeWidth = minUnit / 10 %}
     {% set plainStrokeWidth = minUnit / 5 %}
-    {% set rectPartWidth = areaSize * (proportional ? partInfo.part.l_ratio : 1) - plainStrokeWidth %}
-    {% set rectPartHeight = areaSize * (proportional ? partInfo.part.w_ratio : 1) - plainStrokeWidth %}
+    {% set rectPartWidth = (areaSize - plainStrokeWidth) * (proportional ? partInfo.part.l_ratio : 1) %}
+    {% set rectPartHeight = (areaSize - plainStrokeWidth) * (proportional ? partInfo.part.w_ratio : 1) %}
     <g transform="translate({{ transX + (areaSize - rectPartWidth) / 2 }} {{ transY + (areaSize - rectPartHeight) / 2 }})">
-        <rect x="0" y="0" width="{{ max(0, rectPartWidth) }}" height="{{ max(0, rectPartHeight) }}" fill="#ffffff" stroke="none" />
-        {% if group.material_grained %}
-            <g{% if (partInfo.part.flipped b-xor partInfo.part.axes_flipped) == 1 %} transform="translate({{ rectPartWidth }}, 0) scale(-1,1)"{% endif %}>
-                {% set arrowMargin = minUnit / 4 %}
-                {% set arrowX = arrowMargin %}
-                {% set arrowY = arrowMargin %}
-                {% set arrowWidth = rectPartWidth - arrowMargin * 2 %}
-                {% set arrowLength = rectPartHeight - arrowMargin * 2 %}
-                {% set arrowStrokeWidth = minUnit / 20 %}
-                {% set arrowPattern = [
-                    [     0 , 1/3.0 ],
-                    [ 1/2.0 , 1/3.0 ],
-                    [ 1/2.0 ,     0 ],
-                    [     1 , 1/2.0 ],
-                    [ 1/2.0 ,     1 ],
-                    [ 1/2.0 , 2/3.0 ],
-                    [     0 , 2/3.0 ],
-                    [     0 , 1/3.0 ],
-                ] %}
-                <polyline points="{% for point in arrowPattern %}{{ arrowX + arrowWidth * point[0] }},{{ arrowY + arrowLength * point[1] }} {% endfor %}" stroke="#000" stroke-width="{{ arrowStrokeWidth }}" fill="none" />
+        {% if drawing %}
+            {% set scale = max(rectPartWidth, rectPartHeight) %}
+            {% set drawingStrokeWidth = minUnit / (20 * scale) %}
+            <g transform="scale({{ scale }} {{ scale }}) translate(0 {{ partInfo.part.w_ratio }})">
+                {% for layer in partInfo.custom_values[index] %}
+                    <path d="{{ layer.path }}" stroke="{{ elementDef.color }}" stroke-width="{{ drawingStrokeWidth }}" fill="#ffffff" />
+                {% endfor %}
+            </g>
+            <g>
+                {% if partInfo.part.edge_material_names.ymax %}<line x1="0" y1="0" x2="{{ rectPartWidth }}" y2="0" stroke-linecap="square" stroke="{{ hideMaterialColors ? elementDef.color: partInfo.part.edge_material_colors.ymax }}" stroke-width="{{ plainStrokeWidth }}" />{% endif %}
+                {% if partInfo.part.edge_material_names.ymin %}<line x1="{{ rectPartWidth }}" y1="{{ rectPartHeight }}" x2="0" y2="{{ rectPartHeight }}" stroke-linecap="square" stroke="{{ hideMaterialColors ? elementDef.color : partInfo.part.edge_material_colors.ymin }}" stroke-width="{{ plainStrokeWidth }}" />{% endif %}
+                {% if partInfo.part.edge_material_names.xmax %}<line x1="{{ rectPartWidth }}" y1="0" x2="{{ rectPartWidth }}" y2="{{ rectPartHeight }}" stroke-linecap="square" stroke="{{ hideMaterialColors ? elementDef.color : partInfo.part.edge_material_colors.xmax }}" stroke-width="{{ plainStrokeWidth }}" />{% endif %}
+                {% if partInfo.part.edge_material_names.xmin %}<line x1="0" y1="{{ rectPartHeight }}" x2="0" y2="0" stroke-linecap="square" stroke="{{ hideMaterialColors ? elementDef.color : partInfo.part.edge_material_colors.xmin }}" stroke-width="{{ plainStrokeWidth }}" />{% endif %}
+            </g>
+        {% else %}
+            <rect x="0" y="0" width="{{ max(0, rectPartWidth) }}" height="{{ max(0, rectPartHeight) }}" fill="#ffffff" stroke="none" />
+            {% if group.material_grained %}
+                <g{% if (partInfo.part.flipped b-xor partInfo.part.axes_flipped) == 1 %} transform="translate({{ rectPartWidth }}, 0) scale(-1,1)"{% endif %}>
+                    {% set arrowMargin = minUnit / 4 %}
+                    {% set arrowX = arrowMargin %}
+                    {% set arrowY = arrowMargin %}
+                    {% set arrowWidth = rectPartWidth - arrowMargin * 2 %}
+                    {% set arrowLength = rectPartHeight - arrowMargin * 2 %}
+                    {% set arrowStrokeWidth = minUnit / 20 %}
+                    {% set arrowPattern = [
+                        [     0 , 1/3.0 ],
+                        [ 1/2.0 , 1/3.0 ],
+                        [ 1/2.0 ,     0 ],
+                        [     1 , 1/2.0 ],
+                        [ 1/2.0 ,     1 ],
+                        [ 1/2.0 , 2/3.0 ],
+                        [     0 , 2/3.0 ],
+                        [     0 , 1/3.0 ],
+                    ] %}
+                    <polyline points="{% for point in arrowPattern %}{{ arrowX + arrowWidth * point[0] }},{{ arrowY + arrowLength * point[1] }} {% endfor %}" stroke="{{ elementDef.color }}" stroke-width="{{ arrowStrokeWidth }}" fill="none" />
+                </g>
+            {% endif %}
+            <g>
+                <line x1="0" y1="0" x2="{{ rectPartWidth }}" y2="0" stroke-linecap="square"{% if partInfo.part.edge_material_names.ymax %} stroke="{{ hideMaterialColors ? elementDef.color: partInfo.part.edge_material_colors.ymax }}" stroke-width="{{ plainStrokeWidth }}"{% else %}stroke="{{ elementDef.color }}" stroke-width="{{ dashedStrokeWidth }}" stroke-dasharray="{{ dashedStrokeWidth * 2 }}"{% endif%} />
+                <line x1="{{ rectPartWidth }}" y1="{{ rectPartHeight }}" x2="0" y2="{{ rectPartHeight }}" stroke-linecap="square"{% if partInfo.part.edge_material_names.ymin %} stroke="{{ hideMaterialColors ? elementDef.color : partInfo.part.edge_material_colors.ymin }}" stroke-width="{{ plainStrokeWidth }}"{% else %}stroke="{{ elementDef.color }}"  stroke-width="{{ dashedStrokeWidth }}" stroke-dasharray="{{ dashedStrokeWidth * 2 }}"{% endif%} />
+                <line x1="{{ rectPartWidth }}" y1="0" x2="{{ rectPartWidth }}" y2="{{ rectPartHeight }}" stroke-linecap="square"{% if partInfo.part.edge_material_names.xmax %} stroke="{{ hideMaterialColors ? elementDef.color : partInfo.part.edge_material_colors.xmax }}" stroke-width="{{ plainStrokeWidth }}"{% else %}stroke="{{ elementDef.color }}"  stroke-width="{{ dashedStrokeWidth }}" stroke-dasharray="{{ dashedStrokeWidth * 2 }}"{% endif%} />
+                <line x1="0" y1="{{ rectPartHeight }}" x2="0" y2="0" stroke-linecap="square"{% if partInfo.part.edge_material_names.xmin %} stroke="{{ hideMaterialColors ? elementDef.color : partInfo.part.edge_material_colors.xmin }}" stroke-width="{{ plainStrokeWidth }}"{% else %} stroke-width="{{ dashedStrokeWidth }}"stroke="{{ elementDef.color }}"  stroke-dasharray="{{ dashedStrokeWidth * 2 }}"{% endif%} />
             </g>
         {% endif %}
-        <g>
-            <line x1="0" y1="0" x2="{{ rectPartWidth }}" y2="0" stroke-linecap="square"{% if partInfo.part.edge_material_names.ymax %} stroke="{{ elementDef.color }}" stroke-width="{{ plainStrokeWidth }}"{% else %}stroke="#000" stroke-width="{{ dashedStrokeWidth }}" stroke-dasharray="{{ dashedStrokeWidth * 2 }}"{% endif%} />
-            <line x1="{{ rectPartWidth }}" y1="0" x2="{{ rectPartWidth }}" y2="{{ rectPartHeight }}" stroke-linecap="square"{% if partInfo.part.edge_material_names.xmax %} stroke="{{ elementDef.color }}" stroke-width="{{ plainStrokeWidth }}"{% else %}stroke="#000"  stroke-width="{{ dashedStrokeWidth }}" stroke-dasharray="{{ dashedStrokeWidth * 2 }}"{% endif%} />
-            <line x1="{{ rectPartWidth }}" y1="{{ rectPartHeight }}" x2="0" y2="{{ rectPartHeight }}" stroke-linecap="square"{% if partInfo.part.edge_material_names.ymin %} stroke="{{ elementDef.color }}" stroke-width="{{ plainStrokeWidth }}"{% else %}stroke="#000"  stroke-width="{{ dashedStrokeWidth }}" stroke-dasharray="{{ dashedStrokeWidth * 2 }}"{% endif%} />
-            <line x1="0" y1="{{ rectPartHeight }}" x2="0" y2="0" stroke-linecap="square"{% if partInfo.part.edge_material_names.xmin %} stroke="{{ elementDef.color }}" stroke-width="{{ plainStrokeWidth }}"{% else %} stroke-width="{{ dashedStrokeWidth }}"stroke="#000"  stroke-dasharray="{{ dashedStrokeWidth * 2 }}"{% endif%} />
-        </g>
     </g>
 {% else %}
     {% if terms[0] == 'part' %}
@@ -62,6 +79,8 @@
             {% set value = partInfo.bin %}
         {% elseif key == 'cutting_size' %}
             {% set value = partInfo.part.cutting_length~' x '~partInfo.part.cutting_width %}
+        {% elseif key == 'edge_cutting_size' %}
+            {% set value = partInfo.part.edge_cutting_length~' x '~partInfo.part.edge_cutting_width %}
         {% elseif key == 'size' %}
             {% set value = partInfo.part.length~' x '~partInfo.part.width %}
         {% elseif key == 'batch' %}
@@ -102,6 +121,12 @@
         {% set value = lengthUnit ? ('default.unit_'~lengthUnit)|i18next : '' %}
     {% elseif terms[0] == 'generated_at' %}
         {% set value = generatedAt|date(('default.date_format'|i18next)) %}
+    {% elseif terms[0] == 'custom' %}
+        {% if partInfo.custom_values[index]['error'] %}
+            {% set error = partInfo.custom_values[index]['error'] %}
+        {% else %}
+            {% set value = partInfo.custom_values[index]|split('\n') %}
+        {% endif %}
     {% endif %}
     {% if value|trim is empty and noEmptyValue|default(false) %}
         {% set value = '['~('tab.cutlist.labels.formula.'~(elementDef.formula|replace({ '.':'_' })))|i18next~']' %}
@@ -113,13 +138,17 @@
         {% set textAnchor = elementDef.anchor %}
         {% set transY = 0 %}
     {% endif %}
-    <text class="ladb-label-element" x="0" y="{{ transY }}" font-size="{{ elementDef.size * minUnit }}" text-anchor="{{ textAnchor }}" fill="{{ elementDef.color }}">{% spaceless %}
-        {% if value is iterable %}
-            {% for line in value %}
-                <tspan {% if loop.first %}dy="-{{ elementDef.size * minUnit * ((value|length) - 1) }}"{% else %}x="0" dy="{{ elementDef.size * minUnit }}"{% endif %}>{{ line|trim|escape }}</tspan>
-            {% endfor %}
+    <text class="ladb-label-element" x="0" y="{{ transY }}" font-size="{{ error ? 0.5 * minUnit : elementDef.size * minUnit }}" text-anchor="{{ textAnchor }}" fill="{{ error ? 'red' : elementDef.color }}">{% spaceless %}
+        {% if error %}
+            {{ error|trim|escape }}
         {% else %}
-            {{ value|trim|escape }}
+            {% if value is iterable %}
+                {% for line in value %}
+                    <tspan {% if loop.first %}dy="-{{ elementDef.size * minUnit * ((value|length) - 1) }}"{% else %}x="0" dy="{{ elementDef.size * minUnit }}"{% endif %}>{{ line|trim|escape }}</tspan>
+                {% endfor %}
+            {% else %}
+                {{ value|trim|escape }}
+            {% endif %}
         {% endif %}
     {% endspaceless %}</text>
 {% endif %}

@@ -60,28 +60,36 @@ module Ladb::OpenCutList
         part_update_command(settings)
       end
 
-      Plugin.instance.register_command("cutlist_part_export_to_skp") do |settings|
-        part_export_to_skp_command(settings)
+      Plugin.instance.register_command("cutlist_write_parts") do |settings|
+        write_parts_command(settings)
       end
 
-      Plugin.instance.register_command("cutlist_part_toggle_front") do |part_data|
-        part_toggle_front_command(part_data)
+      Plugin.instance.register_command("cutlist_group_cuttingdiagram1d_start") do |settings|
+        group_cuttingdiagram1d_start_command(settings)
       end
 
-      Plugin.instance.register_command("cutlist_group_cuttingdiagram_1d_start") do |settings|
-        group_cuttingdiagram_1d_start_command(settings)
+      Plugin.instance.register_command("cutlist_group_cuttingdiagram1d_advance") do |settings|
+        group_cuttingdiagram1d_advance_command
       end
 
-      Plugin.instance.register_command("cutlist_group_cuttingdiagram_1d_advance") do |settings|
-        group_cuttingdiagram_1d_advance_command
+      Plugin.instance.register_command("cutlist_cuttingdiagram1d_write") do |settings|
+        cuttingdiagram1d_write_command(settings)
       end
 
-      Plugin.instance.register_command("cutlist_group_cuttingdiagram_2d_start") do |settings|
-        group_cuttingdiagram_2d_start_command(settings)
+      Plugin.instance.register_command("cutlist_group_cuttingdiagram2d_start") do |settings|
+        group_cuttingdiagram2d_start_command(settings)
       end
 
-      Plugin.instance.register_command("cutlist_group_cuttingdiagram_2d_advance") do |settings|
-        group_cuttingdiagram_2d_advance_command
+      Plugin.instance.register_command("cutlist_group_cuttingdiagram2d_advance") do |settings|
+        group_cuttingdiagram2d_advance_command
+      end
+
+      Plugin.instance.register_command("cutlist_cuttingdiagram2d_write") do |settings|
+        cuttingdiagram2d_write_command(settings)
+      end
+
+      Plugin.instance.register_command("cutlist_labels_compute_elements") do |settings|
+        labels_compute_elements_command(settings)
       end
 
       Plugin.instance.register_command("cutlist_reset_prices") do |settings|
@@ -102,7 +110,7 @@ module Ladb::OpenCutList
                                              MaterialsObserver::ON_MATERIAL_REMOVE,
                                          ]) do |params|
 
-        # Invalidate Cutlist if if exists
+        # Invalidate Cutlist if it exists
         @cutlist.invalidate if @cutlist
 
       end
@@ -215,18 +223,18 @@ module Ladb::OpenCutList
       worker.run
     end
 
-    def part_export_to_skp_command(settings)
-      require_relative '../worker/cutlist/cutlist_part_export_to_skp_worker'
+    def write_parts_command(settings)
+      require_relative '../worker/cutlist/cutlist_write_parts_worker'
 
       # Setup worker
-      worker = CutlistPartExportToSkpWorker.new(settings)
+      worker = CutlistWritePartsWorker.new(settings, @cutlist)
 
       # Run !
       worker.run
     end
 
-    def group_cuttingdiagram_1d_start_command(settings)
-      require_relative '../worker/cutlist/cutlist_cuttingdiagram_1d_worker'
+    def group_cuttingdiagram1d_start_command(settings)
+      require_relative '../worker/cutlist/cutlist_cuttingdiagram1d_worker'
 
       # Setup worker
       @cuttingdiagram1d_worker = CutlistCuttingdiagram1dWorker.new(settings, @cutlist)
@@ -237,17 +245,32 @@ module Ladb::OpenCutList
       cuttingdiagram1d.to_hash
     end
 
-    def group_cuttingdiagram_1d_advance_command
+    def group_cuttingdiagram1d_advance_command
       return { :errors => [ 'default.error' ] } unless @cuttingdiagram1d_worker
 
       # Run !
       cuttingdiagram1d = @cuttingdiagram1d_worker.run(true)
 
+      if cuttingdiagram1d.bars.length > 0
+        @cuttingdiagram1d_worker = nil
+        @cuttingdiagram1d = cuttingdiagram1d
+      end
+
       cuttingdiagram1d.to_hash
     end
 
-    def group_cuttingdiagram_2d_start_command(settings)
-      require_relative '../worker/cutlist/cutlist_cuttingdiagram_2d_worker'
+    def cuttingdiagram1d_write_command(settings)
+      require_relative '../worker/cutlist/cutlist_cuttingdiagram1d_write_worker'
+
+      # Setup worker
+      worker = CutlistCuttingdiagram1dWriteWorker.new(settings, @cutlist, @cuttingdiagram1d)
+
+      # Run !
+      worker.run
+    end
+
+    def group_cuttingdiagram2d_start_command(settings)
+      require_relative '../worker/cutlist/cutlist_cuttingdiagram2d_worker'
 
       # Setup worker
       @cuttingdiagram2d_worker = CutlistCuttingdiagram2dWorker.new(settings, @cutlist)
@@ -258,13 +281,38 @@ module Ladb::OpenCutList
       cuttingdiagram2d.to_hash
     end
 
-    def group_cuttingdiagram_2d_advance_command
+    def group_cuttingdiagram2d_advance_command
       return { :errors => [ 'default.error' ] } unless @cuttingdiagram2d_worker
 
       # Run !
       cuttingdiagram2d = @cuttingdiagram2d_worker.run(true)
 
+      if cuttingdiagram2d.sheets.length > 0
+        @cuttingdiagram2d_worker = nil
+        @cuttingdiagram2d = cuttingdiagram2d
+      end
+
       cuttingdiagram2d.to_hash
+    end
+
+    def cuttingdiagram2d_write_command(settings)
+      require_relative '../worker/cutlist/cutlist_cuttingdiagram2d_write_worker'
+
+      # Setup worker
+      worker = CutlistCuttingdiagram2dWriteWorker.new(settings, @cutlist, @cuttingdiagram2d)
+
+      # Run !
+      worker.run
+    end
+
+    def labels_compute_elements_command(settings)
+      require_relative '../worker/cutlist/cutlist_labels_compute_elements_worker'
+
+      # Setup worker
+      worker = CutlistLabelsComputeElementsWorker.new(settings, @cutlist)
+
+      # Run !
+      worker.run
     end
 
     def reset_prices_command

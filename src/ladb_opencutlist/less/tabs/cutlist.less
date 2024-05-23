@@ -91,6 +91,11 @@
         color: #fff;
       }
 
+      .ladb-heading-info {
+        font-size: 75%;
+        color: #555;
+      }
+
     }
 
     td {
@@ -113,7 +118,7 @@
   }
 
   tbody tr.ladb-cutlist-row {
-    font-size: 16px;
+    font-size: 114%;
     cursor: pointer;
 
     &.ladb-cutlist-row-separator {
@@ -279,7 +284,7 @@
           padding: 0 3px 1px 3px;
           margin-right: 4px;
           border-radius: 3px;
-          font-size: 11px;
+          font-size: 78%;
           border: 1px solid #000;
 
           &:hover {
@@ -302,7 +307,7 @@
 
     }
 
-    .ladb-part-description {
+    .ladb-part-description, .ladb-material-description {
       font-size: 70%;
       margin-top: 5px;
     }
@@ -606,14 +611,18 @@
           line-height: 20px !important;
           background-color: #000;
           padding: 1px 6px;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+          .printable-background();
         }
 
       }
 
       .ladb-heading {
         line-height: 22px !important;
+
+        .ladb-heading-info {
+          color: #000;
+        }
+
       }
 
     }

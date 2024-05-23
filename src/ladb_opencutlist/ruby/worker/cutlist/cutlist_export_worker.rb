@@ -64,12 +64,12 @@ module Ladb::OpenCutList
       when 'csv'
 
         # Ask for export file path
-        export_path = UI.savepanel(Plugin.instance.get_i18n_string('tab.cutlist.export.title'), @cutlist.dir, File.basename(@cutlist.filename, '.skp') + '.csv')
-        if export_path
+        path = UI.savepanel(Plugin.instance.get_i18n_string('tab.cutlist.export.title'), @cutlist.dir, File.basename(@cutlist.filename, '.skp') + '.csv')
+        if path
 
           # Force "csv" file extension
-          unless export_path.end_with?('.csv')
-            export_path = export_path + '.csv'
+          unless path.end_with?('.csv')
+            path = path + '.csv'
           end
 
           begin
@@ -98,7 +98,7 @@ module Ladb::OpenCutList
             end
 
             # Write CSV file
-            File.open(export_path, "wb+:#{encoding}") do |f|
+            File.open(path, "wb+:#{encoding}") do |f|
               options = { :col_sep => col_sep }
               content = CSV.generate(**options) do |csv|
 
@@ -113,14 +113,14 @@ module Ladb::OpenCutList
               f.write(content)
 
               # Populate response
-              response[:export_path] = export_path.tr("\\", '/')  # Standardize path by replacing \ by /
+              response[:export_path] = path.tr("\\", '/')  # Standardize path by replacing \ by /
 
             end
 
           rescue => e
             puts e.message
             puts e.backtrace
-            response[:errors] << [ 'tab.cutlist.error.failed_to_write_export_file', { :error => e.message } ]
+            response[:errors] << [ 'core.error.failed_export_to', { path => path, :error => e.message } ]
           end
 
         end
@@ -149,7 +149,10 @@ module Ladb::OpenCutList
 
           data = SummaryExportRowData.new(
             MaterialTypeWrapper.new(group.material_type),
-            StringWrapper.new((group.material_name ? group.material_name : Plugin.instance.get_i18n_string('tab.cutlist.material_undefined')) + (group.material_type != MaterialAttributes::TYPE_UNKNOWN && group.material_type != MaterialAttributes::TYPE_HARDWARE ? ' / ' + group.std_dimension : '')),
+            StringWrapper.new(group.material_name ? group.material_name : Plugin.instance.get_i18n_string('tab.cutlist.material_undefined')),
+            StringWrapper.new(group.std_dimension),
+            StringWrapper.new(group.material_description),
+            StringWrapper.new(group.material_url),
             IntegerWrapper.new(group.part_count),
             LengthWrapper.new(group.def.total_cutting_length, false),
             AreaWrapper.new(group.def.total_cutting_area),
@@ -177,41 +180,52 @@ module Ladb::OpenCutList
               LengthWrapper.new(part.def.cutting_length),
               LengthWrapper.new(part.def.cutting_width),
               LengthWrapper.new(part.def.cutting_size.thickness),
+              LengthWrapper.new(part.def.edge_cutting_length),
+              LengthWrapper.new(part.def.edge_cutting_width),
               LengthWrapper.new(part.def.size.length),
               LengthWrapper.new(part.def.size.width),
               LengthWrapper.new(part.def.size.thickness),
               AreaWrapper.new(part.def.final_area),
               MaterialTypeWrapper.new(group.material_type),
               StringWrapper.new(group.material_display_name),
+              StringWrapper.new(group.material_description),
+              StringWrapper.new(group.material_url),
               ArrayWrapper.new(part.entity_names.map(&:first)),
               StringWrapper.new(part.description),
+              StringWrapper.new(part.url),
               ArrayWrapper.new(part.tags),
               EdgeWrapper.new(
                 part.edge_material_names[:ymin],
+                part.edge_material_colors[:ymin],
                 part.def.edge_group_defs[:ymin] ? part.def.edge_group_defs[:ymin].std_thickness : nil,
                 part.def.edge_group_defs[:ymin] ? part.def.edge_group_defs[:ymin].std_width : nil
               ),
               EdgeWrapper.new(
                 part.edge_material_names[:ymax],
+                part.edge_material_colors[:ymax],
                 part.def.edge_group_defs[:ymax] ? part.def.edge_group_defs[:ymax].std_thickness : nil,
                 part.def.edge_group_defs[:ymax] ? part.def.edge_group_defs[:ymax].std_width : nil
               ),
               EdgeWrapper.new(
                 part.edge_material_names[:xmin],
+                part.edge_material_colors[:xmin],
                 part.def.edge_group_defs[:xmin] ? part.def.edge_group_defs[:xmin].std_thickness : nil,
                 part.def.edge_group_defs[:xmin] ? part.def.edge_group_defs[:xmin].std_width : nil
               ),
               EdgeWrapper.new(
                 part.edge_material_names[:xmax],
+                part.edge_material_colors[:xmax],
                 part.def.edge_group_defs[:xmax] ? part.def.edge_group_defs[:xmax].std_thickness : nil,
                 part.def.edge_group_defs[:xmax] ? part.def.edge_group_defs[:xmax].std_width : nil
               ),
               VeneerWrapper.new(
                 part.face_material_names[:zmin],
+                part.face_material_colors[:zmin],
                 part.def.veneer_group_defs[:zmin] ? part.def.veneer_group_defs[:zmin].std_thickness : nil
               ),
               VeneerWrapper.new(
                 part.face_material_names[:zmax],
+                part.face_material_colors[:zmax],
                 part.def.veneer_group_defs[:zmax] ? part.def.veneer_group_defs[:zmax].std_thickness : nil
               ),
               ArrayWrapper.new(part.def.instance_infos.values.map { |instance_info| instance_info.layer.name }.uniq),
@@ -247,40 +261,51 @@ module Ladb::OpenCutList
                   LengthWrapper.new(part.def.cutting_length),
                   LengthWrapper.new(part.def.cutting_width),
                   LengthWrapper.new(part.def.cutting_size.thickness),
+                  LengthWrapper.new(part.def.edge_cutting_length),
+                  LengthWrapper.new(part.def.edge_cutting_width),
                   LengthWrapper.new(part.def.size.length),
                   LengthWrapper.new(part.def.size.width),
                   LengthWrapper.new(part.def.size.thickness),
                   AreaWrapper.new(part.def.final_area),
                   MaterialTypeWrapper.new(group.material_type),
                   StringWrapper.new(group.material_display_name),
+                  StringWrapper.new(group.material_description),
+                  StringWrapper.new(group.material_url),
                   StringWrapper.new(part.description),
+                  StringWrapper.new(part.url),
                   ArrayWrapper.new(part.tags),
                   EdgeWrapper.new(
                     part.edge_material_names[:ymin],
+                    part.edge_material_colors[:ymin],
                     part.def.edge_group_defs[:ymin] ? part.def.edge_group_defs[:ymin].std_thickness : nil,
                     part.def.edge_group_defs[:ymin] ? part.def.edge_group_defs[:ymin].std_width : nil
                   ),
                   EdgeWrapper.new(
                     part.edge_material_names[:ymax],
+                    part.edge_material_colors[:ymax],
                     part.def.edge_group_defs[:ymax] ? part.def.edge_group_defs[:ymax].std_thickness : nil,
                     part.def.edge_group_defs[:ymax] ? part.def.edge_group_defs[:ymax].std_width : nil
                   ),
                   EdgeWrapper.new(
                     part.edge_material_names[:xmin],
+                    part.edge_material_colors[:xmin],
                     part.def.edge_group_defs[:xmin] ? part.def.edge_group_defs[:xmin].std_thickness : nil,
                     part.def.edge_group_defs[:xmin] ? part.def.edge_group_defs[:xmin].std_width : nil
                   ),
                   EdgeWrapper.new(
                     part.edge_material_names[:xmax],
+                    part.edge_material_colors[:xmax],
                     part.def.edge_group_defs[:xmax] ? part.def.edge_group_defs[:xmax].std_thickness : nil,
                     part.def.edge_group_defs[:xmax] ? part.def.edge_group_defs[:xmax].std_width : nil
                   ),
                   VeneerWrapper.new(
                     part.face_material_names[:zmin],
+                    part.face_material_colors[:zmin],
                     part.def.veneer_group_defs[:zmin] ? part.def.veneer_group_defs[:zmin].std_thickness : nil
                   ),
                   VeneerWrapper.new(
                     part.face_material_names[:zmax],
+                    part.face_material_colors[:zmax],
                     part.def.veneer_group_defs[:zmax] ? part.def.veneer_group_defs[:zmax].std_thickness : nil
                   ),
                   StringWrapper.new(instance_info.layer.name),
@@ -350,7 +375,10 @@ module Ladb::OpenCutList
 
     def initialize(
       material_type,
-      material_thickness,
+      material_name,
+      material_std_dimension,
+      material_description,
+      material_url,
       part_count,
       total_cutting_length,
       total_cutting_area,
@@ -358,7 +386,10 @@ module Ladb::OpenCutList
       total_final_area
     )
       @material_type = material_type
-      @material_thickness = material_thickness
+      @material_name = material_name
+      @material_std_dimension = material_std_dimension
+      @material_description = material_description
+      @material_url = material_url
       @part_count = part_count
       @total_cutting_length = total_cutting_length
       @total_cutting_area = total_cutting_area
@@ -377,14 +408,19 @@ module Ladb::OpenCutList
       cutting_length,
       cutting_width,
       cutting_thickness,
+      edge_cutting_length,
+      edge_cutting_width,
       bbox_length,
       bbox_width,
       bbox_thickness,
       final_area,
       material_type,
       material_name,
+      material_description,
+      material_url,
       entity_names,
       description,
+      url,
       tags,
       edge_ymin,
       edge_ymax,
@@ -400,14 +436,19 @@ module Ladb::OpenCutList
       @cutting_length = cutting_length
       @cutting_width = cutting_width
       @cutting_thickness = cutting_thickness
+      @edge_cutting_length = edge_cutting_length
+      @edge_cutting_width = edge_cutting_width
       @bbox_length = bbox_length
       @bbox_width = bbox_width
       @bbox_thickness = bbox_thickness
       @final_area = final_area
       @material_type = material_type
       @material_name = material_name
+      @material_description = material_description
+      @material_url = material_url
       @entity_names = entity_names
       @description = description
+      @url = url
       @tags = tags
       @edge_ymin = edge_ymin
       @edge_ymax = edge_ymax
@@ -430,13 +471,18 @@ module Ladb::OpenCutList
       cutting_length,
       cutting_width,
       cutting_thickness,
+      edge_cutting_length,
+      edge_cutting_width,
       bbox_length,
       bbox_width,
       bbox_thickness,
       final_area,
       material_type,
       material_name,
+      material_description,
+      material_url,
       description,
+      url,
       tags,
       edge_ymin,
       edge_ymax,
@@ -453,13 +499,18 @@ module Ladb::OpenCutList
       @cutting_length = cutting_length
       @cutting_width = cutting_width
       @cutting_thickness = cutting_thickness
+      @edge_cutting_length = edge_cutting_length
+      @edge_cutting_width = edge_cutting_width
       @bbox_length = bbox_length
       @bbox_width = bbox_width
       @bbox_thickness = bbox_thickness
       @final_area = final_area
       @material_type = material_type
       @material_name = material_name
+      @material_description = material_description
+      @material_url = material_url
       @description = description
+      @url = url
       @tags = tags
       @edge_ymin = edge_ymin
       @edge_ymax = edge_ymax

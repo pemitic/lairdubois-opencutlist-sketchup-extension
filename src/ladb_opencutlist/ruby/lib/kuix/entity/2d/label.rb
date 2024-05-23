@@ -4,9 +4,9 @@ module Ladb::OpenCutList::Kuix
 
     attr_reader :text, :text_options
 
-    def initialize(id = '')
+    def initialize(text = '', id = '')
       super(id)
-      @text = ''
+      @text = text
       @text_options = {
           :font => 'Verdana',
           :size => 15,
@@ -36,7 +36,7 @@ module Ladb::OpenCutList::Kuix
     end
 
     def text_size=(value)
-      size = Sketchup.platform == :platform_win ? value * 0.75 : value  # Windows workaround -> 0.75 = 96 / 72
+      size = Sketchup.platform == :platform_win ? value * 0.75 : value  # Windows workaround -> 0.75 = 72 / 96
       return if @text_options[:size] == size
       @text_options[:size] = size
       compute_min_size

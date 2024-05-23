@@ -7,8 +7,6 @@
 {% set dimensionFontSize = 12 %}
 {% set numberFontSize = 16 %}
 
-{% set textFontWidthFactor = 0.5 %}
-
 {% set dimensionOffset = 5 %}
 {% set barDimensionOffset = 10 %}
 {% set barSliceGutter = 15 %}
@@ -55,8 +53,8 @@
 
 {% block headerToolsInner %}
     <button id="ladb_btn_cuttingdiagram" class="btn btn-primary"><i class="ladb-opencutlist-icon-refresh"></i> {{ 'tab.cutlist.menu.group_cuttingdiagram'|i18next }}...</button>
-    <button id="ladb_btn_print" class="btn btn-default"><i class="ladb-opencutlist-icon-print"></i> {{ 'default.print'|i18next }}</button>
-    <button id="ladb_btn_export" class="btn btn-default btn-sponsored"><i class="ladb-opencutlist-icon-export"></i> {{ 'default.export'|i18next }}</button>
+    <button id="ladb_btn_print" class="btn btn-default"{% if bars|length == 0 %} disabled{% endif %}><i class="ladb-opencutlist-icon-print"></i> {{ 'default.print'|i18next }}</button>
+    <button id="ladb_btn_export" class="btn btn-default"><i class="ladb-opencutlist-icon-export"></i> {{ 'default.export'|i18next }}</button>
     &nbsp;
     <button id="ladb_btn_labels" class="btn btn-default"><i class="ladb-opencutlist-icon-labels"></i> {{ 'tab.cutlist.labels.title'|i18next }}...</button>
     &nbsp;
@@ -83,6 +81,11 @@
                 <tr class="table-heading">
                     <td colspan="{{ colspan }}">
                         <button class="no-print btn btn-default btn-sm ladb-btn-toggle-no-print pull-left"><i class="ladb-opencutlist-icon-eye-close"></i></button>
+                        {% if not generateOptions.part_folding %}
+                            <div class="btn-group pull-right">
+                                <button class="no-print btn btn-default btn-sm ladb-btn-hiddable" id="ladb_btn_select_unplaced_parts" data-toggle="tooltip" title="{{ 'tab.cutlist.tooltip.select_parts_in_cutlist'|i18next({ 'count':unplaced_parts|length }) }}"><i class="ladb-opencutlist-icon-check-box-with-check-sign"></i> {{ 'tab.cutlist.select_part'|i18next({ 'count':unplaced_parts|length }) }}</button>
+                            </div>
+                        {% endif %}
                         <div class="ladb-heading text-danger"><i class="ladb-opencutlist-icon-warning"></i> {{ 'tab.cutlist.cuttingdiagram.list.unplaced_parts'|i18next }}</div>
                     </td>
                 </tr>
@@ -121,7 +124,7 @@
                             {{ part.count }}
                         </td>
                         {% if showCuttingDimensions %}
-                            {% include 'tabs/cutlist/_list-row-cutting-dimension.twig' with { property:'length' } %}
+                            {% include 'tabs/cutlist/_list-row-col-cutting-dimension.twig' with { 'property':'length' } %}
                         {% endif %}
                         <td class="ladb-cutlist-value ladb-cutlist-value-right">{{ part.length }}</td>
                     </tr>
@@ -149,6 +152,7 @@
                                     <ul>
                                         <li><strong>{{ 'tab.cutlist.cuttingdiagram.option_saw_kerf'|i18next }} : </strong>{{ options.saw_kerf }}</li>
                                         <li><strong>{{ 'tab.cutlist.cuttingdiagram.option_trimming'|i18next }} : </strong>{{ options.trimming }}</li>
+                                        <li><strong>{{ 'tab.cutlist.cuttingdiagram.option_part_drawing_type'|i18next }} : </strong>{{ ('tab.cutlist.cuttingdiagram.option_part_drawing_type_'~options.part_drawing_type)|i18next }}</li>
                                     </ul>
                                 </div>
                                 <div class="col-xs-6">
@@ -174,7 +178,7 @@
                 {% for bar in summary.bars  %}
                     <tr class="ladb-cutlist-row{% if bar.is_used and not isFirstUsed %} ladb-cutlist-row-separator{% set isFirstUsed = true %}{% endif %}"{% if not bar.is_used %} data-toggle="tooltip" data-placement="left" title="{{ 'tab.cutlist.cuttingdiagram.list.unused'|i18next }}" style="text-decoration: line-through;color: #888;"{% endif %}>
                         <td>
-                            <i class="ladb-opencutlist-icon-material-type-3"></i> {{ group.material_name|escape('html') }} / <strong>{{ group.std_dimension }}</strong> - {{ ('tab.cutlist.cuttingdiagram.list.bar_'~barStrippedname~'_type_'~bar.type)|i18next }}
+                            <i class="ladb-opencutlist-icon-material-type-3"></i>{% if not generateOptions.hide_material_colors %} {% include 'tabs/materials/_material-color-drop.twig' with { 'material_color':group.material_color } %}{% endif %} {{ group.material_name|escape('html') }} / <strong>{{ group.std_dimension }}</strong> - {{ ('tab.cutlist.cuttingdiagram.list.bar_'~barStrippedname~'_type_'~bar.type)|i18next }}
                             {% if bar.is_used %}
                                 <div class="ladb-minitools ladb-minitools-right no-print">
                                     <a href="#ladb_cuttingdiagram_group_{{ bar.type_id }}" class="ladb-btn-scrollto ladb-click-tool" data-toggle="tooltip" title="{{ 'tab.cutlist.cuttingdiagram.tooltip.scroll_to_block_1d'|i18next }}"><i class="ladb-opencutlist-icon-arrow-circle-down"></i></a>
@@ -237,7 +241,7 @@
                         {% if bar.count > 1 %}
                             <div class="ladb-heading-count pull-right">x&nbsp;{{ bar.count }}</div>
                         {% endif %}
-                        <div class="ladb-heading"><i class="ladb-opencutlist-icon-material-type-3"></i> {{ group.material_name|escape('html') }} / <strong>{{ group.std_dimension }}</strong> - <i class="ladb-opencutlist-icon-size-length"></i> <em>{{ bar.length }}</em> - <span style="padding: 2px 5px; border: 1px solid #000; font-size: 80%;">{{ ('tab.cutlist.cuttingdiagram.list.bar_'~barStrippedname~'_type_'~bar.type)|i18next }}</span></div>
+                        <div class="ladb-heading"><i class="ladb-opencutlist-icon-material-type-3"></i>{% if not generateOptions.hide_material_colors %} {% include 'tabs/materials/_material-color-drop.twig' with { 'material_color':group.material_color } %}{% endif %} {{ group.material_name|escape('html') }} / <strong>{{ group.std_dimension }}</strong> - <i class="ladb-opencutlist-icon-size-length"></i> <em>{{ bar.length }}</em> - <span style="padding: 2px 5px; border: 1px solid #000; font-size: 80%;">{{ ('tab.cutlist.cuttingdiagram.list.bar_'~barStrippedname~'_type_'~bar.type)|i18next }}</span></div>
                     </td>
                 </tr>
                 </thead>
@@ -260,8 +264,8 @@
                             <g class="bar" data-toggle="tooltip" data-html="true" title="<span style='font-size: 120%;'>{{ 'tab.cutlist.cuttingdiagram.list.trimming'|i18next }}</span>&nbsp;{{ options.trimming|escape('html') }}">
                                 {% for slice in bar.slices %}
                                     {% set yOffset = sliceHeight * loop.index0 %}
-                                    <rect class="bar-outer" x="{{ slice.px_x - (loop.first or (loop.last and originCornerIsRight) ? 1 : 0) }}" y="{{ yOffset - 1 }}" width="{{ slice.px_length + (loop.last ? (loop.first ? 2 : 1) : (loop.first ? 1 : 0)) }}" height="{{ bar.px_width + 2 }}"></rect>
-                                    <rect class="bar-inner" x="{{ slice.px_x }}" y="{{ yOffset }}" width="{{ slice.px_length }}" height="{{ bar.px_width }}"></rect>
+                                    <rect class="bar-outer" x="{{ slice.px_x - (loop.first or (loop.last and originCornerIsRight) ? 1 : 0) }}" y="{{ yOffset - 1 }}" width="{{ slice.px_length + (loop.last ? (loop.first ? 2 : 1) : (loop.first ? 1 : 0)) }}" height="{{ bar.px_width + 2 }}" />
+                                    <rect class="bar-inner" x="{{ slice.px_x }}" y="{{ yOffset }}" width="{{ slice.px_length }}" height="{{ bar.px_width }}" />
                                     {% if not (loop.first and originCornerIsLeft) and not (loop.last and originCornerIsRight) %}
                                         <text class="bar-dimension" x="-{{ barOutlineWidth + barDimensionOffset }}" y="{{ yOffset + bar.px_width / 2 }}" font-size="{{ barDimensionFontSize }}px" text-anchor="middle" dominant-baseline="alphabetic">&hellip;</text>
                                     {% endif %}
@@ -276,12 +280,12 @@
                                     {% set yOffset = slice.index * sliceHeight %}
                                     {% set hideCross = options.hide_cross or slice.px_length < dimensionFontSize or bar.px_width < dimensionFontSize %}
                                     {% set dim = bar.leftover.length|trim_tilde %}
-                                    {% set dimPxWidth = dim|length * dimensionFontSize * textFontWidthFactor %}
+                                    {% set dimPxWidth = mesure_text(dim, dimensionFontSize) %}
                                     {% set hideDimension = displayedDimension or slice.px_length <= dimPxWidth %}
-                                    <rect class="leftover-inner" x="{{ slice.px_x }}" y="{{ yOffset }}" width="{{ slice.px_length }}" height="{{ bar.px_width }}"></rect>
+                                    <rect class="leftover-inner" x="{{ slice.px_x }}" y="{{ yOffset }}" width="{{ slice.px_length }}" height="{{ bar.px_width }}" />
                                     {% if not hideCross %}
-                                        <line class="leftover-cross" x1="{{ slice.px_x + slice.px_length }}" y1="{{ yOffset }}" x2="{{ slice.px_x }}" y2="{{ yOffset + bar.px_width }}"></line>
-                                        <line class="leftover-cross" x1="{{ slice.px_x }}" y1="{{ yOffset }}" x2="{{ slice.px_x + slice.px_length }}" y2="{{ yOffset + bar.px_width }}"></line>
+                                        <line class="leftover-cross" x1="{{ slice.px_x + slice.px_length }}" y1="{{ yOffset }}" x2="{{ slice.px_x }}" y2="{{ yOffset + bar.px_width }}" />
+                                        <line class="leftover-cross" x1="{{ slice.px_x }}" y1="{{ yOffset }}" x2="{{ slice.px_x + slice.px_length }}" y2="{{ yOffset + bar.px_width }}" />
                                     {% endif %}
                                     {% if not hideDimension %}
                                         <text class="leftover-dimension" x="{{ slice.px_x + slice.px_length / 2 }}" y="{{ yOffset + bar.px_width + dimensionOffset + dimensionFontSize }}" font-size="{{ dimensionFontSize }}px" text-anchor="middle" dominant-baseline="alphabetic">{{ dim }}</text>
@@ -290,25 +294,43 @@
                                 {% endfor %}
                             </g>
                             {% for part in bar.parts|reverse %}
+                                {% set partIndex = loop.index0 %}
                                 {% set numberText = options.use_names ? part.name : part.number %}
                                 {% set numberTextLength = numberText|length %}
                                 <g class="part" data-part-id="{{ part.id }}" data-toggle="tooltip" data-html="true" title="{{ fn.part_tooltip(part) }}">
                                     {% set displayedDimension = false %}
+                                    {% set projectionXOffset = 0 %}
+                                    {% set sliced = part.slices|length > 1 %}
                                     {% for slice in part.slices %}
                                         {% set yOffset = slice.index * sliceHeight %}
-                                        <rect class="part-outer" x="{{ slice.px_x }}" y="{{ yOffset }}" width="{{ slice.px_length }}" height="{{ bar.px_width }}"></rect>
-                                        <rect class="part-inner" x="{{ slice.px_x + (loop.first and originCornerIsLeft or loop.last and originCornerIsRight ? partOutlineWidth : 0) }}" y="{{ yOffset + partOutlineWidth }}" width="{{ slice.px_length - partOutlineWidth * (loop.last ? (loop.first ? 2 : 1) : (loop.first ? 1 : 0)) }}" height="{{ bar.px_width - partOutlineWidth * 2 }}"></rect>
-                                        {% set hideNumber = slice.px_length < (numberFontSize * (numberTextLength + (loop.first and loop.last ? 0 : 1)) * textFontWidthFactor) %}
+                                        {% if projections[part.id] %}
+                                            <rect class="part-projection-outer" x="{{ slice.px_x }}" y="{{ yOffset }}" width="{{ slice.px_length }}" height="{{ bar.px_width }}" />
+                                            {% if sliced %}
+                                                <clipPath id="clip_{{ barIndex }}_{{ partIndex }}_{{ slice.index }}">
+                                                    <rect x="{{ projectionXOffset - part.px_x_offset }}" y="-{{ bar.px_width }}" width="{{ slice.px_length }}" height="{{ bar.px_width }}" fill="#ffffff" />
+                                                </clipPath>
+                                            {% endif %}
+                                            <g class="part-projection" transform="translate({{ slice.px_x + part.px_x_offset - projectionXOffset }} {{ bar.px_width + yOffset }})"{% if sliced %} clip-path="url(#clip_{{ barIndex }}_{{ partIndex }}_{{ slice.index }})"{% endif %}>
+                                                {% for layer in projections[part.id] %}
+                                                    <path class="part-projection-{% if loop.first %}shape{% else %}machining{% endif %}" d="{{ layer.path }}" />
+                                                {% endfor %}
+                                            </g>
+                                        {% else %}
+                                            <rect class="part-outer" x="{{ slice.px_x }}" y="{{ yOffset }}" width="{{ slice.px_length }}" height="{{ bar.px_width }}" />
+                                            <rect class="part-inner" x="{{ slice.px_x + (loop.first and originCornerIsLeft or loop.last and originCornerIsRight ? partOutlineWidth : 0) }}" y="{{ yOffset + partOutlineWidth }}" width="{{ slice.px_length - partOutlineWidth * (loop.last ? (loop.first ? 2 : 1) : (loop.first ? 1 : 0)) }}" height="{{ bar.px_width - partOutlineWidth * 2 }}" />
+                                        {% endif %}
+                                        {% set hideNumber = slice.px_length < mesure_text(numberText + loop.first and loop.last ? '' : '…', numberFontSize) %}
                                         {% if not hideNumber %}
                                             <text class="part-number" x="{{ slice.px_x + slice.px_length / 2 }}" y="{{ yOffset + bar.px_width / 2 }}" font-size="{{ max(8, min(numberFontSize, (slice.px_length - partOutlineWidth * 2) / numberTextLength, (bar.px_width - partOutlineWidth * 2))) }}px" text-anchor="middle" dominant-baseline="central">{% if (not loop.first and originCornerIsLeft) or (not loop.last and originCornerIsRight) %}&hellip;{% endif %}{{ numberText|escape }}{% if (not loop.last and originCornerIsLeft) or (not loop.first and originCornerIsRight) %}&hellip;{% endif %}</text>
                                         {% endif %}
                                         {% set value = part.cutting_length|trim_tilde %}
-                                        {% set valuePxWidth = value|length * dimensionFontSize * textFontWidthFactor %}
+                                        {% set valuePxWidth = mesure_text(value, dimensionFontSize) %}
                                         {% set hideLength = displayedDimension or slice.px_length <= valuePxWidth %}
                                         {% if not hideLength %}
                                             <text class="part-dimension" x="{{ slice.px_x + slice.px_length / 2 }}" y="{{ yOffset + bar.px_width + dimensionOffset + dimensionFontSize }}" font-size="{{ dimensionFontSize }}px" text-anchor="middle" dominant-baseline="alphabetic"{% if showCuttingDimensions %} style="fill: red;"{% endif %}>{{ value }}</text>
                                             {% set displayedDimension = true %}
                                         {% endif %}
+                                        {% set projectionXOffset = projectionXOffset + slice.px_length %}
                                     {% endfor %}
                                 </g>
                             {% endfor %}
@@ -316,8 +338,8 @@
                                 <g class="cut" data-toggle="tooltip" data-html="true" title="{{ fn.cut_tooltip(cut, options) }}">
                                     {% for slice in cut.slices %}
                                         {% set yOffset = slice.index * sliceHeight %}
-                                        <rect class="cut-outer" x="{{ slice.px_x - cutOutlineWidth }}" y="{{ yOffset - cutOutlineWidth }}" width="{{ options.px_saw_kerf + cutOutlineWidth * 2 }}" height="{{ bar.px_width + cutOutlineWidth * 2 }}"></rect>
-                                        <rect class="cut-inner" x="{{ slice.px_x }}" y="{{ yOffset }}" width="{{ options.px_saw_kerf }}" height="{{ bar.px_width }}"></rect>
+                                        <rect class="cut-outer" x="{{ slice.px_x - cutOutlineWidth }}" y="{{ yOffset - cutOutlineWidth }}" width="{{ options.px_saw_kerf + cutOutlineWidth * 2 }}" height="{{ bar.px_width + cutOutlineWidth * 2 }}" />
+                                        <rect class="cut-inner" x="{{ slice.px_x }}" y="{{ yOffset }}" width="{{ options.px_saw_kerf }}" height="{{ bar.px_width }}" />
                                     {% endfor %}
                                 </g>
                             {% endfor %}
@@ -359,17 +381,17 @@
                                 {% endif %}
                                 {% if not generateOptions.hide_tags and part.tags is not empty %}
                                     <ul class="ladb-cutlist-part-tags">
-                                        {% for label in part.tags %}
-                                            <li><a href="#" class="no-hover">{{ label }}</a></li>
+                                        {% for tag in part.tags %}
+                                            <li><a href="#" class="no-hover">{{ tag }}</a></li>
                                         {% endfor %}
                                     </ul>
                                 {% endif %}
                             </td>
                             <td class="text-center">{{ part.count }}</td>
                             {% if showCuttingDimensions %}
-                                {% include 'tabs/cutlist/_list-row-cutting-dimension.twig' with { 'property':'length' } %}
+                                {% include 'tabs/cutlist/_list-row-col-cutting-dimension.twig' with { 'property':'length' } %}
                             {% endif %}
-                            {% include 'tabs/cutlist/_list-row-box-dimension.twig' with { 'property':'length' } %}
+                            {% include 'tabs/cutlist/_list-row-col-box-dimension.twig' with { 'property':'length' } %}
                         </tr>
                     {% endfor %}
                 {% endif %}

@@ -1,0 +1,34 @@
+{
+  "action_0": {  /* ACTION_EXPORT_PART_3D */
+    "file_format": "stl",
+    "unit": { "metric": 2, "imperial": 0 }, /* Length::Millimeter , Length::Inches*/
+    "anchor": false
+  },
+  "action_1": {  /* ACTION_EXPORT_PART_2D */
+    "file_format": "svg",
+    "unit": { "metric": 2, "imperial": 0 }, /* Length::Millimeter , Length::Inches*/
+    "faces": 1, /* ACTION_OPTION_FACES_ALL */
+    "anchor": false,
+    "smoothing": false,
+    "merge_holes": false,
+    "include_paths": false,
+    "parts_stroke_color": null,
+    "parts_fill_color": "#000000",
+    "parts_holes_stroke_color": "#000000",
+    "parts_holes_fill_color": "#FFFFFF",
+    "parts_paths_stroke_color": "#0068FF"
+  },
+  "action_2": {   /* ACTION_EXPORT_FACE */
+    "file_format": "svg",
+    "unit": { "metric": 2, "imperial": 0 }, /* Length::Millimeter , Length::Inches*/
+    "smoothing": false,
+    "parts_stroke_color": null,
+    "parts_fill_color": "#000000"
+  },
+  "action_3": {   /* ACTION_EXPORT_EDGES */
+    "file_format": "svg",
+    "unit": { "metric": 2, "imperial": 0 }, /* Length::Millimeter , Length::Inches*/
+    "smoothing": false,
+    "parts_paths_stroke_color": "#0068FF"
+  }
+}

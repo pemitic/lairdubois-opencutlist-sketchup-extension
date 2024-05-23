@@ -19,17 +19,45 @@ module Ladb::OpenCutList
     ACTION_PICK = 3
     ACTION_PAINT_CLEAN = 4
 
-    ACTION_MODIFIER_1 = 0
-    ACTION_MODIFIER_2 = 1
-    ACTION_MODIFIER_4 = 2
-    ACTION_MODIFIER_ALL = 4
+    ACTION_OPTION_INSTANCES = 'instances'
+    ACTION_OPTION_EDGES = 'edges'
+    ACTION_OPTION_FACES = 'faces'
+
+    ACTION_OPTION_INSTANCES_1 = 0
+    ACTION_OPTION_INSTANCES_ALL = 1
+
+    ACTION_OPTION_EDGES_1 = 0
+    ACTION_OPTION_EDGES_2 = 1
+    ACTION_OPTION_EDGES_4 = 2
+
+    ACTION_OPTION_FACES_1 = 0
+    ACTION_OPTION_FACES_2 = 1
 
     ACTIONS = [
-      { :action => ACTION_PAINT_PARTS, :modifiers => [ACTION_MODIFIER_1, ACTION_MODIFIER_ALL ] },
-      { :action => ACTION_PAINT_EDGES, :modifiers => [ACTION_MODIFIER_1, ACTION_MODIFIER_2, ACTION_MODIFIER_4 ] },
-      { :action => ACTION_PAINT_FACES, :modifiers => [ACTION_MODIFIER_1, ACTION_MODIFIER_2 ] },
-      { :action => ACTION_PICK },
-      { :action => ACTION_PAINT_CLEAN }
+      {
+        :action => ACTION_PAINT_PARTS,
+        :options => {
+          ACTION_OPTION_INSTANCES => [ ACTION_OPTION_INSTANCES_1, ACTION_OPTION_INSTANCES_ALL ]
+        }
+      },
+      {
+        :action => ACTION_PAINT_EDGES,
+        :options => {
+          ACTION_OPTION_EDGES => [ ACTION_OPTION_EDGES_1, ACTION_OPTION_EDGES_2, ACTION_OPTION_EDGES_4 ]
+        }
+      },
+      {
+        :action => ACTION_PAINT_FACES,
+        :options => {
+          ACTION_OPTION_FACES => [ ACTION_OPTION_FACES_1, ACTION_OPTION_FACES_2 ]
+        }
+      },
+      {
+        :action => ACTION_PICK
+      },
+      {
+        :action => ACTION_PAINT_CLEAN
+      }
     ].freeze
 
     COLOR_MATERIAL_TYPES = {
@@ -41,9 +69,6 @@ module Ladb::OpenCutList
       MaterialAttributes::TYPE_EDGE => Sketchup::Color.new(102, 142, 238).freeze,
       MaterialAttributes::TYPE_VENEER => Sketchup::Color.new(131, 56, 236).freeze
     }
-
-    @@action = nil
-    @@action_modifiers = {} # { action => MODIFIER }
 
     @@action_materials = {} # { action => Sketchup::Material }
     @@action_filters = {}   # { action => Array<MaterialAttributes:TYPE> }
@@ -120,7 +145,14 @@ module Ladb::OpenCutList
       @materials_add_btn.set_style_attribute(:background_color, COLOR_BRAND_LIGHT, :hover)
       @materials_add_btn.set_style_attribute(:background_color, COLOR_BRAND_LIGHT, :active)
       @materials_add_btn.on(:click) { |button|
-        Plugin.instance.execute_dialog_command_on_tab('materials', 'new_material')
+        if is_action_paint_edges?
+          type = MaterialAttributes::TYPE_EDGE
+        elsif is_action_paint_faces?
+          type = MaterialAttributes::TYPE_VENEER
+        else
+          type = MaterialAttributes::TYPE_UNKNOWN
+        end
+        Plugin.instance.execute_tabs_dialog_command_on_tab('materials', 'new_material', "{ type: #{type} }")
       }
       @materials_panel.append(@materials_add_btn)
 
@@ -159,7 +191,7 @@ module Ladb::OpenCutList
           motif.line_width = @unit <= 4 ? 1 : 2
           motif.set_style_attribute(:color, COLOR_BRAND_LIGHT)
           motif.set_style_attribute(:color, COLOR_BRAND_DARK, :hover)
-          motif.set_style_attribute(:color, COLOR_WHITE, :selected)
+          motif.set_style_attribute(:color, Kuix::COLOR_WHITE, :selected)
           panel.append(motif)
 
           @materials_filters_btn_lbl = Kuix::Label.new('glop')
@@ -168,7 +200,7 @@ module Ladb::OpenCutList
           @materials_filters_btn_lbl.visible = false
           @materials_filters_btn_lbl.set_style_attribute(:color, COLOR_BRAND_LIGHT)
           @materials_filters_btn_lbl.set_style_attribute(:color, COLOR_BRAND_DARK, :hover)
-          @materials_filters_btn_lbl.set_style_attribute(:color, COLOR_WHITE, :selected)
+          @materials_filters_btn_lbl.set_style_attribute(:color, Kuix::COLOR_WHITE, :selected)
           panel.append(@materials_filters_btn_lbl)
 
       # Materials Buttons panel
@@ -184,7 +216,7 @@ module Ladb::OpenCutList
       @materials_filters_panel.layout_data = Kuix::BorderLayoutData.new(Kuix::BorderLayoutData::SOUTH)
       @materials_filters_panel.layout = Kuix::BorderLayout.new
       @materials_filters_panel.padding.set_all!(@unit * 2)
-      @materials_filters_panel.set_style_attribute(:background_color, COLOR_WHITE)
+      @materials_filters_panel.set_style_attribute(:background_color, Kuix::COLOR_WHITE)
       @materials_filters_panel.visible = false
       @materials_panel.append(@materials_filters_panel)
 
@@ -207,16 +239,16 @@ module Ladb::OpenCutList
           btn = Kuix::Button.new
           btn.min_size.set_all!(@unit * 6)
           btn.border.set_all!(@unit / 2)
-          btn.set_style_attribute(:background_color, COLOR_LIGHT_GREY)
+          btn.set_style_attribute(:background_color, Kuix::COLOR_LIGHT_GREY)
           btn.set_style_attribute(:background_color, color, :active)
-          btn.set_style_attribute(:background_color, COLOR_WHITE, :selected)
-          btn.set_style_attribute(:background_color, color.blend(COLOR_WHITE, 0.2), :hover)
-          btn.set_style_attribute(:background_color, COLOR_DARK_GREY.blend(COLOR_WHITE, 0.1), :disabled)
+          btn.set_style_attribute(:background_color, Kuix::COLOR_WHITE, :selected)
+          btn.set_style_attribute(:background_color, color.blend(Kuix::COLOR_WHITE, 0.2), :hover)
+          btn.set_style_attribute(:background_color, Kuix::COLOR_DARK_GREY.blend(Kuix::COLOR_WHITE, 0.1), :disabled)
           btn.set_style_attribute(:border_color, color, :selected)
           btn.selected = @@filters[type]
           btn.data = type
           lbl = btn.append_static_label(Plugin.instance.get_i18n_string("tool.smart_paint.filter_#{type}"), @unit * 3 * get_text_unit_factor)
-          lbl.set_style_attribute(:color, COLOR_DARK_GREY, :disabled)
+          lbl.set_style_attribute(:color, Kuix::COLOR_DARK_GREY, :disabled)
           btn.on(:click) { |button|
 
             unless get_enabled_filters_by_action(fetch_action).index(button.data).nil?
@@ -241,6 +273,8 @@ module Ladb::OpenCutList
               set_filter_by_type(button.data, true)
               update_filters_ratio
 
+              store_action_filters(fetch_action, @@filters.clone)
+
               # Re populate material defs & setup corresponding buttons
               _populate_material_defs(view.model)
               _setup_material_buttons
@@ -258,10 +292,10 @@ module Ladb::OpenCutList
 
     # -- Show --
 
-    def notify_material_infos(material, material_attributes)
+    def show_material_infos(material, material_attributes)
       return if material.nil? || material_attributes.nil?
 
-      text_1 = material.display_name
+      text_1 = material.display_name.strip
       text_2 = material_attributes.type > MaterialAttributes::TYPE_UNKNOWN ? "(#{Plugin.instance.get_i18n_string("tab.materials.type_#{material_attributes.type}")})" : ''
 
       return unless @material_infos_panel && text_1.is_a?(String) && text_2.is_a?(String)
@@ -278,7 +312,7 @@ module Ladb::OpenCutList
 
     # -- Actions --
 
-    def get_action_defs  # Array<{ :action => THE_ACTION, :modifiers => [ MODIFIER_1, MODIFIER_2, ... ] }>
+    def get_action_defs
       ACTIONS
     end
 
@@ -311,26 +345,24 @@ module Ladb::OpenCutList
       super
     end
 
-    def get_action_cursor(action, modifier)
+    def get_action_cursor(action)
 
       # Update status text and root cursor
       case action
       when ACTION_PAINT_PARTS
         return @cursor_paint_part_id
       when ACTION_PAINT_EDGES
-        case modifier
-        when ACTION_MODIFIER_4
+        if fetch_action_option_enabled(ACTION_PAINT_EDGES, ACTION_OPTION_EDGES, ACTION_OPTION_EDGES_4)
           return @cursor_paint_edge_4_id
-        when ACTION_MODIFIER_2
+        elsif fetch_action_option_enabled(ACTION_PAINT_EDGES, ACTION_OPTION_EDGES, ACTION_OPTION_EDGES_2)
           return @cursor_paint_edge_2_id
-        when ACTION_MODIFIER_1
+        else
           return @cursor_paint_edge_1_id
         end
       when ACTION_PAINT_FACES
-        case modifier
-        when ACTION_MODIFIER_2
+        if fetch_action_option_enabled(ACTION_PAINT_FACES, ACTION_OPTION_FACES, ACTION_OPTION_FACES_2)
           return @cursor_paint_face_2_id
-        when ACTION_MODIFIER_1
+        else
           return @cursor_paint_face_1_id
         end
       when ACTION_PICK
@@ -344,65 +376,45 @@ module Ladb::OpenCutList
       super
     end
 
-    def get_action_modifier_btn_child(action, modifier)
+    def get_action_option_group_unique?(action, option_group)
 
-      case action
-      when ACTION_PAINT_PARTS
-        case modifier
-        when ACTION_MODIFIER_1
-          lbl = Kuix::Label.new
-          lbl.text = '1'
-          return lbl
-        when ACTION_MODIFIER_ALL
-          lbl = Kuix::Label.new
-          lbl.text = '∞'
-          return lbl
-        end
-      when ACTION_PAINT_EDGES
-        case modifier
-        when ACTION_MODIFIER_1
-          lbl = Kuix::Label.new
-          lbl.text = '1'
-          return lbl
-        when ACTION_MODIFIER_2
-          lbl = Kuix::Label.new
-          lbl.text = '2'
-          return lbl
-        when ACTION_MODIFIER_4
-          lbl = Kuix::Label.new
-          lbl.text = '4'
-          return lbl
-        end
-      when ACTION_PAINT_FACES
-        case modifier
-        when ACTION_MODIFIER_1
-          lbl = Kuix::Label.new
-          lbl.text = '1'
-          return lbl
-        when ACTION_MODIFIER_2
-          lbl = Kuix::Label.new
-          lbl.text = '2'
-          return lbl
-        end
+      case option_group
+      when ACTION_OPTION_INSTANCES, ACTION_OPTION_EDGES, ACTION_OPTION_FACES
+        return true
       end
 
       super
     end
 
-    def store_action(action)
-      @@action = action
-    end
+    def get_action_option_btn_child(action, option_group, option)
 
-    def fetch_action
-      @@action
-    end
+      case option_group
+      when ACTION_OPTION_INSTANCES
+        case option
+        when ACTION_OPTION_INSTANCES_1
+          return Kuix::Label.new('1')
+        when ACTION_OPTION_INSTANCES_ALL
+          return Kuix::Label.new('∞')
+        end
+      when ACTION_OPTION_EDGES
+        case option
+        when ACTION_OPTION_EDGES_1
+          return Kuix::Label.new('1')
+        when ACTION_OPTION_EDGES_2
+          return Kuix::Label.new('2')
+        when ACTION_OPTION_EDGES_4
+          return Kuix::Label.new('4')
+        end
+      when ACTION_OPTION_FACES
+        case option
+        when ACTION_OPTION_FACES_1
+          return Kuix::Label.new('1')
+        when ACTION_OPTION_FACES_2
+          return Kuix::Label.new('2')
+        end
+      end
 
-    def store_action_modifier(action, modifier)
-      @@action_modifiers[action] = modifier
-    end
-
-    def fetch_action_modifier(action)
-      @@action_modifiers[action]
+      super
     end
 
     def store_action_material(action, material)
@@ -459,22 +471,6 @@ module Ladb::OpenCutList
 
     def is_action_paint_clean?
       fetch_action == ACTION_PAINT_CLEAN
-    end
-
-    def is_action_modifier_1?
-      fetch_action_modifier(fetch_action) == ACTION_MODIFIER_1
-    end
-
-    def is_action_modifier_2?
-      fetch_action_modifier(fetch_action) == ACTION_MODIFIER_2
-    end
-
-    def is_action_modifier_4?
-      fetch_action_modifier(fetch_action) == ACTION_MODIFIER_4
-    end
-
-    def is_action_modifier_all?
-      fetch_action_modifier(fetch_action) == ACTION_MODIFIER_ALL
     end
 
     # -- Filters --
@@ -593,6 +589,9 @@ module Ladb::OpenCutList
     def onActivate(view)
       super
 
+      # Clear current selection
+      Sketchup.active_model.selection.clear if Sketchup.active_model
+
       # Force global current material to be valid
       unless get_current_material.nil?
         begin
@@ -621,7 +620,7 @@ module Ladb::OpenCutList
 
     end
 
-    def onActionChange(action, modifier)
+    def onActionChange(action)
 
       if is_action_pick? || is_action_paint_clean?
 
@@ -673,7 +672,7 @@ module Ladb::OpenCutList
         end
         return true
       elsif repeat == 1
-        if key == VK_ADD && is_action_part?
+        if key == Kuix::VK_ADD && is_action_part?
           @materials_add_btn.fire(:click, flags) if @materials_add_btn
           return true
         end
@@ -760,15 +759,15 @@ module Ladb::OpenCutList
 
         if is_action_paint_parts?
 
-          # Show part infos
-          notify_infos(part.name)
-
           @active_material = get_current_material
           color = @active_material ? @active_material.color : MaterialUtils::get_color_from_path(@active_part_entity_path[0...-1]) # [0...-1] returns array without last element
           color.alpha = highlighted ? 255 : 200
 
+          # Show part infos
+          show_tooltip([ "##{_get_active_part_name}", _get_active_part_material_name ], @active_material && @active_material.name == part.material_name ? MESSAGE_TYPE_SUCCESS : MESSAGE_TYPE_DEFAULT)
+
           active_instance = @active_part_entity_path.last
-          instances = is_action_modifier_all? ? active_instance.definition.instances : [ active_instance ]
+          instances = fetch_action_option_enabled(ACTION_PAINT_PARTS, ACTION_OPTION_INSTANCES, ACTION_OPTION_INSTANCES_ALL) ? active_instance.definition.instances : [active_instance ]
           instance_paths = []
           _instances_to_paths(instances, instance_paths, model.active_entities, model.active_path ? model.active_path : [])
 
@@ -784,10 +783,10 @@ module Ladb::OpenCutList
 
           end
 
-          if is_action_modifier_all?
+          if fetch_action_option_enabled(ACTION_PAINT_PARTS, ACTION_OPTION_INSTANCES, ACTION_OPTION_INSTANCES_ALL)
             definition = Sketchup.active_model.definitions[part.def.definition_id]
             if definition && definition.count_used_instances > 1
-              notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_axes.warning.more_entities', { :count_used => definition.count_used_instances })}", MESSAGE_TYPE_WARNING)
+              show_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_axes.warning.more_entities', { :count_used => definition.count_used_instances })}", MESSAGE_TYPE_WARNING)
             end
           end
 
@@ -796,7 +795,7 @@ module Ladb::OpenCutList
         elsif is_action_paint_edges?
 
           if part.group.material_type != MaterialAttributes::TYPE_SHEET_GOOD
-            notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.wrong_material_type', { :type => Plugin.instance.get_i18n_string("tab.materials.type_#{MaterialAttributes::TYPE_SHEET_GOOD}") })}", MESSAGE_TYPE_ERROR)
+            show_tooltip("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.wrong_material_type', { :type => Plugin.instance.get_i18n_string("tab.materials.type_#{MaterialAttributes::TYPE_SHEET_GOOD}") })}", MESSAGE_TYPE_ERROR)
             push_cursor(@cursor_paint_error_id)
           else
 
@@ -805,7 +804,7 @@ module Ladb::OpenCutList
 
             sides = []
             faces = []
-            if is_action_modifier_1? || is_action_modifier_2?
+            if fetch_action_option_enabled(fetch_action, ACTION_OPTION_EDGES, ACTION_OPTION_EDGES_1) || fetch_action_option_enabled(fetch_action, ACTION_OPTION_EDGES, ACTION_OPTION_EDGES_2)
 
               picked_side = nil
               edge_faces.each { |k, v|
@@ -820,7 +819,7 @@ module Ladb::OpenCutList
 
               if picked_side
                 sides << picked_side unless edge_faces[picked_side].nil?
-                if is_action_modifier_2?
+                if fetch_action_option_enabled(fetch_action, ACTION_OPTION_EDGES, ACTION_OPTION_EDGES_2)
                   sides << :ymin if picked_side == :ymax && !edge_faces[:ymin].nil?
                   sides << :ymax if picked_side == :ymin && !edge_faces[:ymax].nil?
                   sides << :xmin if picked_side == :xmax && !edge_faces[:xmin].nil?
@@ -828,7 +827,7 @@ module Ladb::OpenCutList
                 end
               end
 
-            elsif is_action_modifier_4?
+            elsif fetch_action_option_enabled(fetch_action, ACTION_OPTION_EDGES, ACTION_OPTION_EDGES_4)
               sides << :ymin unless edge_faces[:ymin].nil?
               sides << :ymax unless edge_faces[:ymax].nil?
               sides << :xmin unless edge_faces[:xmin].nil?
@@ -841,12 +840,16 @@ module Ladb::OpenCutList
             faces = faces.flatten
 
             if faces.empty?
-              notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.not_edge')}", MESSAGE_TYPE_ERROR)
+              show_tooltip("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.not_edge')}", MESSAGE_TYPE_ERROR)
               push_cursor(@cursor_paint_error_id)
             else
 
               # Show edges infos
-              notify_infos(part.name, [ Plugin.instance.get_i18n_string('tool.smart_paint.edges', { :count => sides.length }) + (sides.length < 4 ? " → #{sides.map { |side| Plugin.instance.get_i18n_string("tool.smart_paint.edge_#{side}") }.join(' + ')}" : '') ])
+              show_tooltip([
+                             "##{_get_active_part_name}",
+                             '-',
+                             Plugin.instance.get_i18n_string('tool.smart_paint.edges', { :count => sides.length }) + (sides.length < 4 ? " → #{sides.map { |side| Plugin.instance.get_i18n_string("tool.smart_paint.edge_#{side}") }.join(' + ')}" : '')
+                           ])
 
               @active_material = get_current_material
               color = @active_material ? @active_material.color : MaterialUtils::get_color_from_path(@active_part_entity_path)
@@ -871,7 +874,7 @@ module Ladb::OpenCutList
 
               definition = Sketchup.active_model.definitions[part.def.definition_id]
               if definition && definition.count_used_instances > 1
-                notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_axes.warning.more_entities', { :count_used => definition.count_used_instances })}", MESSAGE_TYPE_WARNING)
+                show_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_axes.warning.more_entities', { :count_used => definition.count_used_instances })}", MESSAGE_TYPE_WARNING)
               end
 
               @active_instances = instances
@@ -884,7 +887,7 @@ module Ladb::OpenCutList
         elsif is_action_paint_faces?
 
           if part.group.material_type != MaterialAttributes::TYPE_SHEET_GOOD
-            notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.wrong_material_type', { :type => Plugin.instance.get_i18n_string("tab.materials.type_#{MaterialAttributes::TYPE_SHEET_GOOD}") })}", MESSAGE_TYPE_ERROR)
+            show_tooltip("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.wrong_material_type', { :type => Plugin.instance.get_i18n_string("tab.materials.type_#{MaterialAttributes::TYPE_SHEET_GOOD}") })}", MESSAGE_TYPE_ERROR)
             push_cursor(@cursor_paint_error_id)
           else
 
@@ -893,7 +896,7 @@ module Ladb::OpenCutList
 
             sides = []
             faces = []
-            if is_action_modifier_1?
+            if fetch_action_option_enabled(fetch_action, ACTION_OPTION_FACES, ACTION_OPTION_EDGES_1)
 
               picked_side = nil
               face_faces.each { |k, v|
@@ -910,7 +913,7 @@ module Ladb::OpenCutList
                 sides << picked_side unless face_faces[picked_side].nil?
               end
 
-            elsif is_action_modifier_2?
+            elsif fetch_action_option_enabled(fetch_action, ACTION_OPTION_FACES, ACTION_OPTION_FACES_2)
               sides << :zmax unless face_faces[:zmax].nil?
               sides << :zmin unless face_faces[:zmin].nil?
             end
@@ -921,12 +924,16 @@ module Ladb::OpenCutList
             faces = faces.flatten
 
             if faces.empty?
-              notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.not_face')}", MESSAGE_TYPE_ERROR)
+              show_tooltip("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.not_face')}", MESSAGE_TYPE_ERROR)
               push_cursor(@cursor_paint_error_id)
             else
 
               # Show faces infos
-              notify_infos(part.name, [ "#{Plugin.instance.get_i18n_string('tool.smart_paint.faces', { :count => sides.length })} → #{sides.map { |side| Plugin.instance.get_i18n_string("tool.smart_paint.face_#{side}") }.join(' + ')}" ])
+              show_tooltip([
+                             "##{_get_active_part_name}",
+                             '-',
+                             "#{Plugin.instance.get_i18n_string('tool.smart_paint.faces', { :count => sides.length })} → #{sides.map { |side| Plugin.instance.get_i18n_string("tool.smart_paint.face_#{side}") }.join(' + ')}"
+                           ])
 
               @active_material = get_current_material
               color = @active_material ? @active_material.color : MaterialUtils::get_color_from_path(@active_part_entity_path)
@@ -951,7 +958,7 @@ module Ladb::OpenCutList
 
               definition = Sketchup.active_model.definitions[part.def.definition_id]
               if definition && definition.count_used_instances > 1
-                notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_axes.warning.more_entities', { :count_used => definition.count_used_instances })}", MESSAGE_TYPE_WARNING)
+                show_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_axes.warning.more_entities', { :count_used => definition.count_used_instances })}", MESSAGE_TYPE_WARNING)
               end
 
               @active_instances = instances
@@ -964,7 +971,7 @@ module Ladb::OpenCutList
         elsif is_action_paint_clean?
 
           # Show part infos
-          notify_infos(part.name)
+          show_tooltip([ "##{_get_active_part_name}", _get_active_part_material_name ])
 
           color = MaterialUtils::get_color_from_path(@active_part_entity_path[0...-1]) # [0...-1] returns array without last element
           color.alpha = highlighted ? 255 : 200
@@ -988,7 +995,7 @@ module Ladb::OpenCutList
 
           definition = model.definitions[part.def.definition_id]
           if definition && definition.count_used_instances > 1
-            notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_axes.warning.more_entities', { :count_used => definition.count_used_instances })}", MESSAGE_TYPE_WARNING)
+            show_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_axes.warning.more_entities', { :count_used => definition.count_used_instances })}", MESSAGE_TYPE_WARNING)
           end
 
           @active_instances = instances
@@ -1054,10 +1061,10 @@ module Ladb::OpenCutList
       btn.layout = Kuix::StaticLayout.new
       btn.min_size.set!(@unit * 20, @unit * 8)
       btn.border.set_all!(@unit)
-      btn.set_style_attribute(:background_color, COLOR_WHITE)
-      btn.set_style_attribute(:background_color, COLOR_WHITE.blend(COLOR_BLACK, 0.7), :active)
-      btn.set_style_attribute(:border_color, COLOR_WHITE)
-      btn.set_style_attribute(:border_color, COLOR_WHITE.blend(COLOR_BLACK, 0.8), :hover)
+      btn.set_style_attribute(:background_color, Kuix::COLOR_WHITE)
+      btn.set_style_attribute(:background_color, Kuix::COLOR_WHITE.blend(Kuix::COLOR_BLACK, 0.7), :active)
+      btn.set_style_attribute(:border_color, Kuix::COLOR_WHITE)
+      btn.set_style_attribute(:border_color, Kuix::COLOR_WHITE.blend(Kuix::COLOR_BLACK, 0.8), :hover)
       btn.set_style_attribute(:border_color, COLOR_BRAND, :selected)
       btn.append_static_label(Plugin.instance.get_i18n_string('tool.smart_paint.default_material'), @unit * 3 * get_text_unit_factor)
       btn.data = false  # = No material
@@ -1101,11 +1108,11 @@ module Ladb::OpenCutList
         btn.min_size.set!(@unit * 20, @unit * 8)
         btn.border.set_all!(@unit)
         btn.set_style_attribute(:background_color, material_color)
-        btn.set_style_attribute(:background_color, material_color.blend(material_color_is_dark ? COLOR_WHITE : COLOR_BLACK, 0.7), :active)
+        btn.set_style_attribute(:background_color, material_color.blend(material_color_is_dark ? Kuix::COLOR_WHITE : Kuix::COLOR_BLACK, 0.7), :active)
         btn.set_style_attribute(:border_color, material_color)
-        btn.set_style_attribute(:border_color, material_color.blend(material_color_is_dark ? COLOR_WHITE : COLOR_BLACK, 0.7), :hover)
+        btn.set_style_attribute(:border_color, material_color.blend(material_color_is_dark ? Kuix::COLOR_WHITE : Kuix::COLOR_BLACK, 0.7), :hover)
         btn.set_style_attribute(:border_color, COLOR_BRAND, :selected)
-        btn.append_static_label(material.display_name, @unit * 3 * get_text_unit_factor, material_color_is_dark ? COLOR_WHITE : nil)
+        btn.append_static_label(material.display_name.strip, @unit * 3 * get_text_unit_factor, material_color_is_dark ? Kuix::COLOR_WHITE : nil)
         btn.data = material
         btn.selected = material == get_current_material
         btn.on(:click) { |button|
@@ -1117,11 +1124,11 @@ module Ladb::OpenCutList
         btn.on(:doubleclick) { |button|
 
           # Edit material
-          Plugin.instance.execute_dialog_command_on_tab('materials', 'edit_material', "{ materialId: #{material.entityID} }")
+          Plugin.instance.execute_tabs_dialog_command_on_tab('materials', 'edit_material', "{ materialId: #{material.entityID} }")
 
         }
         btn.on(:enter) { |button|
-          notify_material_infos(material, material_attributes)
+          show_material_infos(material, material_attributes)
         }
         btn.on(:leave) { |button|
           hide_material_infos
@@ -1134,7 +1141,7 @@ module Ladb::OpenCutList
           btn_overlay = Kuix::Panel.new
           btn_overlay.layout_data = Kuix::StaticLayoutData.new(1.0, 0, @unit * 2, @unit * 2, Kuix::Anchor.new(Kuix::Anchor::TOP_RIGHT))
           btn_overlay.set_style_attribute(:background_color, COLOR_MATERIAL_TYPES[material_attributes.type])
-          btn_overlay.set_style_attribute(:border_color, COLOR_WHITE)
+          btn_overlay.set_style_attribute(:border_color, Kuix::COLOR_WHITE)
           btn_overlay.border.set_all!(@unit / 4)
           btn_overlay.hittable = false
           btn.append(btn_overlay)
@@ -1163,17 +1170,17 @@ module Ladb::OpenCutList
 
               part = _generate_part_from_path(input_part_entity_path)
               if part
-                _set_active_part(input_part_entity_path, part, event == :l_button_down)
+                _set_active_part(input_part_entity_path, part)
               else
                 _reset_active_part
-                notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.not_part')}", MESSAGE_TYPE_ERROR)
+                show_tooltip("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.not_part')}", MESSAGE_TYPE_ERROR)
                 push_cursor(@cursor_paint_error_id)
               end
               return
 
             else
               _reset_active_part
-              notify_message("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.not_part')}", MESSAGE_TYPE_ERROR)
+              show_tooltip("⚠ #{Plugin.instance.get_i18n_string('tool.smart_paint.error.not_part')}", MESSAGE_TYPE_ERROR)
               push_cursor(@cursor_paint_error_id)
               return
             end
@@ -1284,9 +1291,9 @@ module Ladb::OpenCutList
 
             # Display material infos
             if material
-              notify_infos(material.name, [ Plugin.instance.get_i18n_string("tab.materials.type_#{MaterialAttributes.new(material).type}") ])
+              show_tooltip("##{material.name} (#{Plugin.instance.get_i18n_string("tab.materials.type_#{MaterialAttributes.new(material).type}")})")
             else
-              notify_infos(Plugin.instance.get_i18n_string('tool.smart_paint.default_material'))
+              show_tooltip("##{Plugin.instance.get_i18n_string('tool.smart_paint.default_material')}")
             end
 
           elsif event == :l_button_up
@@ -1311,6 +1318,7 @@ module Ladb::OpenCutList
         next if entity.is_a?(Sketchup::ComponentInstance) && !entity.definition.behavior.cuts_opening? && !entity.definition.behavior.always_face_camera?
         if entity.is_a?(Sketchup::Drawingelement)
           entity.material = material
+          entity.back_material = material if entity.respond_to?(:back_material)
           if material.nil? && entity.respond_to?(:clear_texture_position)
             entity.clear_texture_position(true) # Clear texture position is possible (entity is a Face and SU 2022+)
           end

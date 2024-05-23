@@ -1,0 +1,11 @@
+{
+  "action_0": {  /* ACTION_OPTION_INSTANCES */
+    "instances": 0 /* ACTION_OPTION_INSTANCES_ONE */
+  },
+  "action_1": {  /* ACTION_OPTION_EDGES */
+    "edges": 0 /* ACTION_OPTION_EDGES_ONE */
+  },
+  "action_2": {  /* ACTION_OPTION_FACES */
+    "faces": 0 /* ACTION_OPTION_FACES_ONE */
+  }
+}

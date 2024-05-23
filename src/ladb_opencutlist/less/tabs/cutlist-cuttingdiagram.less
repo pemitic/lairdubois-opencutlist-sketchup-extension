@@ -46,6 +46,15 @@
           fill: lighten(@ladb-brand-primary, 40%);
           filter: none;
         }
+        .part-projection-shape {
+          fill: lighten(@ladb-brand-primary, 10%);
+          filter: none;
+        }
+        .part-projection-machining {
+          fill: lighten(@ladb-brand-primary, 25%);
+          stroke: lighten(@ladb-brand-primary, 10%);
+          filter: none;
+        }
 
       }
 
@@ -55,8 +64,16 @@
       .part-inner {
         fill: #eee;
       }
+      .part-projection-outer {
+        fill: #fff;
+      }
+      .part-projection-shape {
+        fill: #eee;
+      }
+      .part-projection-machining {
+        fill: lighten(#eee, 3%);
+      }
       .part-edge {
-        fill: @ladb-material-type-4;
       }
       .part-number {
         fill: #000;
@@ -77,6 +94,9 @@
         .leftover-cross {
           stroke: @ladb-brand-primary;
         }
+        .leftover-bullet {
+          fill: @ladb-brand-primary;
+        }
       }
 
       .leftover-inner {
@@ -88,6 +108,9 @@
       }
       .leftover-dimension {
         fill: #888;
+      }
+      .leftover-bullet {
+        fill: #aaa;
       }
 
     }
@@ -204,11 +227,12 @@
     }
 
     .part {
-      .part-outer {
+      .part-outer, .part-inner {
         fill: #fff;
       }
-      .part-inner {
-        fill: #fff;
+      .part-projection-shape, .part-projection-machining {
+        fill: none;
+        stroke: #aaa;
       }
     }
 

@@ -2,7 +2,55 @@ CHANGELOG
 =========
 
 This changelog references the relevant changes (bug and security fixes) done
-in 5.x, 4.x, 3.x, 2.x, 1.x and 0.x versions.
+in 6.x, 5.x, 4.x, 3.x, 2.x, 1.x and 0.x versions.
+
+* 6.2.0 (2024-03-22)
+
+  * Added **Chinese** language
+  * Fixed multiline material description UI bug
+
+* 6.1.0 (2024-03-05)
+
+  * Added **Portuguese** language (thanks to Henny Ferreira for joining the translators team)
+  * Fixed _Clippy_ loading when OpenCutList installed under a non-ASCII path
+  * Fixed table row size reload on startup
+  * Fixed veneer default material attributes
+  * Improved Smart Tools tooltip behavior
+  * Improved Smart Axes Tools flip action planes color
+
+* 6.0.1 (2024-02-26)
+
+  * Fixed removed languages selection 
+
+* 6.0.0 (2024-02-21)
+
+  * Added **Smart Export** Tool and Module to export parts to 3D (STL, OBJ) or 2D (SVG, DXF) files
+  * Added _Hide material colors_ cutlist option
+  * Added edge material color display in part list, cutting diagram and labels
+  * Added edit material for edge and veneer virtual parts
+  * Added labels formulas
+  * Added labels part preview element
+  * Added labels remove all elements button
+  * Added export remove all columns button
+  * Added table row size options
+  * Added Toggle button in cutlist tags filters to switch from "present" to "not present"
+  * Added Mass and Currency custom precision in settings tab
+  * Added item to reset dialog position to default in extensions menu
+  * Added Description and URL fields to Material's attributes
+  * Added URL field to Part's attributes
+  * Added €/m price unit to sheet good and veneer materials
+  * Added ∑ rough length, area and volume to all material types except hardware in cutlist summary
+  * Added list of leftover to keep at the end of 2D cutting diagrams + button to copy them to clipboard
+  * Added a button to select all unplaced parts in parts list from cutting diagrams
+  * Added ability to configure material weight per raw instance
+  * Added ability to estimate parts weight and cost by cut volume only
+  * Improved smart tool last used action now stored globally to keep it on new SketchUp session
+  * Improved dimension default style in Layout document after exporting _Drawing_ to Layout
+  * Changed material color bullet from drop to circle but present in all lists
+  * Dropped **Polish** language for lack of contributors
+  * Dropped **Portuguese** language for lack of contributors
+  * Dropped **Simplified Chinese** language for lack of contributors
+  * Dropped **Vietnamese** language for lack of contributors
 
 * 5.1.2 (2023-11-29)
 

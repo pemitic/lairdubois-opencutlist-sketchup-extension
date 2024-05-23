@@ -19,7 +19,7 @@
 
     DEFAULTS_DICTIONARY = 'materials_material_attributes'.freeze
 
-    attr_accessor :uuid, :type, :thickness, :length_increase, :width_increase, :thickness_increase, :std_lengths, :std_widths, :std_thicknesses, :std_sections, :std_sizes, :grained, :edge_decremented, :volumic_mass, :std_prices
+    attr_accessor :uuid, :type, :description, :url, :thickness, :length_increase, :width_increase, :thickness_increase, :std_lengths, :std_widths, :std_thicknesses, :std_sections, :std_sizes, :grained, :edge_decremented, :raw_estimated, :std_volumic_masses, :std_prices
     attr_reader :material
 
     @@cached_uuids = {}
@@ -307,18 +307,17 @@
       a
     end
 
-    def volumic_mass
+    def std_volumic_masses
       case @type
-        when TYPE_SOLID_WOOD, TYPE_SHEET_GOOD, TYPE_DIMENSIONAL, TYPE_EDGE, TYPE_VENEER
-          @volumic_mass
-        else
-          Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['volumic_mass']
+      when TYPE_SOLID_WOOD, TYPE_SHEET_GOOD, TYPE_DIMENSIONAL, TYPE_EDGE, TYPE_VENEER
+        @std_volumic_masses
+      else
+        Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)['std_volumic_masses']
       end
     end
 
-    def h_volumic_mass
-      unit, val = UnitUtils.split_unit_and_value(@volumic_mass)
-      { :unit => unit, :val => val }
+    def h_std_volumic_masses
+      _std_vd_to_uvd(@std_volumic_masses)
     end
 
     def std_prices
@@ -331,24 +330,30 @@
     end
 
     def h_std_prices
+      _std_vd_to_uvd(@std_prices)
+    end
+
+    # -----
+
+    def _std_vd_to_uvd(std_vd)
 
       # Returns an array like [ { :unit => STRING_UNIT, :val => FLOAT }, { :unit => STRING_UNIT, :val => FLOAT , :dim => [ LENGTH or SIZE, ... ]}, ... ]
 
       # Setup return array with default value first
-      std_prices = [ { unit: nil, :val => 0.0 } ]
+      std_uvd = [ { unit: nil, :val => 0.0 } ]
 
-      if @std_prices.is_a?(Array)
-        @std_prices.each do |std_price|
+      if std_vd.is_a?(Array)
+        std_vd.each do |std_attribute|
 
-          if std_price['dim'].nil?
-            unit, val = UnitUtils.split_unit_and_value(std_price['val'])
-            std_prices[0][:unit] = unit
-            std_prices[0][:val] = val
-          elsif !std_price['dim'].is_a?(String)
+          if std_attribute['dim'].nil?
+            unit, val = UnitUtils.split_unit_and_value(std_attribute['val'])
+            std_uvd[0][:unit] = unit
+            std_uvd[0][:val] = val
+          elsif !std_attribute['dim'].is_a?(String)
             next
           else
             dim = []
-            a = std_price['dim'].split(';')
+            a = std_attribute['dim'].split(';')
             a.each { |d|
               unless d.nil?
                 if d.index('x').nil?
@@ -359,15 +364,15 @@
               end
             }
             if dim.length > 0
-              unit, val = UnitUtils.split_unit_and_value(std_price['val'])
-              std_prices << { :unit => unit, :val => val, :dim => dim }
+              unit, val = UnitUtils.split_unit_and_value(std_attribute['val'])
+              std_uvd << { :unit => unit, :val => val, :dim => dim }
             end
           end
 
         end
       end
 
-      std_prices
+      std_uvd
     end
 
     # -----
@@ -394,6 +399,8 @@
         defaults = Plugin.instance.get_app_defaults(DEFAULTS_DICTIONARY, @type)
 
         @type = MaterialAttributes.valid_type(Plugin.instance.get_attribute(@material, 'type', TYPE_UNKNOWN))
+        @description = Plugin.instance.get_attribute(@material, 'description', nil)
+        @url = Plugin.instance.get_attribute(@material, 'url', nil)
         @thickness = Plugin.instance.get_attribute(@material, 'thickness', defaults['thickness'])
         @length_increase = Plugin.instance.get_attribute(@material, 'length_increase', defaults['length_increase'])
         @width_increase = Plugin.instance.get_attribute(@material, 'width_increase', defaults['width_increase'])
@@ -405,9 +412,12 @@
         @std_sizes = Plugin.instance.get_attribute(@material, 'std_sizes', defaults['std_sizes'])
         @grained = Plugin.instance.get_attribute(@material, 'grained', defaults['grained'])
         @edge_decremented = Plugin.instance.get_attribute(@material, 'edge_decremented', defaults['edge_decremented'])
-        @volumic_mass = Plugin.instance.get_attribute(@material, 'volumic_mass', defaults['volumic_mass'])
+        @raw_estimated = Plugin.instance.get_attribute(@material, 'raw_estimated', defaults['raw_estimated'])
+        volumic_mass = Plugin.instance.get_attribute(@material, 'volumic_mass', nil)  # Deprecated since 6.0
+        @std_volumic_masses = Plugin.instance.get_attribute(@material, 'std_volumic_masses', volumic_mass.nil? ? defaults['std_volumic_masses'] : [ { 'val' => volumic_mass, 'dim' => nil } ])
         @std_prices = Plugin.instance.get_attribute(@material, 'std_prices', defaults['std_prices'])
       else
+        @description = ''
         @type = TYPE_UNKNOWN
       end
     end
@@ -421,6 +431,8 @@
         end
 
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'type', @type)
+        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'description', @description)
+        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'url', @url)
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'thickness', DimensionUtils.instance.str_add_units(@thickness))
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'length_increase', DimensionUtils.instance.str_add_units(@length_increase))
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'width_increase', DimensionUtils.instance.str_add_units(@width_increase))
@@ -432,7 +444,9 @@
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_sizes', DimensionUtils.instance.dxd_add_units(@std_sizes))
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'grained', @grained)
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'edge_decremented', @edge_decremented)
-        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'volumic_mass', @volumic_mass)
+        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'raw_estimated', @raw_estimated)
+        @material.delete_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'volumic_mass')  # Delete unused 'volumic_mass' attribute since 6.0
+        @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_volumic_masses', @std_volumic_masses.to_json)
         @material.set_attribute(Plugin::ATTRIBUTE_DICTIONARY, 'std_prices', @std_prices.to_json)
       end
     end

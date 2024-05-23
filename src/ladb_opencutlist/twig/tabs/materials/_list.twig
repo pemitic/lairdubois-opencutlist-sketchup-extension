@@ -25,15 +25,24 @@
                         {% elseif material.attributes.type == 4 and material.attributes.edge_decremented %}  {# 2 = TYPE_EDGE #}
                             <i class="ladb-opencutlist-icon-edge-decremented" data-toggle='tooltip' title="{{ 'tab.materials.edit_material.edge_decremented_1'|i18next }}"></i>
                         {% endif %}
+                        {% if not material.attributes.raw_estimated  %}
+                            <i class="ladb-opencutlist-icon-raw-estimated-0" data-toggle='tooltip' title="{{ 'tab.materials.tooltip.raw_estimated_0'|i18next }}"></i>
+                        {% endif %}
                         {{ material.display_name|escape }}
+                        {% if material.attributes.description is not empty %}
+                            <div class="ladb-tiny">{{ material.attributes.description|truncate(25)|nl2br }}</div>
+                        {% endif %}
                     </div>
                     {% if material.colorized %}
-                        <div class="ladb-overlay-drop"><i class="ladb-opencutlist-icon-drop" style="color: {{ material.color }}; font-size: 150%;" data-toggle='tooltip' title="{{ 'tab.materials.tooltip.colorized'|i18next }}"></i></div>
+                        <div class="ladb-overlay-drop" data-toggle='tooltip' title="{{ 'tab.materials.tooltip.colorized'|i18next }}">{% include 'tabs/materials/_material-color-drop.twig' with { 'material_color':material.color } %}</div>
                     {% endif %}
                     <div class="ladb-overlay-icon">{% include 'tabs/materials/_material-type-icon.twig' with { 'type':material.attributes.type, 'filled':material.attributes.type > 0 } %}</div>
                 </div>
                 <div class="ladb-footer">
                     <div class="ladb-minitools ladb-minitools-right">
+                        {% if material.attributes.url is not empty %}
+                            <a href="{{ material.attributes.url|escape }}" class="ladb-btn-open-material-url ladb-active-tool" data-toggle="tooltip" data-html="true" title="{{ 'tab.materials.tooltip.open_url'|i18next }}"><i class="ladb-opencutlist-icon-link"></i></a>
+                        {% endif %}
                         <a href="#" class="ladb-btn-set-current ladb-active-tool" data-toggle="tooltip" data-html="true" title="{{ 'tab.materials.tooltip.set_current'|i18next({ 'name':material.name }) }}"><i class="ladb-opencutlist-icon-materials"></i></a>
                         <a href="#" class="ladb-btn-edit-material ladb-click-tool" data-toggle="tooltip" title="{{ 'tab.materials.tooltip.edit'|i18next({ 'name':material.name }) }}..."><i class="ladb-opencutlist-icon-edit"></i></a>
                     </div>

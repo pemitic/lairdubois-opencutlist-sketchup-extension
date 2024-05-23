@@ -43,6 +43,27 @@ i, span.ladb-opencutlist-icon:before {
 }
 
 
+.ladb-opencutlist-icon-raw-estimated-0:before {
+  content: "\e9ab";
+}
+.ladb-opencutlist-icon-raw-estimated-1:before {
+  content: "\e9ac";
+}
+.ladb-opencutlist-icon-3d:before {
+  content: "\e9a9";
+}
+.ladb-opencutlist-icon-2d:before {
+  content: "\e9aa";
+}
+.ladb-opencutlist-icon-fill:before {
+  content: "\e9a7";
+}
+.ladb-opencutlist-icon-stroke:before {
+  content: "\e9a8";
+}
+.ladb-opencutlist-icon-folder:before {
+  content: "\e9a6";
+}
 .ladb-opencutlist-icon-explode:before {
   content: "\e99d";
 }
@@ -259,11 +280,11 @@ i, span.ladb-opencutlist-icon:before {
 .ladb-opencutlist-icon-resized:before {
   content: "\e933";
 }
-.ladb-opencutlist-icon-import:before {
-  content: "\e934";
-}
 .ladb-opencutlist-icon-export:before {
   content: "\e935";
+}
+.ladb-opencutlist-icon-import:before {
+  content: "\e934";
 }
 .ladb-opencutlist-icon-numbers-reset:before {
   content: "\e936";
@@ -310,6 +331,9 @@ i, span.ladb-opencutlist-icon:before {
 .ladb-opencutlist-icon-layout-selection:before {
   content: "\e99b";
 }
+.ladb-opencutlist-icon-cursor:before {
+  content: "\e9a5";
+}
 .ladb-opencutlist-icon-edit:before {
   content: "\e943";
 }
@@ -345,6 +369,9 @@ i, span.ladb-opencutlist-icon:before {
 }
 .ladb-opencutlist-icon-cutlist:before {
   content: "\e94e";
+}
+.ladb-opencutlist-icon-outliner:before {
+  content: "\e9a2";
 }
 .ladb-opencutlist-icon-mini-logo-ladb:before {
   content: "\e951";
@@ -444,6 +471,12 @@ i, span.ladb-opencutlist-icon:before {
 }
 .ladb-opencutlist-icon-edge-0000:before {
   content: "\e968";
+}
+.ladb-opencutlist-icon-group:before {
+  content: "\e9a3";
+}
+.ladb-opencutlist-icon-component:before {
+  content: "\e9a4";
 }
 .ladb-opencutlist-icon-dynamic-component:before {
   content: "\e969";

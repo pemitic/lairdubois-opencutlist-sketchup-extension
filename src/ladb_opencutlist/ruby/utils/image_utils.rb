@@ -32,7 +32,7 @@ module Ladb::OpenCutList
       # Force out_file to be in_file if nil
       out_file = in_file if out_file.nil?
 
-      bin_dir = File.absolute_path(File.join(Plugin.instance.root_dir,'bin'))
+      bin_dir = File.join(PLUGIN_DIR,'bin')
       case Sketchup.platform
 
         when :platform_osx
@@ -51,7 +51,7 @@ module Ladb::OpenCutList
 
         when :platform_win
 
-          bin_dir = File.join(bin_dir, 'x86')
+          bin_dir = File.join(bin_dir, 'win')
           convert_path = File.absolute_path(File.join(bin_dir, 'convert.exe'))
 
           cmd = ["\"#{convert_path}\"", "\"#{in_file}\"", options, "\"#{out_file}\""].join(' ')

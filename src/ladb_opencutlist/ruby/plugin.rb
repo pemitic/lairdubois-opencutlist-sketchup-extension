@@ -15,18 +15,20 @@ module Ladb::OpenCutList
   require_relative 'observer/plugin_observer'
   require_relative 'controller/materials_controller'
   require_relative 'controller/cutlist_controller'
+  require_relative 'controller/outliner_controller'
   require_relative 'controller/importer_controller'
   require_relative 'controller/settings_controller'
   require_relative 'utils/dimension_utils'
   require_relative 'utils/path_utils'
   require_relative 'tool/smart_paint_tool'
   require_relative 'tool/smart_axes_tool'
+  require_relative 'tool/smart_export_tool'
 
   class Plugin
     
     include Singleton
 
-    IS_RBZ = __dir__.start_with?(Sketchup.find_support_file('Plugins', ''))
+    IS_RBZ = PLUGIN_DIR.start_with?(Sketchup.find_support_file('Plugins', ''))
     IS_DEV = EXTENSION_VERSION.end_with?('-dev')
 
     require 'pp' if IS_DEV
@@ -56,17 +58,23 @@ module Ladb::OpenCutList
     SETTINGS_KEY_DIALOG_LEFT = 'settings.dialog_left'
     SETTINGS_KEY_DIALOG_TOP = 'settings.dialog_top'
     SETTINGS_KEY_DIALOG_PRINT_MARGIN = 'settings.dialog_print_margin'
+    SETTINGS_KEY_DIALOG_TABLE_ROW_SIZE = 'settings.dialog_table_row_size'
     SETTINGS_KEY_COMPONENTS_LAST_DIR = 'settings.components_last_dir'
     SETTINGS_KEY_MATERIALS_LAST_DIR = 'settings.materials_last_dir'
 
-    DIALOG_MINIMIZED_WIDTH = 90
-    DIALOG_MINIMIZED_HEIGHT = 30 + 80 + 80 * 3     # = 3 Tab buttons
-    DIALOG_DEFAULT_MAXIMIZED_WIDTH = 1150
-    DIALOG_DEFAULT_MAXIMIZED_HEIGHT = 640
-    DIALOG_DEFAULT_LEFT = 60
-    DIALOG_DEFAULT_TOP = 100
-    DIALOG_DEFAULT_PRINT_MARGIN = 0   # 0 = Normal, 1 = Small
-    DIALOG_PREF_KEY = 'fr.lairdubois.opencutlist'
+    TABS_DIALOG_MINIMIZED_WIDTH = 90
+    TABS_DIALOG_MINIMIZED_HEIGHT = 30 + 80 + 80 * 3     # = 3 Tab buttons
+    TABS_DIALOG_DEFAULT_MAXIMIZED_WIDTH = 1150
+    TABS_DIALOG_DEFAULT_MAXIMIZED_HEIGHT = 640
+    TABS_DIALOG_DEFAULT_LEFT = 60
+    TABS_DIALOG_DEFAULT_TOP = 100
+    TABS_DIALOG_DEFAULT_PRINT_MARGIN = 0   # 0 = Normal, 1 = Small
+    TABS_DIALOG_DEFAULT_TABLE_ROW_SIZE = 0   # 0 = Normal, 1 = Compact
+    TABS_DIALOG_PREF_KEY = 'fr.lairdubois.opencutlist'
+
+    MODAL_DIALOG_DEFAULT_WIDTH = 700
+    MODAL_DIALOG_DEFAULT_HEIGHT = 700
+    MODAL_DIALOG_PREF_KEY = 'fr.lairdubois.opencutlist.modal'
 
     DOCS_URL = 'https://www.lairdubois.fr/opencutlist/docs'
     DOCS_DEV_URL = 'https://www.lairdubois.fr/opencutlist/docs-dev'
@@ -94,36 +102,26 @@ module Ladb::OpenCutList
 
       @started = false
 
-      @dialog = nil
-      @dialog_maximized = false
-      @dialog_startup_tab_name = nil
-      @dialog_maximized_width = read_default(SETTINGS_KEY_DIALOG_MAXIMIZED_WIDTH, DIALOG_DEFAULT_MAXIMIZED_WIDTH)
-      @dialog_maximized_height = read_default(SETTINGS_KEY_DIALOG_MAXIMIZED_HEIGHT, DIALOG_DEFAULT_MAXIMIZED_HEIGHT)
-      @dialog_left = read_default(SETTINGS_KEY_DIALOG_LEFT, DIALOG_DEFAULT_LEFT)
-      @dialog_top = read_default(SETTINGS_KEY_DIALOG_TOP, DIALOG_DEFAULT_TOP)
-      @dialog_print_margin = read_default(SETTINGS_KEY_DIALOG_PRINT_MARGIN, DIALOG_DEFAULT_PRINT_MARGIN)
+      @tabs_dialog = nil
+      @tabs_dialog_maximized = false
+      @tabs_dialog_startup_tab_name = nil
+      @tabs_dialog_maximized_width = read_default(SETTINGS_KEY_DIALOG_MAXIMIZED_WIDTH, TABS_DIALOG_DEFAULT_MAXIMIZED_WIDTH)
+      @tabs_dialog_maximized_height = read_default(SETTINGS_KEY_DIALOG_MAXIMIZED_HEIGHT, TABS_DIALOG_DEFAULT_MAXIMIZED_HEIGHT)
+      @tabs_dialog_left = read_default(SETTINGS_KEY_DIALOG_LEFT, TABS_DIALOG_DEFAULT_LEFT)
+      @tabs_dialog_top = read_default(SETTINGS_KEY_DIALOG_TOP, TABS_DIALOG_DEFAULT_TOP)
+      @tabs_dialog_print_margin = read_default(SETTINGS_KEY_DIALOG_PRINT_MARGIN, TABS_DIALOG_DEFAULT_PRINT_MARGIN)
+      @tabs_dialog_table_row_size = read_default(SETTINGS_KEY_DIALOG_TABLE_ROW_SIZE, TABS_DIALOG_DEFAULT_TABLE_ROW_SIZE)
+
+      @modal_dialog = nil
 
     end
 
     # -----
 
-    def root_dir
-      if @root_dir
-        return @root_dir
-      end
-      dir = __dir__
-      dir.force_encoding('UTF-8') if dir.respond_to?(:force_encoding)
-      @root_dir = File.expand_path(File.join(dir, '..'))
-    end
-
     def temp_dir
-      if @temp_dir
-        return @temp_dir
-      end
+      return @temp_dir unless @temp_dir.nil?
       dir = File.join(Sketchup.temp_dir, "ladb_opencutlist")
-      if Dir.exist?(dir)
-        FileUtils.remove_dir(dir, true)   # Temp dir exists we clean it
-      end
+      FileUtils.remove_dir(dir, true) if Dir.exist?(dir)  # Temp dir exists we clean it
       Dir.mkdir(dir)
       @temp_dir = dir
     end
@@ -142,10 +140,10 @@ module Ladb::OpenCutList
         language = Sketchup.get_locale.split('-')[0].downcase  # Retrieve SU language
       end
       available_languages = self.get_available_languages
-      if available_languages.include? language
+      if available_languages.include?(language)
         @language = language   # Uses language only if translation is available
       else
-        @language = 'en'
+        @language = DEFAULT_LANGUAGE
       end
       if persist
         write_default(SETTINGS_KEY_LANGUAGE, @language)
@@ -153,11 +151,17 @@ module Ladb::OpenCutList
       @i18n_strings_cache = nil # Reset i18n strings cache
     end
 
+    def get_enabled_languages
+      return ENABLED_LANGUAGES unless IS_DEV
+      ENABLED_LANGUAGES.flat_map { |language| [ language, "zz_#{language}" ] }
+    end
+
     def get_available_languages
       available_languages = []
-      Dir[File.join(root_dir, 'js', 'i18n', '*.js')].each { |file|
+      Dir[File.join(PLUGIN_DIR, 'js', 'i18n', '*.js')].each { |file|
         available_languages.push(File.basename(file, File.extname(file)))
       }
+      available_languages = get_enabled_languages & available_languages
       available_languages.sort
     end
 
@@ -180,7 +184,7 @@ module Ladb::OpenCutList
     def get_i18n_string(path_key, vars = nil)
 
       unless @i18n_strings_cache
-        file_path = File.join(root_dir, 'yaml', 'i18n', "#{language}.yml")
+        file_path = File.join(PLUGIN_DIR, 'yaml', 'i18n', "#{language}.yml")
         begin
           @i18n_strings_cache = YAML::load_file(file_path)
         rescue => e
@@ -240,18 +244,22 @@ module Ladb::OpenCutList
 
     end
 
-    def dump_exception(e)
+    def dump_exception(e, show_console = true, message = nil)
 
-      SKETCHUP_CONSOLE.show
+      SKETCHUP_CONSOLE.show if show_console
 
       heading = "Please email the following error to opencutlist@lairdubois.fr"
       puts '-' * heading.length
       puts heading
       puts '-' * heading.length
-      puts "OpenCutList #{EXTENSION_VERSION} (build:#{EXTENSION_BUILD})"
+      puts "OpenCutList #{EXTENSION_VERSION} (build:#{EXTENSION_BUILD}) / #{language} - SketchUp #{Sketchup.version} - #{platform_name}"
       puts "#{e.inspect}"
       puts e.backtrace.join("\n")
       puts '-' * heading.length
+      unless message.nil? || message.to_s.empty?
+        puts message.to_s
+        puts '-' * heading.length
+      end
 
     end
 
@@ -269,7 +277,7 @@ module Ladb::OpenCutList
 
       unless @app_defaults_cache && @app_defaults_cache.has_key?(cache_key)
 
-        file_path = File.join(root_dir, 'json', 'defaults', "#{dictionary}.json")
+        file_path = File.join(PLUGIN_DIR, 'json', 'defaults', "#{dictionary}.json")
         begin
           file = File.open(file_path)
           data = JSON.load(file)
@@ -281,14 +289,14 @@ module Ladb::OpenCutList
         model_unit_is_metric = DimensionUtils.instance.model_unit_is_metric
 
         defaults = {}
-        if data.has_key? section
+        if data.has_key?(section)
           data = data[section]
           data.each do |key, value|
             if value.is_a? Hash
               if model_unit_is_metric
-                value = value['metric'] if value.has_key? 'metric'
+                value = value['metric'] if value.has_key?('metric')
               else
-                value = value['imperial'] if value.has_key? 'imperial'
+                value = value['imperial'] if value.has_key?('imperial')
               end
             end
             defaults.store(key, value)
@@ -709,7 +717,8 @@ module Ladb::OpenCutList
     end
 
     def execute_command(command, params = nil)
-      if @commands.has_key? command
+      start unless @started
+      if @commands.has_key?(command)
         block = @commands[command]
         return block.call(params)
       end
@@ -719,28 +728,41 @@ module Ladb::OpenCutList
     # -----
 
     def add_event_callback(event, &block)
-      if event.is_a? Array
+      if event.is_a?(Array)
         events = event
       else
         events = [ event ]
       end
       events.each do |e|
-        unless @event_callbacks.has_key? e
+        unless @event_callbacks.has_key?(e)
           @event_callbacks[e] = []
         end
         @event_callbacks[e].push(block)
       end
+      block
+    end
+
+    def remove_event_callback(event, block)
+      if event.is_a?(Array)
+        events = event
+      else
+        events = [ event ]
+      end
+      events.each do |e|
+        next unless @event_callbacks.has_key?(e)
+        @event_callbacks[e].delete(block)
+      end
     end
 
     def trigger_event(event, params)
-      if @event_callbacks.has_key? event
+      if @event_callbacks.has_key?(event)
         blocks = @event_callbacks[event]
         blocks.each do |block|
           block.call(params)
         end
       end
-      if @dialog
-        @dialog.execute_script("triggerEvent('#{event}', '#{params.is_a?(Hash) ? Base64.strict_encode64(JSON.generate(params)) : ''}');")
+      if @tabs_dialog
+        @tabs_dialog.execute_script("triggerEvent('#{event}', '#{params.is_a?(Hash) ? Base64.strict_encode64(JSON.generate(params)) : ''}');")
       end
     end
 
@@ -752,17 +774,17 @@ module Ladb::OpenCutList
       menu = UI.menu
       submenu = menu.add_submenu(get_i18n_string('core.menu.submenu'))
       submenu.add_item(get_i18n_string('tab.materials.title')) {
-        show_dialog('materials')
+        show_tabs_dialog('materials')
       }
       submenu.add_item(get_i18n_string('tab.cutlist.title')) {
-        show_dialog('cutlist')
+        show_tabs_dialog('cutlist')
       }
       submenu.add_item(get_i18n_string('tab.importer.title')) {
-        show_dialog('importer')
+        show_tabs_dialog('importer')
       }
       submenu.add_separator
       submenu.add_item(get_i18n_string('core.menu.item.generate_cutlist')) {
-        execute_dialog_command_on_tab('cutlist', 'generate_cutlist')
+        execute_tabs_dialog_command_on_tab('cutlist', 'generate_cutlist')
       }
       submenu.add_separator
       edit_part_item = submenu.add_item(get_i18n_string('core.menu.item.edit_part_properties')) {
@@ -789,10 +811,17 @@ module Ladb::OpenCutList
       }
       submenu.add_separator
       submenu.add_item(get_i18n_string('core.menu.item.smart_paint')) {
-        Sketchup.active_model.select_tool(SmartPaintTool.new)
+        Sketchup.active_model.select_tool(SmartPaintTool.new) if Sketchup.active_model
       }
       submenu.add_item(get_i18n_string('core.menu.item.smart_axes')) {
-        Sketchup.active_model.select_tool(SmartAxesTool.new)
+        Sketchup.active_model.select_tool(SmartAxesTool.new) if Sketchup.active_model
+      }
+      submenu.add_item(get_i18n_string('core.menu.item.smart_export')) {
+        Sketchup.active_model.select_tool(SmartExportTool.new) if Sketchup.active_model
+      }
+      submenu.add_separator
+      submenu.add_item(get_i18n_string('core.menu.item.reset_dialog_position')) {
+        tabs_dialog_reset_position
       }
 
       # Setup Context Menu
@@ -818,7 +847,7 @@ module Ladb::OpenCutList
       toolbar = UI::Toolbar.new(get_i18n_string('core.toolbar.name'))
 
       cmd = UI::Command.new(get_i18n_string('core.toolbar.command.dialog')) {
-        toggle_dialog
+        toggle_tabs_dialog
       }
       cmd.small_icon = '../img/icon-72x72.png'
       cmd.large_icon = '../img/icon-114x114.png'
@@ -828,7 +857,14 @@ module Ladb::OpenCutList
       toolbar = toolbar.add_item(cmd)
 
       cmd = UI::Command.new(get_i18n_string('core.toolbar.command.smart_paint')) {
-        Sketchup.active_model.select_tool(SmartPaintTool.new)
+        if Sketchup.active_model
+          if Sketchup.active_model.tools.respond_to?(:active_tool) && Sketchup.active_model.tools.active_tool.is_a?(SmartPaintTool)
+            Sketchup.active_model.select_tool(nil)
+          else
+            Sketchup.active_model.select_tool(SmartPaintTool.new)
+          end
+          Sketchup.focus if Sketchup.respond_to?(:focus)
+        end
       }
       cmd.small_icon = '../img/icon-smart-paint-72x72.png'
       cmd.large_icon = '../img/icon-smart-paint-114x114.png'
@@ -838,13 +874,37 @@ module Ladb::OpenCutList
       toolbar = toolbar.add_item(cmd)
 
       cmd = UI::Command.new(get_i18n_string('core.toolbar.command.smart_axes')) {
-        Sketchup.active_model.select_tool(SmartAxesTool.new)
+        if Sketchup.active_model
+          if Sketchup.active_model.tools.respond_to?(:active_tool) && Sketchup.active_model.tools.active_tool.is_a?(SmartAxesTool)
+            Sketchup.active_model.select_tool(nil)
+          else
+            Sketchup.active_model.select_tool(SmartAxesTool.new)
+          end
+          Sketchup.focus if Sketchup.respond_to?(:focus)
+        end
       }
       cmd.small_icon = '../img/icon-smart-axes-72x72.png'
       cmd.large_icon = '../img/icon-smart-axes-114x114.png'
       cmd.tooltip = get_i18n_string('core.toolbar.command.smart_axes')
       cmd.status_bar_text = get_i18n_string('core.toolbar.command.smart_axes')
       cmd.menu_text = get_i18n_string('core.toolbar.command.smart_axes')
+      toolbar = toolbar.add_item(cmd)
+
+      cmd = UI::Command.new(get_i18n_string('core.toolbar.command.smart_export')) {
+        if Sketchup.active_model
+          if Sketchup.active_model.tools.respond_to?(:active_tool) && Sketchup.active_model.tools.active_tool.is_a?(SmartExportTool)
+            Sketchup.active_model.select_tool(nil)
+          else
+            Sketchup.active_model.select_tool(SmartExportTool.new)
+          end
+          Sketchup.focus if Sketchup.respond_to?(:focus)
+        end
+      }
+      cmd.small_icon = '../img/icon-smart-export-72x72.png'
+      cmd.large_icon = '../img/icon-smart-export-114x114.png'
+      cmd.tooltip = get_i18n_string('core.toolbar.command.smart_export')
+      cmd.status_bar_text = get_i18n_string('core.toolbar.command.smart_export')
+      cmd.menu_text = get_i18n_string('core.toolbar.command.smart_export')
       toolbar = toolbar.add_item(cmd)
 
       toolbar.restore
@@ -870,6 +930,7 @@ module Ladb::OpenCutList
 
         @controllers.push(MaterialsController.new)
         @controllers.push(CutlistController.new)
+        @controllers.push(OutlinerController.new)
         @controllers.push(ImporterController.new)
         @controllers.push(SettingsController.new)
 
@@ -914,14 +975,17 @@ module Ladb::OpenCutList
         register_command('core_dialog_ready') do |params|
           dialog_ready_command
         end
-        register_command('core_dialog_minimize') do |params|
-          dialog_minimize_command
+        register_command('core_tabs_dialog_minimize') do |params|
+          tabs_dialog_minimize_command
         end
-        register_command('core_dialog_maximize') do |params|
-          dialog_maximize_command
+        register_command('core_tabs_dialog_maximize') do |params|
+          tabs_dialog_maximize_command
         end
-        register_command('core_dialog_hide') do |params|
-          dialog_hide_command
+        register_command('core_tabs_dialog_hide') do |params|
+          tabs_dialog_hide_command
+        end
+        register_command('core_modal_dialog_hide') do |params|
+          modal_dialog_hide_command
         end
         register_command('core_open_external_file') do |params|
           open_external_file_command(params)
@@ -959,67 +1023,68 @@ module Ladb::OpenCutList
 
     end
 
-    def create_dialog
+    # -- Dialogs --
+
+    def create_tabs_dialog
 
       # Start
       start
 
       # Create dialog instance
-      @dialog = UI::HtmlDialog.new(
+      @tabs_dialog = UI::HtmlDialog.new(
           {
               :dialog_title => get_i18n_string('core.dialog.title') + ' - ' + EXTENSION_VERSION + (IS_DEV ? " ( build: #{EXTENSION_BUILD} )" : ''),
-              :preferences_key => DIALOG_PREF_KEY,
+              :preferences_key => TABS_DIALOG_PREF_KEY,
               :scrollable => true,
               :resizable => true,
-              :width => DIALOG_MINIMIZED_WIDTH,
-              :height => DIALOG_MINIMIZED_HEIGHT,
-              :left => @dialog_left,
-              :top => @dialog_top,
-              :min_width => DIALOG_MINIMIZED_WIDTH,
-              :min_height => DIALOG_MINIMIZED_HEIGHT,
+              :width => TABS_DIALOG_MINIMIZED_WIDTH,
+              :height => TABS_DIALOG_MINIMIZED_HEIGHT,
+              :left => @tabs_dialog_left,
+              :top => @tabs_dialog_top,
+              :min_width => TABS_DIALOG_MINIMIZED_WIDTH,
+              :min_height => TABS_DIALOG_MINIMIZED_HEIGHT,
               :style => UI::HtmlDialog::STYLE_DIALOG
           })
-      @dialog.set_on_closed {
-        @dialog = nil
-        @dialog_maximized = false
+      @tabs_dialog.set_on_closed {
+        @tabs_dialog = nil
+        @tabs_dialog_maximized = false
       }
-      @dialog.set_can_close {
-        dialog_store_current_position
-        dialog_store_current_size
+      @tabs_dialog.set_can_close {
+        tabs_dialog_store_current_position
+        tabs_dialog_store_current_size
         true
       }
 
       # Setup dialog page
-      @dialog.set_file(File.join(root_dir, 'html', "dialog-#{language}.html"))
-
-      # Set dialog size and position
-      # dialog_set_size(DIALOG_MINIMIZED_WIDTH, DIALOG_MINIMIZED_HEIGHT)
-      # dialog_set_position(@dialog_left, @dialog_top)
+      @tabs_dialog.set_file(File.join(PLUGIN_DIR, 'html', "dialog-tabs-#{language}.html"))
 
       # Setup dialog actions
-      @dialog.add_action_callback('ladb_opencutlist_command') do |action_context, call_json|
+      @tabs_dialog.add_action_callback('ladb_opencutlist_setup_dialog_context') do |action_context, call_json|
+        @tabs_dialog.execute_script("setDialogContext('tabs');")
+      end
+      @tabs_dialog.add_action_callback('ladb_opencutlist_command') do |action_context, call_json|
         call = JSON.parse(call_json)
         response = execute_command(call['command'], call['params'])
         script = "rubyCommandCallback(#{call['id']}, '#{response.is_a?(Hash) ? Base64.strict_encode64(JSON.generate(response)) : ''}');"
-        @dialog.execute_script(script) if @dialog
+        @tabs_dialog.execute_script(script) if @tabs_dialog
       end
 
     end
 
-    def show_dialog(tab_name = nil, auto_create = true, &ready_block)
+    def show_tabs_dialog(tab_name = nil, auto_create = true, &ready_block)
 
-      return if @dialog.nil? && !auto_create
+      return if @tabs_dialog.nil? && !auto_create
 
-      unless @dialog
-        create_dialog
+      unless @tabs_dialog
+        create_tabs_dialog
       end
 
-      if @dialog.visible?
+      if @tabs_dialog.visible?
 
         if tab_name
           # Startup tab name is defined call JS to select it
-          @dialog.bring_to_front
-          @dialog.execute_script("$('body').ladbDialog('selectTab', '#{tab_name}');")
+          @tabs_dialog.bring_to_front
+          @tabs_dialog.execute_script("$('body').ladbDialogTabs('selectTab', '#{tab_name}');")
         end
 
         if ready_block
@@ -1030,110 +1095,195 @@ module Ladb::OpenCutList
       else
 
         # Store the startup tab name
-        @dialog_startup_tab_name = tab_name
+        @tabs_dialog_startup_tab_name = tab_name
 
         # Store the ready block
         @dialog_ready_block = ready_block
 
         # Show dialog
-        @dialog.show
+        @tabs_dialog.show
 
         # Set dialog size and position (those functions must be called after `show` call to have a coherent position on Windows)
-        dialog_set_size(DIALOG_MINIMIZED_WIDTH, DIALOG_MINIMIZED_HEIGHT)
-        dialog_set_position(@dialog_left, @dialog_top)
+        tabs_dialog_set_size(TABS_DIALOG_MINIMIZED_WIDTH, TABS_DIALOG_MINIMIZED_HEIGHT)
+        tabs_dialog_set_position(@tabs_dialog_left, @tabs_dialog_top)
 
       end
 
     end
 
-    def hide_dialog
-      if @dialog
-        @dialog.close
+    def hide_tabs_dialog
+      if @tabs_dialog
+        @tabs_dialog.close
         true
       else
         false
       end
     end
 
-    def toggle_dialog
-      unless hide_dialog
-        show_dialog
+    def toggle_tabs_dialog
+      unless hide_tabs_dialog
+        show_tabs_dialog
       end
     end
 
-    def dialog_store_size(width, height)
-      @dialog_maximized_width = [ width, DIALOG_DEFAULT_MAXIMIZED_WIDTH ].max
-      @dialog_maximized_height = [ height, DIALOG_DEFAULT_MAXIMIZED_HEIGHT ].max
+    def tabs_dialog_reset_position
+      @tabs_dialog_left = TABS_DIALOG_DEFAULT_LEFT
+      @tabs_dialog_top = TABS_DIALOG_DEFAULT_TOP
+      tabs_dialog_store_position(@tabs_dialog_left, @tabs_dialog_top)
+      if @tabs_dialog
+        tabs_dialog_set_position(@tabs_dialog_left, @tabs_dialog_top)
+      else
+        show_tabs_dialog
+      end
+    end
+
+    def tabs_dialog_store_size(width, height)
+      @tabs_dialog_maximized_width = [width, TABS_DIALOG_DEFAULT_MAXIMIZED_WIDTH ].max
+      @tabs_dialog_maximized_height = [height, TABS_DIALOG_DEFAULT_MAXIMIZED_HEIGHT ].max
       write_default(SETTINGS_KEY_DIALOG_MAXIMIZED_WIDTH, width)
       write_default(SETTINGS_KEY_DIALOG_MAXIMIZED_HEIGHT, height)
     end
 
-    def dialog_store_current_size
-      if @dialog && @dialog.respond_to?('get_size') && @dialog_maximized
-        width, height = @dialog.get_size
-        dialog_store_size(width, height) if width >= DIALOG_MINIMIZED_WIDTH && height >= DIALOG_MINIMIZED_HEIGHT
+    def tabs_dialog_store_current_size
+      if @tabs_dialog && @tabs_dialog.respond_to?('get_size') && @tabs_dialog_maximized
+        width, height = @tabs_dialog.get_size
+        return if width.nil? || height.nil?
+        tabs_dialog_store_size(width, height) if width >= TABS_DIALOG_MINIMIZED_WIDTH && height >= TABS_DIALOG_MINIMIZED_HEIGHT
       end
     end
 
-    def dialog_set_size(width, height)
-      if @dialog
-        @dialog.set_size(width, height)
+    def tabs_dialog_set_size(width, height)
+      if @tabs_dialog
+        @tabs_dialog.set_size(width, height)
       end
     end
 
-    def dialog_inc_maximized_size(inc_width = 0, inc_height = 0)
-      dialog_store_size(@dialog_maximized_width + inc_width, @dialog_maximized_height + inc_height)
-      if @dialog_maximized
-        dialog_set_size(@dialog_maximized_width, @dialog_maximized_height)
+    def tabs_dialog_inc_maximized_size(inc_width = 0, inc_height = 0)
+      tabs_dialog_store_size(@tabs_dialog_maximized_width + inc_width, @tabs_dialog_maximized_height + inc_height)
+      if @tabs_dialog_maximized
+        tabs_dialog_set_size(@tabs_dialog_maximized_width, @tabs_dialog_maximized_height)
       end
     end
 
-    def dialog_store_position(left, top)
-      @dialog_left = left
-      @dialog_top = top
+    def tabs_dialog_store_position(left, top)
+      @tabs_dialog_left = left
+      @tabs_dialog_top = top
       write_default(SETTINGS_KEY_DIALOG_LEFT, left)
       write_default(SETTINGS_KEY_DIALOG_TOP, top)
     end
 
-    def dialog_store_current_position
-      if @dialog && @dialog.respond_to?('get_position')
-        if @dialog.respond_to?('get_size')
-          width, height = @dialog.get_size
-          return if width < DIALOG_MINIMIZED_WIDTH || height < DIALOG_MINIMIZED_HEIGHT  # Do not store the position if dialog size is smaller than minimized size
+    def tabs_dialog_store_current_position
+      if @tabs_dialog && @tabs_dialog.respond_to?('get_position')
+        if @tabs_dialog.respond_to?('get_size')
+          width, height = @tabs_dialog.get_size
+          return if width.nil? || height.nil?
+          return if width < TABS_DIALOG_MINIMIZED_WIDTH || height < TABS_DIALOG_MINIMIZED_HEIGHT  # Do not store the position if dialog size is smaller than minimized size
         end
-        left, top = @dialog.get_position
-        dialog_store_position(left, top) if left > 0 && top > 0
+        left, top = @tabs_dialog.get_position
+        tabs_dialog_store_position(left, top) if left > 0 && top > 0
       end
     end
 
-    def dialog_set_position(left, top)
-      if @dialog
-        @dialog.set_position(left, top)
+    def tabs_dialog_set_position(left, top)
+      if @tabs_dialog
+        @tabs_dialog.set_position(left, top)
       end
     end
 
-    def dialog_inc_position(inc_left = 0, inc_top = 0)
-      dialog_store_position(@dialog_left + inc_left, @dialog_top + inc_top)
-      dialog_set_position(@dialog_left, @dialog_top)
+    def tabs_dialog_inc_position(inc_left = 0, inc_top = 0)
+      tabs_dialog_store_position(@tabs_dialog_left + inc_left, @tabs_dialog_top + inc_top)
+      tabs_dialog_set_position(@tabs_dialog_left, @tabs_dialog_top)
     end
 
-    def dialog_set_print_margin(print_margin, persist = false)
-      @dialog_print_margin = print_margin
-      if persist
-        write_default(SETTINGS_KEY_DIALOG_PRINT_MARGIN, print_margin)
-      end
+    def tabs_dialog_set_print_margin(print_margin, persist = false)
+      @tabs_dialog_print_margin = print_margin
+      write_default(SETTINGS_KEY_DIALOG_PRINT_MARGIN, print_margin) if persist
     end
 
-    def execute_dialog_command_on_tab(tab_name, command, parameters = nil, callback = nil)
+    def tabs_dialog_set_table_row_size(table_row_size, persist = false)
+      @tabs_dialog_table_row_size = table_row_size
+      write_default(SETTINGS_KEY_DIALOG_TABLE_ROW_SIZE, table_row_size) if persist
+    end
 
-      show_dialog(nil, true) do
+    def execute_tabs_dialog_command_on_tab(tab_name, command, parameters = nil, callback = nil)
+
+      show_tabs_dialog(nil, true) do
         # parameters and callback must be formatted as JS code
         if tab_name and command
-          @dialog.bring_to_front
-          @dialog.execute_script("$('body').ladbDialog('executeCommandOnTab', [ '#{tab_name}', '#{command}', #{parameters}, #{callback} ]);")
+          @tabs_dialog.bring_to_front
+          @tabs_dialog.execute_script("$('body').ladbDialogTabs('executeCommandOnTab', [ '#{tab_name}', '#{command}', #{parameters}, #{callback} ]);")
         end
       end
 
+    end
+
+    def create_modal_dialog(modal_name, params = nil)
+
+      # Start
+      start
+
+      @modal_dialog = UI::HtmlDialog.new(
+        {
+          :dialog_title => ' ',
+          :preferences_key => MODAL_DIALOG_PREF_KEY,
+          :scrollable => true,
+          :resizable => true,
+          :width => MODAL_DIALOG_DEFAULT_WIDTH,
+          :height => MODAL_DIALOG_DEFAULT_HEIGHT,
+          :min_width => MODAL_DIALOG_DEFAULT_WIDTH,
+          :min_height => MODAL_DIALOG_DEFAULT_HEIGHT,
+          :style => UI::HtmlDialog::STYLE_UTILITY
+        }
+      )
+      @modal_dialog.set_on_closed {
+        @modal_dialog = nil
+      }
+
+      # Setup dialog page
+      @modal_dialog.set_file(File.join(PLUGIN_DIR, 'html', "dialog-modal-#{language}.html"))
+
+      # Setup dialog actions
+      @modal_dialog.add_action_callback('ladb_opencutlist_setup_dialog_context') do |action_context, call_json|
+        @modal_dialog.execute_script("setDialogContext('modal', '#{Base64.strict_encode64(JSON.generate({ :startup_modal_name => modal_name, :params => params }))}');")
+      end
+      @modal_dialog.add_action_callback('ladb_opencutlist_command') do |action_context, call_json|
+        call = JSON.parse(call_json)
+        response = execute_command(call['command'], call['params'])
+        script = "rubyCommandCallback(#{call['id']}, '#{response.is_a?(Hash) ? Base64.strict_encode64(JSON.generate(response)) : ''}');"
+        @modal_dialog.execute_script(script) if @modal_dialog
+      end
+
+    end
+
+    def show_modal_dialog(modal_name = nil, params = nil)
+
+      unless @modal_dialog
+        create_modal_dialog(modal_name, params)
+      end
+
+      unless @modal_dialog.visible?
+
+        # Show dialog
+        @modal_dialog.show
+        @modal_dialog.center
+
+      end
+
+    end
+
+    def hide_modal_dialog
+      if @modal_dialog
+        @modal_dialog.close
+        true
+      else
+        false
+      end
+    end
+
+    def toggle_modal_dialog
+      unless hide_modal_dialog
+        show_modal_dialog
+      end
     end
 
     # -- Devtool ---
@@ -1177,7 +1327,7 @@ module Ladb::OpenCutList
 
     def _edit_part_properties(entity, tab = 'general')
       unless entity.nil?
-        execute_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: null, part_serialized_path: '#{PathUtils.serialize_path(Sketchup.active_model.active_path.nil? ? [ entity ] : Sketchup.active_model.active_path + [ entity ])}', tab: '#{tab}' }")
+        execute_tabs_dialog_command_on_tab('cutlist', 'edit_part', "{ part_id: null, part_serialized_path: '#{PathUtils.serialize_path(Sketchup.active_model.active_path.nil? ? [entity ] : Sketchup.active_model.active_path + [entity ])}', tab: '#{tab}' }")
       end
     end
 
@@ -1267,7 +1417,7 @@ module Ladb::OpenCutList
             if success
 
               # Hide OCL dialog
-              hide_dialog
+              hide_tabs_dialog
 
               # Inform user to restart Sketchup
               UI.messagebox(get_i18n_string('core.upgrade.success'))
@@ -1382,7 +1532,7 @@ module Ladb::OpenCutList
 
       @webgl_available = params['webgl_available'] == true
 
-      {
+      base_capabilities = {
           :version => EXTENSION_VERSION,
           :build => EXTENSION_BUILD,
           :is_rbz => IS_RBZ,
@@ -1398,14 +1548,25 @@ module Ladb::OpenCutList
           :language => Plugin.instance.language,
           :available_languages => Plugin.instance.get_available_languages,
           :decimal_separator => DimensionUtils.instance.decimal_separator,
-          :webgl_available => @webgl_available,
-          :manifest => @manifest,
-          :update_available => @update_available,
-          :update_muted => @update_muted,
-          :last_news_timestamp => @last_news_timestamp,
-          :dialog_print_margin => @dialog_print_margin,
-          :dialog_startup_tab_name => @dialog_startup_tab_name  # nil if none
       }
+
+      case params['dialog_type']
+      when 'tabs'
+        return base_capabilities.merge(
+          {
+            :manifest => @manifest,
+            :update_available => @update_available,
+            :update_muted => @update_muted,
+            :last_news_timestamp => @last_news_timestamp,
+            :tabs_dialog_print_margin => @tabs_dialog_print_margin,
+            :tabs_dialog_table_row_size => @tabs_dialog_table_row_size,
+            :tabs_dialog_startup_tab_name => @tabs_dialog_startup_tab_name # nil if none
+          }
+        ).merge(params)
+      when 'modal'
+        return base_capabilities.merge(params)
+      end
+
     end
 
     def dialog_ready_command
@@ -1415,13 +1576,13 @@ module Ladb::OpenCutList
       end
     end
 
-    def dialog_minimize_command
-      if @dialog
+    def tabs_dialog_minimize_command
+      if @tabs_dialog
 
-        dialog_store_current_position
-        dialog_store_current_size
-        dialog_set_size(DIALOG_MINIMIZED_WIDTH, DIALOG_MINIMIZED_HEIGHT)
-        @dialog_maximized = false
+        tabs_dialog_store_current_position
+        tabs_dialog_store_current_size
+        tabs_dialog_set_size(TABS_DIALOG_MINIMIZED_WIDTH, TABS_DIALOG_MINIMIZED_HEIGHT)
+        @tabs_dialog_maximized = false
 
         # Focus SketchUp
         Sketchup.focus if Sketchup.respond_to?(:focus)
@@ -1429,28 +1590,34 @@ module Ladb::OpenCutList
       end
     end
 
-    def dialog_maximize_command
-      if @dialog
-        dialog_set_size(@dialog_maximized_width, @dialog_maximized_height)
-        @dialog_maximized = true
+    def tabs_dialog_maximize_command
+      if @tabs_dialog
+        tabs_dialog_set_size(@tabs_dialog_maximized_width, @tabs_dialog_maximized_height)
+        @tabs_dialog_maximized = true
       end
     end
 
-    def dialog_hide_command
-      hide_dialog
+    def tabs_dialog_hide_command
+      hide_tabs_dialog
+    end
+
+    def modal_dialog_hide_command
+      hide_modal_dialog
     end
 
     def open_external_file_command(params)    # Expected params = { path: PATH_TO_FILE }
       path = params['path']
       if path && path.is_a?(String)
         url = "file:///#{path}"
-        UI.openURL(platform_is_mac ? URI::DEFAULT_PARSER.escape(url) : url)
+        url = URI::DEFAULT_PARSER.escape(url) if platform_is_mac && Sketchup.version_number >= 1800000000
+        UI.openURL(url)
       end
     end
 
     def open_url_command(params)    # Expected params = { url: URL }
       url = params['url']
       if url && url.is_a?(String)
+        url = 'https://' + url unless /^https?:\/\//.match(url)  # Force url starts by "https://"
         UI.openURL(URI::DEFAULT_PARSER.escape(url))
       end
     end
@@ -1462,7 +1629,7 @@ module Ladb::OpenCutList
     end
 
     def play_sound_command(params)    # Expected params = { filename: WAV_FILE_TO_PLAY }
-      UI.play_sound(File.join(root_dir, params['filename']))
+      UI.play_sound(File.join(PLUGIN_DIR, 'wav', params['filename']))
     end
 
     def send_action_command(params)

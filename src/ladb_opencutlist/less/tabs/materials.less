@@ -44,13 +44,18 @@
     #gradient > .vertical(rgba(0, 0, 0, 0), rgba(0, 0, 0, .3), 0%, 100%);
     text-shadow: 0 1px 4px rgba(0, 0, 0, .8);
     overflow: hidden;
+
+    .ladb-tiny {
+      font-size: 70%;
+    }
+
   }
 
   .ladb-overlay-drop {
     position: absolute;
-    left: 4px;
-    top: 6px;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    left: 6px;
+    top: 0;
+    font-size: 150%;
   }
 
   .ladb-overlay-icon {
@@ -153,6 +158,18 @@
     }
 
   }
+}
+
+.ladb-material-color-drop {
+  border-radius: 50%;
+  border-style: solid;
+  border-width: 1px;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  line-height: 1em;
+  box-sizing: content-box;
+  .printable-background();
 }
 
 // Print

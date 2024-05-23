@@ -11,9 +11,16 @@ module Ladb
         UI.messagebox("/!\ CAUTION\nOpenCutList requires SketchUp 2017 or above to run correctly.\nDowngrade to version 3.x to run on prior version of SketchUp.", MB_OK)
       end
 
+      # Plugin ID and dir
+      _file_ = __FILE__
+      _file_.force_encoding("UTF-8") if _file_.respond_to?(:force_encoding)
+
+      PLUGIN_ID = File.basename(_file_, ".*")
+      PLUGIN_DIR = File.join(File.dirname(_file_), PLUGIN_ID)
+
       # Create extension
-      ex = SketchupExtension.new('OpenCutList', 'ladb_opencutlist/ruby/main')
-      ex.version     = "5.1.2"  ## /!\ Auto-generated line, do not edit ##
+      ex = SketchupExtension.new('OpenCutList', File.join(PLUGIN_DIR, 'ruby', 'main'))
+      ex.version     = "6.2.0"  ## /!\ Auto-generated line, do not edit ##
       ex.copyright   = "2016-#{Date.today.year} - GNU GPLv3"  ## /!\ Auto-generated line, do not edit ##
       ex.creator     = 'L\'Air du Bois - www.lairdubois.fr'
 
@@ -37,16 +44,12 @@ module Ladb
         ex.description = 'Generatore di Distinte Materiali e Schemi di Taglio per falegnami. Open Source, crowdfunded e facile da usare ;)'
       when 'nl'
         ex.description = 'Genereer materiaallijsten, zaagschema\'s voor panelen en balken voor houtbewerkers. Open Source, crowdfunded en gebruiksvriendelijk ;)'
-      when 'pl'
-        ex.description = 'Generator listy cięć i schematów cięcia dla stolarzy. Open Source, crowdfunded i łatwy w użyciu ;)'
       when 'pt'
-        ex.description = 'Planilha de Produção e Gerador de Diagrama de Corte de chapas e pranchas MLC para marceneiros e carpinteiros. Código aberto, crowdfunded e fácil de usar ;)'
+        ex.description = 'Planilha de Produção e Gerador de Plano de Corte de chapas e barras para marceneiros, carpinteiros e serralheiros. Código aberto, crowdfunded e fácil de usar ;)'
       when 'ru'
         ex.description = 'Плагин расчета карт раскроя для деревообработчиков и не только. Открытый исходный код, краундфандинг и простота использования ;)'
       when 'uk'
         ex.description = 'Плагін розрахунку карт розкрою листового та погонного матеріалів для деревообробників і не тільки. Відкритий вихідний код, фінансується користувачами і простий у використанні ;)'
-      when 'vi'
-        ex.description = 'Danh sách cắt và Trình tạo sơ đồ cắt cho thợ mộc. Mã nguồn mở, được huy động vốn từ cộng đồng và dễ sử dụng;)'
       when 'zh'
         ex.description = '木工的切割清单和切割图生成器。 开源，众筹且易于使用 ;)'
       else
@@ -57,7 +60,7 @@ module Ladb
       # Register extension
       Sketchup.register_extension(ex, true)
 
-      file_loaded(__FILE__)
+      file_loaded(_file_)
 
     end
 

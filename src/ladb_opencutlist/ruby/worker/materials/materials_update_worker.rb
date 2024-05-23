@@ -17,6 +17,8 @@ module Ladb::OpenCutList
 
       attributes = material_data.fetch('attributes')
       @type = MaterialAttributes.valid_type(attributes.fetch('type'))
+      @description = attributes.fetch('description', '')
+      @url = attributes.fetch('url', '')
       @thickness = attributes.fetch('thickness')
       @length_increase = attributes.fetch('length_increase')
       @width_increase = attributes.fetch('width_increase')
@@ -28,7 +30,8 @@ module Ladb::OpenCutList
       @std_sizes = attributes.fetch('std_sizes')
       @grained = attributes.fetch('grained')
       @edge_decremented = attributes.fetch('edge_decremented')
-      @volumic_mass = attributes.fetch('volumic_mass')
+      @raw_estimated = attributes.fetch('raw_estimated')
+      @std_volumic_masses = attributes.fetch('std_volumic_masses')
       @std_prices = attributes.fetch('std_prices')
 
     end
@@ -50,6 +53,9 @@ module Ladb::OpenCutList
       return { :errors => [ 'tab.materials.error.material_not_found' ] } unless material
 
       trigger_change_event = true
+
+      # Sanitize display_name by removing tabs and line breaks
+      @display_name = @display_name.delete("\t\r\n").strip
 
       # Update properties
       if @display_name != material.name
@@ -112,6 +118,8 @@ module Ladb::OpenCutList
       # Update attributes
       material_attributes = MaterialAttributes.new(material)
       material_attributes.type = @type
+      material_attributes.description = @description
+      material_attributes.url = @url
       material_attributes.thickness = @thickness
       material_attributes.length_increase = @length_increase
       material_attributes.width_increase = @width_increase
@@ -123,7 +131,8 @@ module Ladb::OpenCutList
       material_attributes.std_sizes = @std_sizes
       material_attributes.grained = @grained
       material_attributes.edge_decremented = @edge_decremented
-      material_attributes.volumic_mass = @volumic_mass
+      material_attributes.raw_estimated = @raw_estimated
+      material_attributes.std_volumic_masses = @std_volumic_masses
       material_attributes.std_prices = @std_prices
       material_attributes.write_to_attributes
 

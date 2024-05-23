@@ -7,7 +7,7 @@ module Ladb::OpenCutList
     # -- Serialization --
 
     def self.serialize_path(path)  # path is Array<ComponentInstance>
-      return nil if path.nil?
+      return nil unless path.is_a?(Array)
       entity_ids = []
       path.each { |entity|
         entity_ids.push(entity.entityID)
@@ -16,6 +16,7 @@ module Ladb::OpenCutList
     end
 
     def self.unserialize_path(serialized_path)
+      return nil unless serialized_path.is_a?(String)
       path = []
       entity_ids = serialized_path.split(SEPARATOR)
       entity_ids.each { |entity_id|
@@ -46,11 +47,11 @@ module Ladb::OpenCutList
 
     # -- Geom --
 
-    def self.get_transformation(path)
-      return nil if path.nil? || path.empty?
+    def self.get_transformation(path, default_transformation = nil)
+      return default_transformation if path.nil? || path.empty?
       transformation = Geom::Transformation.new
       path.each { |entity|
-        transformation *= entity.transformation if entity.is_a?(Sketchup::ComponentInstance) || entity.is_a?(Sketchup::Group)
+        transformation *= entity.transformation if entity.respond_to?(:transformation)
       }
       transformation
     end

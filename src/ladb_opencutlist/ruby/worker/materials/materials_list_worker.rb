@@ -1,5 +1,7 @@
 module Ladb::OpenCutList
 
+  require_relative '../../utils/color_utils'
+
   class MaterialsListWorker
 
     def initialize(settings)
@@ -54,7 +56,7 @@ module Ladb::OpenCutList
                   :name => material.name,
                   :display_name => material.display_name,
                   :thumbnail_file => thumbnail_file,
-                  :color => ("#%02x%02x%02x" % [material.color.red, material.color.green, material.color.blue]),
+                  :color => ColorUtils.color_to_hex(material.color),
                   :alpha => material.alpha,
                   :colorized => material.materialType == 2, # 2 = Sketchup::Material::MATERIAL_COLORIZED_TEXTURED
                   :textured => (material.materialType == 1 || material.materialType == 2),  # 1 = Sketchup::Material::MATERIAL_TEXTURED, 2 = Sketchup::Material::MATERIAL_COLORIZED_TEXTURED
@@ -67,6 +69,8 @@ module Ladb::OpenCutList
                   :texture_image_height => material.texture.nil? ? nil : material.texture.image_height,
                   :attributes => {
                       :type => material_attributes.type,
+                      :description => material_attributes.description,
+                      :url => material_attributes.url,
                       :thickness => material_attributes.thickness,
                       :length_increase => material_attributes.length_increase,
                       :width_increase => material_attributes.width_increase,
@@ -78,7 +82,8 @@ module Ladb::OpenCutList
                       :std_sizes => material_attributes.std_sizes,
                       :grained => material_attributes.grained,
                       :edge_decremented => material_attributes.edge_decremented,
-                      :volumic_mass => material_attributes.volumic_mass,
+                      :raw_estimated => material_attributes.raw_estimated,
+                      :std_volumic_masses => material_attributes.std_volumic_masses,
                       :std_prices => material_attributes.std_prices,
                   }
               }

@@ -1,7 +1,7 @@
 # this label must be in your language
 _label: "العربية (experimental, no rtl)"
 # the reload message will be displayed when a user switches to this language
-_reload_msg: "لأخذ التغييرات بالحسبان، عليك **غلق** و **إعادة فتح** نافذة OpenCutList."
+_reload_msg: "OpenCutList لأخذ التغييرات بالحسبان، عليك **غلق** و **إعادة فتح** نافذة "
 _description: "مولد لرسومات التقطيع التخطيطية و قوائم القَطع موجه للنجارين. مفتوح المصدر و ممول جماهيريا و سهل الاستخدام ;)"
 default:
   minimize: تصغير
@@ -68,6 +68,10 @@ default:
   alt_key_win: Alt
   alt_key_mac: Command
   tab_key: Tab
+  file: ملف
+  file_plural: ملفات
+  stroke_color: لون الخط المحيط
+  fill_color: لون التعبئة
 core:
   menu:
     submenu: OpenCutList
@@ -80,12 +84,22 @@ core:
       edit_part_faces_properties: $t(tab.cutlist.edit_part_faces_properties)
       smart_paint: $t(core.toolbar.command.smart_paint)
       smart_axes: $t(core.toolbar.command.smart_axes)
+      smart_export: $t(core.toolbar.command.smart_export)
+      reset_dialog_position: أعد تعيين موضع النافذة
   toolbar:
     name: OpenCutList
     command:
       dialog: OpenCutList
-      smart_paint: صباغة القِطع
+      smart_paint: اصبغ القِطع
       smart_axes: وجِّه القطع
+      smart_export: صدّر القِطع
+  messagebox:
+    dir_override: |
+      « {{ target }} » موجود مسبقا. هل ترغب في استبداله؟
+
+      هناك مجلد بنفس الاسم في المجلد {{ parent }}. إن استبدلته، ستفقد المحتوى الأصلي
+  savepanel:
+    export_to_file: "التصدير إلى ملف {{ file_format }}"
   dialog:
     title: OpenCutList by L'Air du Bois
   leftbar:
@@ -99,37 +113,44 @@ core:
     report_a_bug: الإبلاغ عن خطأ
   warning:
     dev: |
-      أنت تستعمل نسخة **ما زالت تحت التطوير** من *OpenCutList*.
-      هذه النسخة متوفرة فقط لغرض التجريب.
-      لا ينصح باستعمالها في الإنتاج.
+      *OpenCutList* أنت تستعمل نسخة **ما زالت تحت التطوير** من 
+      هذه النسخة متوفرة فقط لغرض التجريب
+      لا ينصح باستعمالها في الإنتاج
 
-      للتبليغ عن خطإ برمجي: <a href="mailto:opencutlist@lairdubois.fr?subject=Bug%20Report%20OpenCutList%20{{ version }}%20(build: {{ build }})" target="_blank">opencutlist@lairdubois.fr</a>.
+       <a href="mailto:opencutlist@lairdubois.fr?subject=Bug%20Report%20OpenCutList%20{{ version }}%20(build: {{ build }})" target="_blank">opencutlist@lairdubois.fr</a> للتبليغ عن خطإ برمجي:
   error:
     feature_unavailable: "تتطلب هذه الخاصية توفر النسخة {{ version }} من SketchUp أو أعلى"
+    failed_export_to: |2
+       أثناء التصدير إلى *{{ path }}* حدث خطأ
+       **{{ error }}**
+  success:
+    exported_to: "نجح التصدير إلى {{ path }}."
+    copied_to_clipboard: تم النسخ إلى الحافظة
   event:
     model_change: لقد غُيّر النموذج النشط.
     options_change: لقد غُيّرت الخيارات في النموذج.
     material_change: هناك خامة واحدة على الأقل قد غُيرت.
     selection_change: لقد غُيّر التحديد في النموذج النشط.
+    layers_change: لقد غُيّرت الوسوم في النموذج النشط.
   upgrade:
-    unavailable: لا يتسنى العثور على آخر نسخة من *OpenCutList*.
+    unavailable: "*OpenCutList* لا يتسنى العثور على آخر نسخة من "
     available: |
-      هناك نسخة جديدة من *OpenCutList* متوفرة الآن.
-      حدّث للحصول إلى آخر الميزات!
+      هناك نسخة جديدة من *OpenCutList* متوفرة الآن
+      ! حدّث للحصول إلى آخر الميزات
     up_to_date: |
-      لديك حاليا آخر نسخة من *OpenCutList*.
+      *OpenCutList* لديك حاليا آخر نسخة من 
 
-      *ضع في اعتبارك رعاية هذا المشروع لمساعدتنا في إضافة المزيد من الميزات!*
+      !*ضع في اعتبارك رعاية هذا المشروع لمساعدتنا في إضافة المزيد من الميزات*
     downloading: التحميل جارٍ
     changelog: "ما الجديد؟"
     ignore_update: تجاوز هذا التحديث
     download_rescue: "مشكلة في التحميل؟"
     manual_download: تحميل يدوي
-    zzz: "أنا حاليا في وضع السكون بعد التحديث. لإعادتي إلى الوضع الطبيعي، عليك أن تعيد تشغيل SketchUp."
+    zzz: "SketchUp أنا حاليا في وضع السكون بعد التحديث. لإعادتي إلى الوضع الطبيعي، عليك أن تعيد تشغيل "
     success: |
-      لقد اكتمل تحديث OpenCutList !
+      ! لقد اكتمل تحديث OpenCutList 
 
-      أعد تشغيل SKETCHUP لتفعيل التغييرات.
+      أعد تشغيل SKETCHUP لتفعيل التغييرات
     error:
       download: خطأ أثناء تحميل الملف المضغوط.
       unzip: خطأ أثناء فك الضغط عن الملف.
@@ -157,19 +178,26 @@ core:
       save_to: "تحديث الإعداد المسبق '{{ name }}'"
       delete: "حذف الإعداد المسبق '{{ name }}'"
     dictionary:
-      component_textinput_color: لوح الألوان
+      component_textinput_color: لوحة الألوان
       cutlist_cuttingdiagram1d_options: $t(tab.cutlist.label) / $t(tab.cutlist.cuttingdiagram.title) 1D
+      cutlist_cuttingdiagram1d_export_options: $t(tab.cutlist.label) / $t(tab.cutlist.cuttingdiagram.export.title) 1D
       cutlist_cuttingdiagram2d_options: $t(tab.cutlist.label) / $t(tab.cutlist.cuttingdiagram.title) 2D
+      cutlist_cuttingdiagram2d_export_options: $t(tab.cutlist.label) / $t(tab.cutlist.cuttingdiagram.export.title) 2D
       cutlist_export_options: $t(tab.cutlist.label) / $t(tab.cutlist.export.title)
       cutlist_labels_options: $t(tab.cutlist.label) / $t(tab.cutlist.labels.title)
       cutlist_layout_options: $t(tab.cutlist.label) / $t(tab.cutlist.layout.title)
       cutlist_options: $t(tab.cutlist.label) / $t(default.options)
       cutlist_report_options: $t(tab.cutlist.label) / $t(tab.cutlist.report.title)
+      cutlist_write2d_options: $t(tab.cutlist.label) / $t(tab.cutlist.write.title) 2D
+      cutlist_write3d_options: $t(tab.cutlist.label) / $t(tab.cutlist.write.title) 3D
       importer_import_options: $t(tab.importer.label) / $t(default.import)
       importer_load_options: $t(tab.importer.label) / $t(default.open)
       materials_material_attributes: $t(tab.materials.label) / $t(tab.materials.edit_material.cut_options)
       materials_options: $t(tab.materials.label) / $t(default.options)
       settings_model: $t(tab.settings.label) / النموذج
+      tool_smart_paint_options: $t(core.toolbar.command.smart_paint)
+      tool_smart_axes_options: $t(core.toolbar.command.smart_axes)
+      tool_smart_export_options: $t(core.toolbar.command.smart_export)
   progress:
     please_wait: حساب عالم من السلم
   component:
@@ -192,22 +220,24 @@ core:
       view_right: أيمن
       zoom: "مقياس {{ zoom }}"
       explode_factor: مدى التفجير
-      toggle_box_helper: أظهر / أخف مكعب الإحاطة
-      toggle_box_dimensions_helper: أظهر / أخف الأبعاد
-      toggle_axes_helper: أظهر / أخف المحاور
+      toggle_box_helper: أظهر / أخفِ مكعب الإحاطة
+      toggle_box_dimensions_helper: أظهر / أخفِ الأبعاد
+      toggle_axes_helper: أظهر / أخفِ المحاور
   docs:
     error:
       failed_to_load: |
-        تعذر فتح المستندات.
-        تأكد من اتصالك بالإنترنت.
+        تعذر فتح المستندات
+        تأكد من اتصالك بالإنترنت
 tab:
   cutlist:
-    label: القطع
-    title: قائمة القطع
+    label: القِطع
+    title: قائمة القِطع
     help: |
-      حدد القطع التي ستستعمل في قائمتك في المشهد الحالي و اضغط على **استحداث**.
-      إن لم يكن هناك تحديد، فستدخل كل العناصر المرئية داخل المشهد في حساب قائمة القطع.
+      حدد القطع التي ستستعمل في قائمتك في المشهد الحالي و اضغط على **استحداث**
+      إن لم يكن هناك تحديد، فستدخل كل العناصر المرئية داخل المشهد في حساب قائمة القطع
     is_selection: التحديد فحسب
+    select_part: حدد القِطعة
+    select_part_plural: حدد القِطع
     material_undefined: بلا خامة
     not_available_std_width: العرض غير معيّن
     not_available_std_thickness: السمك غير معيّن
@@ -219,9 +249,12 @@ tab:
     edit_part_size_increase_properties: عدّل خصائص (تمديدات) القطعة
     edit_part_edges_properties: عدل خصائص (حواشي) القطعة
     edit_part_faces_properties: عدّل خصائص القطعة (قشرة الخشب)
+    part_drawing_type_1: واجهة ثنائية الأبعاد
+    part_drawing_type_2: خلفية ثنائية الأبعاد
+    part_drawing_type_3: ثلاثي الأبعاد
     tooltip:
-      show_hide_block: إظهار / إخفاء المجموعة
-      scroll_to_block: مرور إلى المجموعة
+      show_hide_block: أظهر / أخفِ المجموعة
+      scroll_to_block: مُرَّ إلى المجموعة
       not_available_std_width: "لم يحدد العرض *{{ std_dimension_real }}* في العروض النظامية للخامة '{{ material_name }}'."
       not_available_std_thickness: "لم يحدد السمك *{{ std_dimension_real }}* ضمن السمك النظامي للخامة '{{ material_name }}'."
       not_available_std_section: "لم يحدد القطاع *{{ std_dimension_real }}* في القطاعات النظامية للخامة '{{ material_name }}'"
@@ -249,13 +282,13 @@ tab:
         *{{ std_dimension_real }}* :القطاع الحقيقي
         ---
         $t(tab.cutlist.tooltip.rounded_std_footer)
-      rounded_std_footer: قوّم الدقة في *Model Info* في سكاتش آب أو تفقّد قياسات القِطع في هذه المجموعة.
+      rounded_std_footer: قوِّم الدقة في *Model Info* في سكاتش آب أو تفقّد قياسات القِطع في هذه المجموعة.
       highlight_part: $t(tab.cutlist.highlight_part)
       highlight_parts: $t(tab.cutlist.highlight_parts)
       edit_part_properties: $t(tab.cutlist.edit_part_properties)
       edit_parts_properties: عدّل خصائص مجموعة قِطع
       edit_material: $t(tab.cutlist.menu.edit_material)
-      folding_part: طيّ / نشر
+      folding_part: اِطوِ / اُنشر
       material_origin_1: خامة هذه القطعة معرفة وفقا لمثيلاتها
       material_origin_2: خامة هذه القطعة موروثة عن أحد عناصرها الأصلية
       material_origin_3: خامة هذه القطعة مأخوذة من أحد عناصرها الفرعية
@@ -268,6 +301,7 @@ tab:
       symmetrical: الكشف عن الانعكاس لهذه القطعة معطل
       ignore_grain_direction: اتجاه تعرق ألياف هذه القطعة مهمل
       auto_oriented: لقد أُعيد توجيه هذه القطعة آليا
+      oko_label_filter: "تضمين / استبعاد هذا الوسم"
       add_label_filter: "تصفية وفق '{{ label }}'"
       remove_label_filter: "إزالة التصفية وفق '{{ label }}'"
       add_edge_material_name_filter: "تصفية وفق '{{ material_name }}'"
@@ -285,9 +319,9 @@ tab:
       thickness_layered_equation: "**{{ count }}** *قطعة* x **{{ layerCount }}** *طبقات* = **{{ cuttingPartCount }}**"
       thickness_layered_equation_plural: "**{{ count }}** *قِطَع* x **{{ layerCount }}** *طبقات* = **{{ cuttingPartCount }}**"
       multiple_content_layers: "تحذير، هذه القطعة مكونة من قطع فرعية موجودة في عدد {{ count }} طبقات مختلفة: {{ layers }}<br>"
-      children_warnings: "تحذير، هناك {{ count }} إنذار في القطع المجموعة"
+      children_warnings: "تحذير، هناك عدد {{ count }} إنذار في القطع المجموعة"
       children_warnings_plural: "تحذير، هناك {{ count }} إنذارات في القطع المجموعة"
-      children_size_increase: "جرى تمديد هذا البعد لـ {{ count }} قطع مجموعة"
+      children_size_increase: "جرى تمديد هذا البعد لـ {{ count }} قِطعٍ / قِطعةً مجموعة"
       invalid_final_area: "تنبيه، لا يمكن حساب هذه المساحة الإجمالية لأن {{ count }} قطعة (من أصل {{ total }}) بها مساحة غير صالحة"
       invalid_final_area_plural: "تنبيه، لا يمكن حساب هذه المساحة الإجمالية لأن {{ count }} قطعة/ قِطع (من أصل {{ total }}) بها مساحة غير صالحة"
       is_dynamic_attributes_name: وصف هذه القطعة مأخوذ من 'Name' الخاص بالعنصر الديناميكي
@@ -302,19 +336,28 @@ tab:
       edge_xmin: عرض الحاشية 1
       edge_xmax: عرض الحاشية 2
       face_zmin: ظهر قشرة الخشب
-      face_zmax: وجه قشرة الخشب
+      face_zmax: الوجه الأمامي لقشرة الخشب
       dblclick_to_copy_all_edges: انقر هنا نقرا مزدوجا لتكرار هذه القيمة لبقية الحواشي
       dblclick_to_copy_all_faces: انقر هنا نقرا مزدوجا لاستنساخ هذه القيمة إلى الوجه الآخر
       dblclick_to_sort_axes: انقر هنا نقرًا مزدوجًا لإعادة ترتيب المحاور تلقائيًا وفقًا لأبعاد القطعة
       part_axes: محاور القطعةِ الداخليةُ
       select_unselect_all_parts: حدد / أزل التحديد عن كل القطع في المجموعة
+      select_parts_in_cutlist: حدد القِطعة داخل قائمة القِطع
+      select_parts_in_cutlist_plural: "حدد {{ count }} قطعة / قِطع في قائمة القِطع"
       setup_group_cuttingdiagram: "تكوين رسم التقطيع التخطيطي لـ '{{ material_name }}&nbsp;/&nbsp;{{ std_dimension }}'"
+      open_part_url: افتح رابط القِطعة
     menu:
       show_all_groups: أظهر كل المجموعات
       hide_all_other_groups: أخفِ كل المجموعات الأخرى
       numbers_save: احفظ أرقام القطع
       numbers_reset: أعد تهيئة أرقام القطع
       highlight_parts: $t(tab.cutlist.highlight_parts)
+      write_2d: إسقاط ثنائي الأبعاد
+      write_3d: الشكل ثلاثي الأبعاد
+      write_2d_parts: صدر الإسقاط ثنائي البعد للقِطَع
+      write_3d_parts: صدّر الشكل ثلاثي البعد للقِطَع
+      group_write_2d_parts: صدر الإسقاط ثنائي البعد لقِطَع المجموعة
+      group_write_3d_parts: صدر الشكل ثلاثي البعد لقِطَع المجموعة
       group_layout_parts: طباعة معاينة قطع المجموعة
       group_numbers_save: احفظ أرقام القطع في هذه المجموعة
       group_numbers_reset: أعد تهيئة أرقام القطع في هذه المجموعة
@@ -337,7 +380,7 @@ tab:
       extra_help: "\"**$t(tab.materials.type_{{ material_type }})**\". قائمة الخصائص المحددة لنوع الخامة"
       edges: الحواشي
       faces: قِشرُ الخشب
-      name: وصف
+      name: الإسم
       material: الخامة
       cumulable: مجموع
       cumulable_help: |
@@ -367,6 +410,9 @@ tab:
       description: تعليق وصفيّ
       description_help: |
         يتيح لك *الوصف* معلومات معلومات مخصصة عن تعريف كل قطعة.
+      url: رابط
+      url_help: |
+        الـ URL يسمح بتوفير رابط مخصص إلى صفحة خارجية على كل تعريف لقطعة
       tags: الوسوم
       tags_help: |
         تمكنك *الوسوم* من إضافة كلمات مفتاحية مخصصة لتعريف كل قطعة.
@@ -415,10 +461,7 @@ tab:
       edge_disabled_help: هذه الحاشية غير قابلة للتكوين لأنه لم يُعثر على وجه حامل للخامة في طرف هذه القطعة داخل النموذج.
       face_disabled_help: هذا السطح غير قابل للتكوين لأنه لم يتم اكتشاف أي وجه بوسعه استقبال خامة في حافة هذه القِطعة من النموذج.
       multiple_values: قيم متعددة
-      export_to_skp: تصدير (skp.)
       loading_preview: تحميل المعاينة
-    export_to_skp:
-      title: تصدير إلى ملف skp.
     option:
       auto_orient: توجيه آلي للقطع
       auto_orient_help: |
@@ -463,8 +506,10 @@ tab:
       hide_edges_help: "إن كانت هذه الخاصية محددة فإن **أعمدة الحواشي** ضمن التصنيف *لوح* لن تُعرض."
       hide_faces: أخف أعمدة قِشرِ الخشب
       hide_faces_help: "إن كانت هذه الخاصية محددة، فستُخفى **أعمدة قِشرِ الخشب** من القطع المندرجة تحت النوع *لوح*"
+      hide_material_colors: أخفِ ألوان الخامات
+      hide_material_colors_help: "إن كانت هذه الخاصية محددة فإن ألوان الخامات ستخفى"
       minimize_on_highlight: "*'$t(tab.cutlist.highlight_part)...'* تصغير بعد"
-      minimize_on_highlight_help: "تحديد هذه الخاصية سيُصغّر OpenCutList\nعند استخدام الوظيفة *'$t(tab.cutlist.highlight_part)'*"
+      minimize_on_highlight_help: "تحديد هذه الخاصية سيُصغّر OpenCutList عند استخدام الوظيفة *'$t(tab.cutlist.highlight_part)'*"
       general: عام
       part_order_strategy: فرز القطع
       part_order_strategy_help: |
@@ -476,7 +521,7 @@ tab:
       property_thickness: السُمك
       property_length: الطول
       property_width: العرض
-      property_name: وصف
+      property_name: التسمية
       property_count: العدد
       property_edge_pattern: عدد الحواشي
       property_tags: الوسوم
@@ -515,7 +560,7 @@ tab:
       thickness: السُمك
       thickness_short: س
       edges: الحواشي
-      faces: قِشرُ الخشب
+      faces: الوجوه
     export:
       title: صدِّر
       info_0: |
@@ -525,6 +570,7 @@ tab:
       add_column: أضف عمودا
       add_native_columns: أضف عمودا أصليا
       remove_column: أزل
+      remove_all_columns: أزل الكل
       columns: الأعمدة
       column_title: العنوان
       column_title_help: |
@@ -548,7 +594,7 @@ tab:
       number: الرقم
       path: المسار
       instance_name: مثيل
-      name: وصف
+      name: التسمية
       total_cutting_length: الطول الإجمالي - أولي
       total_cutting_area: المساحة الإجمالية - أولية
       total_cutting_volume: الحجم الإجمالي - أولي
@@ -556,6 +602,8 @@ tab:
       cutting_length: الطول - أولي
       cutting_width: العرض - أولي
       cutting_thickness: السُمك - أولي
+      edge_cutting_length: طول الحاشية - أولي
+      edge_cutting_width: عرض الحواشي - أولي
       bbox_length: الطول
       bbox_width: العرض
       bbox_thickness: السمك
@@ -563,35 +611,43 @@ tab:
       count: العدد
       part_count: عدد القطع
       material_type: النوع
-      material_thickness: الخامة / السُمك
       material_name: الخامة
+      material_description: وصف الخامة
+      material_url: رابط الخامة
+      material_std_dimension: الأبعاد النظامية
       entity_names: أسماء المثيلات
-      description: وصف
+      description: تعليق وصفيّ
+      url: رابط
       tags: الوسوم
       edge_ymin: طول الحاشية 1
       edge_ymax: طول الحاشية 2
       edge_xmin: عرض الحاشية 1
       edge_xmax: عرض الحاشية 2
-      face_zmin: الوجه الخلفي لقشرة الخشب
-      face_zmax: الوجه الأمامي لقشرة الخشب
+      face_zmin: ظهر قشرة الخشب
+      face_zmax: أمامي
       layer: وسم
       layers: وسوم
+      batch: طقم
+      bin: الحاوية
+      filename: اسم الملف
+      model_name: اسم النموذج
+      model_description: وصف النموذج
+      page_name: اسم المشهد
+      page_description: وصف المشهد
       placeholder:
         no_column_title: أدخل عنوانا
         no_column_formula_native: " القيمة الأصلية للعمود '{{ col_name }}'"
         no_column_formula: أدخل صيغة
       warning:
         is_group_selection: لن تصدر القطع المتضمَّنة في **المجموعات المخفية** مع قائمة القطع.
-      success:
-        copied: تم النسخ إلى الحافظة
     report:
       title: تثمين
       info_0: |
-        تتيح لك هذه الوظيفة إنشاء تثمين **للكتل** و **التكاليف** و **الخامات** اللازمة لإنتاج القطع المتضمَّنة في قائمة القطع *.
+        تتيح لك هذه الوظيفة إنشاء تثمين **للكتل** و **التكاليف** و **الخامات** اللازمة لإنتاج القطع* المتضمَّنة في قائمة القطع*.
       options_general: عام
       options_solid_wood: $t(tab.materials.type_1)
       option_solid_wood_coefficient: "*$t(tab.materials.type_1)* معامل الهدر"
-      option_solid_wood_coefficient_help: تُستخدم للدلالة على معامل الضرب المطبق على الحجم الإجمالي المُقاس للخامات من نوع "**t(tab.materials.type_1)$**" لحساب المهدور.
+      option_solid_wood_coefficient_help: تُستخدم للدلالة على معامل الضرب المطبق على الحجم الإجمالي المُقاس للخامات من نوع "**$t(tab.materials.type_1)**" لحساب المهدور.
       raw_materials: المواد الأولية
       coefficient: المعامل
       total: الإجمالي
@@ -604,8 +660,10 @@ tab:
       total_volume: مجموع الأحجام
       total_area: مجموع المساحات
       total_length: مجموع الأطوال
+      tooltip:
+        incompatible_unit: الوحدة غير متوافقة مع خيارات تثمين الخامة
       error:
-        no_typed_material_parts: "لا تتوفر أي قطعة ذات خامة محددة (**t(tab.materials.type_1)$** أو **t(tab.materials.type_2)$** أو **t(tab.materials.type_3)$** أو **t(tab.materials.type_4)$** أو **t(tab.materials.type_5)$** أو **t(tab.materials.type_6)$**) لإنشاء التثمين"
+        no_typed_material_parts: "لا تتوفر أي قطعة ذات خامة محددة (**$t(tab.materials.type_1)** أو **$t(tab.materials.type_2)** أو **$t(tab.materials.type_3)** أو **$t(tab.materials.type_4)** أو **$t(tab.materials.type_5)** أو **$t(tab.materials.type_6)**) لإنشاء التثمين"
         entry_error: "*{{ material_name }} / {{ std_dimension }}* : **{{ count }} error**."
         entry_error_plural: "*{{ material_name }} / {{ std_dimension }}* : **{{ count }} errors**."
       warning:
@@ -636,10 +694,10 @@ tab:
       option_hide_part_list_1d_dimensional_0: معروض لكل قضيب
       option_hide_part_list_1d_edge_0: معروض لكل شريط حاشية
       option_hide_part_list_2d_good_0: معروض لكل لوح
-      option_hide_part_list_2d_veneer_0: معروض لكل ورقة خشب
+      option_hide_part_list_2d_veneer_0: معروض لكل ورقة قِشر خشب
       option_hide_part_list_1: مخفي
       option_hide_part_list_1d_help: اعرض أو أخف قائمة القِطع لكل قضيب أو شريط حاشية.
-      option_hide_part_list_2d_help: اعرض أو أخف قائمة القِطع لكل لوح
+      option_hide_part_list_2d_help: اعرض أو أخف قائمة القِطع لكل لوح أو ورقة قِشر خشب
       option_use_names: التعريف بالقطع
       option_use_names_0: استعمل الرقم
       option_use_names_1: استعمل التسمية
@@ -671,6 +729,14 @@ tab:
       option_hide_edges_preview_0: معروض في مخطط التقطيع
       option_hide_edges_preview_1: مخفي من مخطط التقطيع
       option_hide_edges_preview_help: يتيح لك إبراز أو إخفاء تصوير أشرطة الحواشي لكل قِطعة في مخطط التقطيع
+      option_part_drawing_type: شكل القِطع
+      option_part_drawing_type_0: مخفيّ
+      option_part_drawing_type_1: عرض الوجه الأمامي
+      option_part_drawing_type_2: عرض الوجه الخلفي
+      option_part_drawing_type_help: |
+        يتيح هذا الخيار إبراز أو إخفاء الشكل الحقيقي للقِطع داخل رسم التقطيع التخطيطي
+
+        *ينبغي أن يكون الخيار مفعلا ليتم تصدير الأشكال*
       option_saw_kerf: سُمك الشَفرة
       option_saw_kerf_help: عرض المادة المزالة بفعل شفرة المنشار
       option_trimming: تقليم
@@ -686,11 +752,13 @@ tab:
       option_stacking_1: على الطول
       option_stacking_2: على العرض
       option_stacking_3: كل الاحتمالات
+      option_keep: القياس الأدنى لبواقي التقطيع
+      option_keep_help: ستُعلَّم بواقي التقطيع التي يزيد طولها و عرضها عن الحد الأدنى بـ **تُحفظ**.
       option_std_bar_dimensional: قضيب نظامي
       option_std_bar_edge: شريط حاشية نظامي
       option_std_bar_help: |
         حدد القضيب النظامي الذي سيُنسخ لاحتواء جميع القِطع
-        هذه القائمة محددة وفقا لحقل الخامة **t(tab.materials.edit_material.std_lengths)$**
+        هذه القائمة محددة وفقا لحقل الخامة **$t(tab.materials.edit_material.std_lengths)**
         لتحديث هذه القائمة، عدّل الخامة '{{ material_name }}'
       option_std_bar_add: أضف طولا
       option_std_bar_none: لا شيء
@@ -706,7 +774,7 @@ tab:
       option_std_sheet_veneer: قشرة خشب قياسية
       option_std_sheet_help: |
         حدد ورقة قشرة الخشب أو اللوح النظامي الذي سيُنسخ لحساب أفضل احتواء ممكن للقِطع
-        هذه القائمة محددة وفقا لحقل الخامة **t(tab.materials.edit_material.std_sizes)$**
+        هذه القائمة محددة وفقا لحقل الخامة **$t(tab.materials.edit_material.std_sizes)**
         لتحديث هذه القائمة ، عدل الخامة '{{ material_name }}'
       option_std_sheet_add: أضف طولا
       option_std_sheet_none: لا شيء
@@ -721,11 +789,12 @@ tab:
       tooltip:
         scroll_to_block_1d: مرور إلى القضيب أو شريط الحاشية الأول
         scroll_to_block_2d: مرور إلى اللوح الأول
+        copy_leftovers_to_clipboard: انسخ بواقي التقطيع إلى الحافظة
       list:
         unplaced_parts: قِطع غير مُدرجة
         summary: ملخص
         count: العدد
-        bar: قضيب
+        bar: قضيب خشبي
         sheet: لوح
         length: الطول
         width: العرض
@@ -740,6 +809,9 @@ tab:
         overall_efficiency: المردود الكلّي
         efficiency: الفاعلية
         leftover: البواقي
+        leftover_to_keep: باقٍ يحفظ
+        leftover_to_keep_plural: بواقٍ تحفظ
+        leftover_to_throw_away: باقٍ يرمى
         cut: قطع
         cut_plural: قطع
         cut_trimming: التَّقليم
@@ -760,6 +832,65 @@ tab:
         parts: "{{ count }} قطعة"
         parts_plural: "{{ count }} قِطع"
         settings: الإعدادات
+      export:
+        title: تصدير مخطط التقطيع
+        info_0: |
+          تسمح لك هذه الوحدة بتصدير **شكل** *رسم التقطيع التخطيطي* في هيئة قائمة من الملفات بتنسيق [SVG](https://wikipedia.org/wiki/Scalable_Vector_Graphics) أو [DXF](https://wikipedia.org/wiki/AutoCAD_DXF)
+        option_file_format: $t(tab.cutlist.write.option_file_format)
+        option_file_format_help: $t(tab.cutlist.write.option_file_format_help)
+        option_dxf_structure: " DXF بُنية"
+        option_dxf_structure_1: الطبقات
+        option_dxf_structure_2: الطبقات + الكتل
+        option_dxf_structure_help: |
+          DXF يساعد الخيار على تحديد بُنية ملف الـ 
+
+          - بُنية **الطبقات** تُسطِّح كل الخطوط، و تميز بين أنواع الخطوط المختلفة باستعمال الطبقات فقط. *توفر هذه البُنية توافقا أكبر مع البرامج المُساعِدة* 
+          - بُنية ** الطبقات + الكتل ** تنشئ كتلة واحدة لكل قِطعة، و تضيف هذه الكتل عدة مرات حسب تكرار القِطع. *توفر هذه البنية مرونة أكبر لتعديل الملف*
+        option_unit: $t(tab.cutlist.write.option_unit)
+        option_unit_help: $t(tab.cutlist.write.option_unit_help)
+        option_smoothing: $t(tab.cutlist.write.option_smoothing)
+        option_smoothing_0: $t(tab.cutlist.write.option_smoothing_0)
+        option_smoothing_1: $t(tab.cutlist.write.option_smoothing_1)
+        option_smoothing_help: $t(tab.cutlist.write.option_smoothing_help)
+        option_merge_holes: $t(tab.cutlist.write.option_merge_holes)
+        option_merge_holes_0: $t(tab.cutlist.write.option_merge_holes_0)
+        option_merge_holes_1: $t(tab.cutlist.write.option_merge_holes_1)
+        option_merge_holes_help: $t(tab.cutlist.write.option_merge_holes_help)
+        option_include_paths: $t(tab.cutlist.write.option_include_paths)
+        option_include_paths_0: $t(tab.cutlist.write.option_include_paths_0)
+        option_include_paths_1: $t(tab.cutlist.write.option_include_paths_1)
+        option_include_paths_help: $t(tab.cutlist.write.option_include_paths_help)
+        option_sheet_good: لوح
+        option_sheet_good_help: |
+          يتيح هذا الخيار تصدير اللوح و اختيار ألوانه
+        option_sheet_veneer: قشرة الخشب
+        option_sheet_veneer_help: |
+          يتيح هذا الخيار تصدير ورقة قشر الخشب و اختيار اللون
+        option_bar_dimensional: قضيب خشبي
+        option_bar_dimensional_help: |
+          يتيح هذا الخيار تصدير القضيب و اختيار ألوانه
+        option_bar_band: شريط الحاشية
+        option_bar_band_help: |
+          يتيح هذا الخيار تصدير شريط الحاشية و اختيار ألوانه
+        option_parts: القِطع
+        option_parts_help: |
+          يتيح هذا الخيار تصدير القِطع و اختيار ألوانها
+        option_parts_holes: التثقيب
+        option_parts_holes_help: |
+          حدد لون التثقيب
+        option_parts_paths: $t(tab.cutlist.write.option_parts_paths)
+        option_parts_paths_help: $t(tab.cutlist.write.option_parts_paths_help)
+        option_texts: المعرفات
+        option_texts_help: |
+          يتيح تمكين تصدير النصوص الخاصة بالقِطع واختيار ألوانها
+        option_leftovers: بواقي التقطيع
+        option_leftovers_help: |
+          يتيح هذا الخيار تصدير بواقي التقطيع و اختيار ألوانها
+        option_cuts: قطع
+        option_cuts_help: |
+          يتيح هذا الخيار تصدير رسومات القَطع واختيار لونها
+        warning:
+          is_sheet_selection: لم تُصدَّر ** الألواح المخفية **
       error:
         no_bar_dimensional: لم يكوَّن القضيب النظامي بشكل صحيح و لا بواقيَ للقَطع محددةٌ.
         no_bar_edge: لم يكوَّن شريط الحاشية النظامي بشكل صحيح و لا بواقيَ للقَطع محددةٌ.
@@ -786,6 +917,7 @@ tab:
       size: الحجم الحقيقي للملصق
       add_element: أضف عنصرا
       remove_element: أزل
+      remove_all_elements: أزل الكل
       part_order_strategy_help: |
         أعد تنظيم الخصائص التالية لتحديد ترتيب الملصقات.
         يمكن فرز كل خاصية <i class="ladb-opencutlist-icon-sort-asc"></i>*تصاعديا* أو <i class="ladb-opencutlist-icon-sort-desc"></i>*تنازليا*.
@@ -801,9 +933,9 @@ tab:
       option_page_height: الارتفاع
       option_margin: الهوامش
       option_margin_top: فوق
-      option_margin_right: يمين
+      option_margin_right: أيمن
       option_margin_bottom: تحت
-      option_margin_left: يسار
+      option_margin_left: أيسر
       option_spacing: حجم الفراغ
       option_spacing_h: أفقي
       option_spacing_v: عمودي
@@ -815,6 +947,7 @@ tab:
       option_cutting_marks_1: المطبوعة
       option_formula: القيمة
       option_size: البعد
+      option_custom_formula: الصيغة
       option_anchor: نقطة الإرساء
       option_anchor_start: بداية - سفلي
       option_anchor_middle: وسط - سفلي
@@ -824,9 +957,10 @@ tab:
       option_anchor_end_top: نهاية - علوي
       option_color: اللون
       formula:
+        custom: الصيغة
         part_number: الرقم
-        part_name: وصف
-        part_description: وصف
+        part_name: التسمية
+        part_description: تعليق وصفيّ
         part_entity_named_path: مسار المثيل
         part_entity_name: اسم المثيل
         part_bin: الحاوية
@@ -834,6 +968,9 @@ tab:
         part_cutting_length: الطول الأولي
         part_cutting_width: العرض الأولي
         part_cutting_thickness: السُمك - أولي
+        part_edge_cutting_size: أبعاد الحاشية
+        part_edge_cutting_length: طول الحواشي - أولي
+        part_edge_cutting_width: عرض الحواشي - أولي
         part_size: البعد النهائي
         part_length: الطول
         part_width: العرض
@@ -846,6 +983,7 @@ tab:
         part_edge_xmax: عرض الحاشية 2
         part_face_zmin: ظهر قشرة الخشب
         part_face_zmax: وجه قشرة الخشب
+        thumbnail_proportional_drawing: صورة مصغّرة
         thumbnail_proportional: ملصق متناسب
         thumbnail_square: ملصق مربع
         group_material: الخامة / السُمك
@@ -863,7 +1001,7 @@ tab:
         formula_not_available: المعادلة غير متاحة في هذا السياق
     layout:
       title: الرسم
-      to_layout: التصدير إلى Layout
+      to_layout: " Layout التصدير إلى"
       options_layout: النموذج الطباعي
       options_settings: إعداد
       option_parts: القِطع
@@ -924,7 +1062,7 @@ tab:
       option_explode: منظر مُفجَّر
       error:
         no_part: ليست هناك قطعة لتُرسم.
-        failed_to_save_as_skp: فشلت كتابة الملف SKP الموجه إلى Layout
+        failed_to_save_as_skp: "Layout فشلت كتابة الملف SKP الموجه إلى "
         failed_to_layout: |
           خطأ أثناء كتابة ملف Layout كالتالي: *{{ error }}*
 
@@ -932,7 +1070,68 @@ tab:
       warning:
         is_group_selection: لن تُرسم القِطَعُ المتضمَّنة في **المجموعات المخفية** داخل قائمة القِطَع.
         is_part_selection: معاينة هذا الرسم محدودة بـ **القطع المحددة**
+    write:
+      title: تصدير القِطع
+      info_2d: |
+        تسمح لك هذه الوحدة بتصدير **الإسقاط ثنائي الأبعاد** للقِطع في هيئة ملفات بتنسيق [SVG](https://wikipedia.org/wiki/Scalable_Vector_Graphics) أو [DXF](https://wikipedia.org/wiki/AutoCAD_DXF)
+      info_3d: |
+        تسمح لك هذه الوحدة بتصدير **الشكل ثلاثي الأبعاد** للقِطع في هيئة ملفات بتنسيق [STL](https://wikipedia.org/wiki/STL_(file_format)) أو [OBJ](https://wikipedia.org/wiki/Wavefront_.obj_file)
+      option_file_format: المقاس
+      option_file_format_help: |
+        حدد صيغة الملف المُصدَّر
+      option_unit: الوحدة
+      option_unit_help: |
+        حدد الوحدة المستعملة في الملف المُصدَّر
+      option_part_drawing_type: إسقاط
+      option_part_drawing_type_help: |
+        حدد المنظر الذي سيصدَّر
+      option_faces: الوجوه
+      option_faces_0: استعمل الوجه المستهدف فقط
+      option_faces_1: استعمل كل وجوه القِطعة
+      option_faces_help: |
+        يتيح لك اختيار ما إذا كان البحث عن شكل القِطعة يتم على جميع وجوهها أم على الوجه المستهدف فقط 
+      option_anchor: نقطة الارتساء
+      option_anchor_0: افتراضي
+      option_anchor_1: صدر مبدأ القِطعة
+      option_anchor_help: |
+        يتيح تفعيل إسقاط مبدإ محاور القِطعة كنقطة ارتساء
+      option_smoothing: تمليس
+      option_smoothing_0: لا شيء
+      option_smoothing_1: تمليس الدوائر و الأقواس (تجريبي)
+      option_smoothing_help: |
+        يتيح تفعيل اكتشاف الدوائر والأقواس.
+
+        *لا يتيح هذا الخيار اكتشاف أنواع أخرى من المنحنيات*
+      option_merge_holes: نمط الدمج
+      option_merge_holes_0: افتراضي
+      option_merge_holes_1: الخط الخارجي + التثقيب + الدمج
+      option_merge_holes_help: |
+        **افتراضيًا**
+        يتم تصدير شكل القِطعة بطبقة واحدة لكل عمق
+
+        **الخط الخارجي + التثقيب + الدمج**
+        تفعيل فصل الحاشية الخارجية للقِطع عن الثقوب الخاصة بها بالإضافة إلى دمج الأعماق لكل تثقيب
+      option_include_paths: المسارات
+      option_include_paths_0: لا شيء
+      option_include_paths_1: استخدم الحواشي غير المرتبطة بوجه
+      option_include_paths_help: |
+        تسمح الخاصية بتمكين استخدام الحواف غير المرتبطة بوجهٍ والموجودة في القِطعة لتصديرها كمسار
+      option_parts: القِطع
+      option_parts_help: |
+        حدد ألوان القِطع
+      option_parts_holes: التثقيب
+      option_parts_holes_help: |
+        حدد ألوان تثقيب القِطع
+      option_parts_paths: المسارات
+      option_parts_paths_help: |
+        حدد لون المسارات
+      error:
+        no_part: لا توجد قِطعة للتصدير
+      warning:
+        is_group_selection: لن تصدر القطع المتضمَّنة في **المجموعات المخفية** مع قائمة القطع.
+        is_part_selection: التصدير مقتصر على **القطع المحددة**
     snippet:
+      hello: مرحبا
       number: الرقم
       name: التسمية
       number_and_name: الرقم و الوصف
@@ -945,23 +1144,22 @@ tab:
       no_entities: نموذجك فارغ. عليك أن تزودني بمعلومات أكثر ;)
       no_component_in_selection: لم يُعثر على أي مثيل لعنصر ظاهر في تحديدك.
       no_component_in_model: لم يُعثر على أي مثيل لعنصر ظاهر في مشهدك.
-      failed_to_write_export_file: "فشل في كتابة ملف التصدير. **{{ error }}**"
-      failed_export_skp_file: " أثناء التصدير إلى الملف .skp حدث خطأ. **{{ error }}**."
       unknow_part: القطعة المحددة غير موجودة في قائمة القطع
       obsolete_cutlist: "مستحيل، قائمة القطع قديمة. أعد استحداثها."
     warning:
       is_entity_selection: وحدها القطع المحددة في نموذجك من أُخذت بالحسبان.
-      no_typed_materials_in_model: "لا يستعمل نموذجك أي خامة محددة (**t(tab.materials.type_1)$** أو **t(tab.materials.type_2)$** أو **t(tab.materials.type_3)$** أو **t(tab.materials.type_5)$**)"
-      no_typed_materials_in_selection: "لا تستعمل في تحديدك أي خامة محددة (**t(tab.materials.type_1)$** أو **t(tab.materials.type_2)$** أو **t(tab.materials.type_3)$** أو **t(tab.materials.type_5)$**)"
+      no_typed_materials_in_model: "لا يستعمل نموذجك أي خامة محددة (**$t(tab.materials.type_1)** أو **$t(tab.materials.type_2)** أو **$t(tab.materials.type_3)** أو **$t(tab.materials.type_5)**)"
+      no_typed_materials_in_selection: "لا تستعمل في تحديدك أي خامة محددة (**$t(tab.materials.type_1)** أو **$t(tab.materials.type_2)** أو **$t(tab.materials.type_3)** أو **$t(tab.materials.type_5)**)"
       export_empty: تصديرك لا يحتوي أي قطعة.
     success:
-      exported_to: "نجح التصدير إلى {{ export_path }}."
+      part_selected: "{{ count }} قطعة محددة في قائمة القِطع"
+      part_selected_plural: "{{ count }} قِطع / قِطعة محددة في قائمة القِطع"
     tip:
       no_component: |
         يجب أن تكون القِطع المتضمَّمة في *قائمة القِطع* مثيلات**عنصر**.
         إن كنت تستعمل المجموعات groups فحسب فعليك تحويلها إلى عناصر components.
         استخدام العناصر لإنتاج القِطع، يتيح إعادة إنتاجها بطريقة مماثلة دون نسخها نسخا مطابقا.
-      no_typed_materials: "طبّق خامة على القِطع التي ستُدرج في قائمة القطع و حدد خصائصها (**t(tab.materials.type_1)$** أو **t(tab.materials.type_2)$** أو **t(tab.materials.type_3)$** أو **t(tab.materials.type_5)$**) في التبويب<i class=\"ladb-opencutlist-icon-materials\"></i> **الخامات**"
+      no_typed_materials: "طبّق خامة على القِطع التي ستُدرج في قائمة القطع و حدد خصائصها (**$t(tab.materials.type_1)** أو **$t(tab.materials.type_2)** أو **$t(tab.materials.type_3)** أو **$t(tab.materials.type_5)**) في التبويب<i class=\"ladb-opencutlist-icon-materials\"></i> **الخامات**"
     obsolete_base: "للبقاء في وضعية مزامنة، ينبغي أن تعيد استحداث قائمة القِطع."
   materials:
     label: الخامات
@@ -985,6 +1183,7 @@ tab:
       grained_0: $t(tab.materials.edit_material.grained_0)
       grained_1: $t(tab.materials.edit_material.grained_1)
       grain_direction: اتجاه تعرّق الألياف
+      raw_estimated_0: تم التثمين استنادا إلى الحجم الفعلي المعمول به
       colorized: سيضاف هذا اللون إلى الهيئة السطحية -تكستشر- لهذه الخامة عندما يجري تصييرها -رندرتها- في النموذج
       texture_load: حمّل هيئة سطحية - تكستشر جديدة
       texture_clear: أزل الهيئة السطحية - التكستشر
@@ -992,6 +1191,7 @@ tab:
       set_current: |
         اصبغ القِطع بـ '{{ name }}'
         *انقر نقرا مزدوجا للتصغير*
+      open_url: افتح رابط الخامة
     menu:
       import_from_skm: استيراد خامة (skm.)
       purge_unused: التخلص من الخامات غير المستعملة
@@ -1013,18 +1213,21 @@ tab:
       general: عام
       texture: الهيئة السطحية -التكستشر-
       no_texture: لا وجود لهيئة سطحية - تكستشر
-      name: وصف
+      name: الإسم
       type: النوع
+      description: تعليق وصفيّ
+      url: رابط
       cut_options: خيارات التقطيع
+      estimate_options: خصائص التثمين
       attributes: السِّمات
       thickness: السُمك
       thickness_help: |
         السمك النهائي للخامة.
         *إن لم تكن هناك أي وحدة محددة فستؤخذ وحدة النموذج بالحسبان*.
-      length_increase: تمديد العرض
+      length_increase: تمديد الطول
       length_increase_help: طُبق تمديد على الطول لتحديد **الطول الأولي**.
       width_increase: تمديد العرض
-      width_increase_help: طُبق تمديد على العرض لتحديد *العرض الأولي**.
+      width_increase_help: طُبق تمديد على العرض لتحديد **العرض الأولي**.
       thickness_increase: تمديد السُمك
       thickness_increase_help: طُبق تمديد على السُّمك لتحديد **السمك الأولي**.
       std_lengths: الأطوال النظامية
@@ -1060,11 +1263,23 @@ tab:
       edge_decremented_help: تسمح بتحديد ما إذا كان يجب إنقاص الأبعاد وفقا لسُمك الحاشية.
       edge_decremented_0: لا إنقاص
       edge_decremented_1: إنقاص بقدر سمك الحاشية
-      volumic_mass: الكثافة
-      volumic_mass_help: تتيح لك تعيين الكتلة الحجمية للخامة
+      raw_estimated: الحجم المستعمل
+      raw_estimated_help: |
+        يتيح الخيار تحديد الحجم المستخدم لتثمين الوزن والتكلفة الإجمالية للقِطع المصنوعة من هذا الخامة
+
+        **الحجم المعمول به**
+        سيكون الحجم الإجمالي مجموعَ الحجوم المعمول بها للقِطع
+
+        **حجم المادة الخام اللازمة**
+        سيكون الحجم الإجمالي مجموعَ حجوم الألواح، الأوراق، القضبان أو أشرطة الحواشي للقِطع بعد التقطيع
+      raw_estimated_0: الحجم المعمول به
+      raw_estimated_1: حجم المادة الخام اللازمة
+      std_attributes_dim_placeholder: حدد مقاسا
+      std_volumic_masses: الكثافة
+      std_volumic_masses_help: يتيح لك الخيار تعيين كثافة لجميع الأحجام و أيضًا لكل حجم خامة اعتيادي
+      std_volumic_masses_add: أضف كثافةً
       std_prices: السعر
       std_prices_help: تتيح لك تعيين السعر لكل القياسات و أيضا لكل قياس نظامي من الخامة.
-      std_prices_dim_placeholder: حدد مقاسا
       std_prices_add: أضف سعرا
       texture_width: العرض
       texture_height: الارتفاع
@@ -1072,16 +1287,16 @@ tab:
     texture_load:
       title: حمّل صورة
     import_from_skm:
-      title: استيراد ملف skm.
+      title: "skm. استيراد ملف "
     export_to_skm:
-      title: تصدير إلى ملف skm.
+      title: "skm. تصدير إلى ملف "
     option:
       material_order_strategy: فرز الخامات
       material_order_strategy_help: |
         أعد تنظيم الخصائص التالية لتحديد ترتيب فرز الخامات في القائمة.
         يمكن فرز كل خاصية <i class="ladb-opencutlist-icon-sort-asc"></i>*تصاعديا* أو <i class="ladb-opencutlist-icon-sort-desc"></i>*تنازليا*.
       property_type: النوع
-      property_name: وصف
+      property_name: الإسم
     remove:
       message: |
         أنت على وشك إزالة الخامة **{{ material_name }}** من نموذجك.
@@ -1098,9 +1313,43 @@ tab:
       failed_removing_material: "حدث خطأ أثناء إزالة هذه الخامة. **{{ error }}**"
       failed_duplicating_material: "وقع خطأ أثناء استنساخ الخامة. **{{ error }}**"
       invalid_image_file: الصورة غير صالحة
-    success:
-      exported_to: "نجح التصدير إلى {{ export_path }}."
     obsolete_base: "لتبقي على حالة المزامنة، عليك أن تحدث قائمة الخامات."
+  outliner:
+    label: البُنية
+    title: البُنية
+    list: شجرة بُنية الوحدات
+    nodes: المثيلات
+    part_count: عدد القِطع
+    type_0: النموذج
+    type_1: المجموعة
+    type_2: العُنصُر
+    type_3: القِطعة
+    tooltip:
+      open_node_url: افتح رابط المثيل
+    edit_node:
+      title_model: "خصائص النموذج"
+      title_instance: "خصائص المثيل **{{ name }}**"
+      general: عام
+      preview: معاينة
+      name: الإسم
+      instance_name: مثيل
+      definition_name: التعريف
+      description: تعليق وصفيّ
+      url: رابط
+      layer_name: وسم
+      explode: تفجير
+      explode_message: "هل أنت واثق من رغبتك في تفجير المثيل **\"{{ name }}\"**؟"
+    error:
+      no_model: لا يوجد نموذج مفتوح. عليك أن تزودني بمعلومات أكثر ;)
+      no_entities: نموذجك فارغ!
+      node_not_found: نقطة التقاطع غير موجودة
+      entity_not_found: لم يُعثر على أي مثيل
+      obsolete_outliner: "غير ممكن، البُنية المولّدة قديمة. أعد استحداثها"
+    tip:
+      no_node: |
+        لا يحتوي نموذجك على أي مثيل ليتم عرضه هنا
+        المثيل هو **مجموعة** أو **عنصر** داخل المشهد
+    obsolete_base: "للبقاء في وضعية مزامنة، ينبغي عليك إعادة تحديث البُنية"
   importer:
     label: استيراد
     title: استيراد القطع
@@ -1108,10 +1357,10 @@ tab:
       تسمح لك هذه الصفحة باستيراد قطع (محددة بمربع إحاطة) إلى نموذجك عبر ملف [CSV](https://ar.wikipedia.org/wiki/%D9%82%D9%8A%D9%85_%D9%85%D9%81%D8%B5%D9%88%D9%84%D8%A9_%D8%A8%D9%81%D9%88%D8%A7%D8%B5%D9%84)
       يمكنك عندها الاستفادة من ميزات *OpenCutList*من أجل القطع التي جرى إنشاؤها ببرنامج آخر غير *SketchUp*.
       اضغط على الزر **فتح ملف CSV** للبدء.
-    open_csv: فتح ملف CSV
+    open_csv: "CSV فتح ملف "
     import_to_model: استيراد إلى النموذج
     load:
-      title: تحميل ملف CSV
+      title: "CSV تحميل ملف "
       info_0: |
         اختر الخصائص اللازمة لقراءة الملف:
          **{{ filename }}** بشكل صحيح.
@@ -1147,7 +1396,7 @@ tab:
       unused: غير مستعمل
       mandatory: حقول إلزامية
       optional: حقول اختيارية
-      name: وصف
+      name: التسمية
       count: العدد
       bbox_length: الطول
       bbox_width: العرض
@@ -1178,16 +1427,16 @@ tab:
       imported_title: تم الاستيراد
       imported_body: "{{ count }} قطعة قد استوردت بنجاح!"
       imported_body_plural: "{{ count }} قِطع / قطعة قد استوردت بنجاح!"
-    obsolete_base: "لتبقى في وضع المزامنة ، يجب عليك إعادة تحميل ملف الـ CSV."
+    obsolete_base: "CSV لتبقى في وضع المزامنة ، يجب عليك إعادة تحميل ملف الـ "
   tutorials:
     label: شروحات توضيحية
     title: شروحات توضيحية
     help: |
-      جِد هنا قائمة غير مستفيضة من الفيديوهات المنتجة من قبل المجتمع عن طريقة استخدام *OpenCutList*.
+      *OpenCutList* جِد هنا قائمة غير مستفيضة من الفيديوهات المنتجة من قبل المجتمع عن طريقة استخدام 
     submit: أرسل فيديو
     submit_info: |
       صممت فيديو يقدم لاستعمال **OpenCutList** و تريده أن يظهر هنا؟
-      أعلمنا بمراسلتنا عبر **opencutlist@lairdubois.fr**!
+      **opencutlist@lairdubois.fr**! أعلمنا بمراسلتنا عبر 
 
       *يجب أن يكون الفيديو على اليوتيوب و أن يكون وضعه عامًّا*.
     error:
@@ -1196,7 +1445,7 @@ tab:
     label: الأخبار
     title: الأخبار
     help: |
-      آخر الأخبار عن *OpenCutList*.
+      *OpenCutList* آخر الأخبار عن 
     comment: تعليق
     error:
       fail_to_load_list: تعذر تحميل قائمة الأخبار.
@@ -1204,36 +1453,36 @@ tab:
     label: المنتدى
     title: المنتدى
     help: |
-      تتيح لك هذه المساحة تبادل الحوار مع مجتمع المستخدمين و فريق *OpenCutList*.
+      *OpenCutList* تتيح لك هذه المساحة تبادل الحوار مع مجتمع المستخدمين و فريق 
     create_conversation: البدء في محادثة
     reply: الرد
     tags: الوسوم
     redirection: |
-      ستُحوَّل إلى **Open Collective** المنصة المستضيفة لمنتدى النقاش هذا.
-      من أجل *البدء في النقاش* أو *الرد* ينبغي عليك تسجيل حساب و الولوج إليه.
+      ستُحوَّل إلى **Open Collective** المنصة المستضيفة لمنتدى النقاش هذا
+      من أجل *البدء في النقاش* أو *الرد* ينبغي عليك تسجيل حساب و الولوج إليه
       *إن الأمر مجاني و لا توجد إلزامات و كل المطلوب هو عنوان بريد إلكتروني.*
 
-      طبِّق للمتابعة.
+      طبِّق للمتابعة
     error:
       fail_to_load_list: تعذر تحميل قائمة المحادثات.
   sponsor:
     label: رعاية
     title: رعاية
     description: |
-      **OpenCutList** هو برنامج *مفتوح المصدر* ممول من قبل مستخدمين عبر المنصة <a href="https://opencollective.com/" target="_blank">Open Collective</a>.
-      ادعموا هذا البرنامج عبر مساهمة مالية !
+      <a href="https://opencollective.com/" target="_blank">Open Collective</a> هو برنامج *مفتوح المصدر* ممول من قبل مستخدمين عبر المنصة **OpenCutList** 
+      ! ادعموا هذا البرنامج عبر مساهمة مالية 
     contribute: ساهم
     backers: "{{ count }} مساهما بالمال"
     backers_plural: "{{ count }} مساهمين / مساهما بالمال"
-    ad: "هل يعجبك OpenCutList؟"
+    ad: "OpenCutList؟ هل يعجبك "
     objective: الهدف
-    objective_slogan: "OpenCutList، هو نحن كلنا"
+    objective_slogan: " هو نحن كلنا OpenCutList"
     objective_title:
       default: الأهداف
       cuttingdiagram_export: تمويل تصدير رسومات التقطيعِ التخطيطيةِ
     objective_details:
       default: |
-        التحسين المستمر لـ *OpenCutList* مهم لنا، و المشروع بحاجة لمساعدتكم من أجل الإصدار التالي!
+        تحسين *OpenCutList* المستمر مهم لنا، و المشروع بحاجة لمساعدتكم من أجل الإصدار التالي
       cuttingdiagram_export: |
         يهمنا أن يمكن تكييف خاصية *رسم التقطيعِ التخطيطيّ* في *OpenCutList* مع توقعات المستعملين المختلفة.
         لتوسيع الاحتمالات بشكل أكبر، نود تمكين تصدير مخططات التقطيع بتنسيق **SVG** و **DXF**.
@@ -1242,8 +1491,8 @@ tab:
         الهدف من هذا الجزء هو تسهيل طباعة معاينة لمشروعك و إظهار **منظرٍ مُفجَّرٍ** له مع تعيين للقِطَعِ وفقا لرقمها المعطى لها في قائمة القِطع.
     objective_crowdfunding: |
       سيجري تطوير هذه الوظائف الجديدة عبر **التمويل التشاركي** و ستكون البداية عند بلوغ **الهدف المالي**.
-    objective_thanks: |
-      شكرا لمساهمتك !
+    objective_thanks: |2
+       ! شكرا لمساهمتك
     objective_funded_progress: "مموَّل بنسبة % {{ progress }}"
   settings:
     label: التفضيلات
@@ -1253,15 +1502,18 @@ tab:
     language_auto: تلقائي
     zoom: حجم الخط
     zoom_normal: عادي
-    zoom_small: صغير
+    zoom_small: قصير
     zoom_tiny: بالغ الصغر
     print_margin: هوامش الطباعة
     print_margin_normal: العادية
     print_margin_small: صغيرة
+    table_row_size: حجم صفوف الجدول
+    table_row_size_normal: عادي
+    table_row_size_compact: مدمج
     size_and_position: حجم و موضع النافذة
     model_settings: تفضيلات النموذج
     length_unit: وحدة الطول
-    length_format: المقاس
+    length_format: الصيغة
     length_format_0: عُشري
     length_format_1: معماري
     length_format_2: هندسي
@@ -1269,20 +1521,22 @@ tab:
     length_precision: الدقة
     suppress_units_display: اعرض وحدة الطول لكل قيمة
     mass_unit: وحدة الكتلة
+    mass_precision: الدقة
     currency_symbol: رمز العملة
+    currency_precision: الدقة
     presets:
       export_global_presets: تصدير الإعدادات المسبقة
       export_global_presets_help: |
-        تتيح لك هذه الخاصية تصدير إعداداتك المسبقة إلى ملف بصيغة **json.**
+        **json.** تتيح لك هذه الخاصية تصدير إعداداتك المسبقة إلى ملف بصيغة 
         حدد الإعدادات التي تريد تصديرها إليه
-      export_global_presets_success: نجح تصدير الإعدادات المسبقة.
+      export_global_presets_success: نجح تصدير الإعدادات المسبقة
       import_global_presets: استيراد إعدادات مسبقة
       import_global_presets_help: |
-        حدد الإعدادات المسبقة التي تريد استيرادها من ملف الـ **json.**
+        **json.**حدد الإعدادات المسبقة التي تريد استيرادها من ملف الـ 
         رجاء انتبه إلى أن الإعداد الموجود من قبل سيُستبدَلُ بالنسخة المستوردة إن كانا يحملان الاسم ذاته
       import_global_presets_success: |
-        لقد استوردت إعدادات *OpenCutList* المسبقة بنجاح.
-        لأخذ التغييرات بالحسبان، عليك **غلق** و **إعادة فتح** نافذة OpenCutList.
+        لقد استوردت إعدادات *OpenCutList* المسبقة بنجاح
+        OpenCutList لأخذ التغييرات بالحسبان، عليك **غلق** و **إعادة فتح** نافذة
       dump_global_presets: مَكَبّ الإعدادات المسبقة
       dump_model_presets: مَكَبّ إعدادات النموذج المسبقة
       reset_global_presets: إعادة تهيئة الإعدادات المسبقة
@@ -1291,16 +1545,16 @@ tab:
         هذا الإجراء نهائي. **ستضيع كل الإعدادات المسبقة.**
         أكّد من أجل المواصلة.
       reset_global_presets_success: |
-        لقد أُعيد تعيين إعدادات *OpenCutList* المسبقة.
-        لأخذ التغييرات بالحسبان، عليك **غلق** و **إعادة فتح** نافذة OpenCutList.
+        لقد أُعيد تعيين إعدادات *OpenCutList* المسبقة
+        OpenCutList لأخذ التغييرات بالحسبان، عليك **غلق** و **إعادة فتح** نافذة 
       reset_model_presets: إعادة تهيئة إعدادات النموذج المسبقة
       reset_model_presets_confirm: |
         أنت مقبل على إعادة تعيين كل إعدادات *OpenCutList* للنموذج الحالي.
         هذا الإجراء نهائي. **ستعاد كل الإعدادات إلى القيم الافتراضية.**
         أكّد من أجل المواصلة.
       reset_model_presets_success: |
-        لقد أُعيد تعيين إعدادات *OpenCutList* للنموذج الحالي.
-        لأخذ التغييرات بالحسبان، عليك **غلق** و **إعادة فتح** نافذة OpenCutList.
+        لقد أُعيد تعيين إعدادات *OpenCutList* للنموذج الحالي
+        OpenCutList لأخذ التغييرات بالحسبان، عليك **غلق** و **إعادة فتح** نافذة 
       error:
         no_preset_to_export: لا إعدادات مسبقة للتصدير
         no_preset_to_import: لا إعدادات مسبقة للاستيراد
@@ -1331,8 +1585,8 @@ tab:
       - [刘涛](https://www.liutao91.cn) (*الصينية المبسطة*)
       - Dany Dhondt, Eric Lugtigheid, Koen Dejonckheere (*الهولندية*)
     credits_description: |
-      تطوير هذه الإضافة مرتبط بمشروع منصة المشاركة [L'Air du Bois](https://www.lairdubois.fr).
-      هذه الإضافة *مفتوحة المصدر* و متوفرة ضمن [GNU GPLv3](https://github.com/lairdubois/lairdubois-opencutlist-sketchup-extension/blob/master/LICENSE) على [GitHub](https://github.com/lairdubois/lairdubois-opencutlist-sketchup-extension).
+      [L'Air du Bois](https://www.lairdubois.fr) تطوير هذه الإضافة مرتبط بمشروع منصة المشاركة 
+       [GitHub](https://github.com/lairdubois/lairdubois-opencutlist-sketchup-extension) على [GNU GPLv3](https://github.com/lairdubois/lairdubois-opencutlist-sketchup-extension/blob/master/LICENSE) هذه الإضافة *مفتوحة المصدر* و متوفرة ضمن
     credits_runtime: وقت التشغيل
     credits_development: تطوير
     credits_vendors: |
@@ -1347,6 +1601,7 @@ tool:
     transparency: الشفافية
     zoom_extents: نطاقات التكبير و التصغير
     toggle_depth: القِطع في الخلفية
+    more: المزيد
   highlight:
     transparency: $t(tool.default.transparency)
     zoom_extents: $t(tool.default.zoom_extents)
@@ -1365,12 +1620,22 @@ tool:
     action_0_status: انقر على قِطعة معينة لتطبق لونا على مثيلتها
     action_1: صباغة قطعةٍ
     action_1_status: "'$t(tab.materials.type_4)' انقر على حاشية لوح معين لتطبيق"
-    action_2: تنقية وجهٍ
+    action_2: صباغة الوجوه
     action_2_status: "'$t(tab.materials.type_6)' انقر على وجه لوح معين لتطبيق"
     action_3: تنقية قطعةٍ
     action_3_status: انقر على وجه معين لأخذ عينة من خامته.
     action_4: نقِّ
     action_4_status: انقر على قطعة معينة لتزيل كل الخامات منها و من مثيلاتها
+    action_option_group_instances: عدد المثيلات
+    action_option_group_edges: عدد الحواشي
+    action_option_group_faces: عدد الوجوه
+    action_option_instances_0_status: اصبغ مثيل القِطعة المستهدفة فقط
+    action_option_instances_1_status: اصبغ كل مثيلات القِطعة المستهدفة
+    action_option_edges_0_status: اصبغ الحاشية المستهدفة فقط
+    action_option_edges_1_status: اصبغ في هذه القطعة الحاشية المستهدفة و المقابلة لها
+    action_option_edges_2_status: اصبغ حواشي القطعة المستهدفة الأربعة
+    action_option_faces_0_status: اصبغ الوجه المستهدف فقط
+    action_option_faces_1_status: اصبغ وجهي القِطعة المستهدفة
     edges: "حاشية {{ count }}"
     edges_plural: " حواشٍ {{ count }}"
     edge_ymin: الطول 1
@@ -1380,12 +1645,12 @@ tool:
     faces: "وجه {{ count }}"
     faces_plural: "وجوه {{ count }}"
     face_zmin: ظهر قشرة الخشب
-    face_zmax: أمام
+    face_zmax: أمامي
     warning:
-      no_material: لا يحتوي نموذجك على أي خامة!
+      no_material: لا توجد خامة
       no_material_type: "'{{ type }}' لا توجد خامة من نوع"
     error:
-      not_part: الموضع المستهدف ليس قِطعة
+      not_part: المجسم المستهدف ليس قِطعة (عنصر)
       not_edge: الوجه المستهدف ليس حاشية لوح
       not_face: الوجه المستهدف ليس وجه لوح
       wrong_material_type: "يجب أن تكون القِطعة المستهدفة من النوع '{{ type }}'"
@@ -1399,11 +1664,48 @@ tool:
     action_2_status: انقر على قِطعة معينة لمبادلة أمامِها بخلفها
     action_3: عدِّل المحاور
     action_3_status: انقر على وجه أو حاشية قِطعة ما لتعديل توجيه محاورها
-    action_modifier_length: ط
-    action_modifier_width: ع
-    action_modifier_thickness: س
+    action_option_group_direction: الاتجاه
+    action_option_direction_0: ط
+    action_option_direction_1: ع
+    action_option_direction_2: س
+    action_option_direction_0_status: أدر القِطعة تبعا للطول
+    action_option_direction_1_status: أدر القِطعة تبعا للعرض
+    action_option_direction_2_status: أدر القِطعة تبعا لسمكها
     warning:
       more_entities: "{{ count_used }} مثيلات تشترك في التعريف ذاته ستُعدّل"
     error:
-      not_part: الموضع المستهدف ليس قِطعة
+      not_part: المجسم المستهدف ليس قِطعة (عنصر)
       not_orientable: نوع هذه القِطعة لا يسمح بتوجيهها
+  smart_export:
+    title: تصدير
+    action_0: صدّر قِطعة ثلاثية البعد
+    action_0_status: انقر على قِطعة
+    action_1: صدّر قطعة ثنائية البعد
+    action_1_status: انقر على وجهِ قطعةٍ
+    action_2: صدّر وجهًا
+    action_2_status: انقر على وجهٍ
+    action_3: صدّر مسارًا
+    action_3_status: انقر على حاشية
+    action_option_group_file_format: الصيغة
+    action_option_group_unit: الوحدة
+    action_option_group_faces: الوجوه
+    action_option_group_options: الخيارات
+    action_option_file_format_dxf_status: " DXF تصدير إلى ملف"
+    action_option_file_format_stl_status: "STL تصدير إلى ملف "
+    action_option_file_format_obj_status: "OBJ تصدير إلى ملف "
+    action_option_file_format_svg_status: "SVG تصدير إلى ملف "
+    action_option_unit_0_status: $t(default.unit_0)
+    action_option_unit_1_status: $t(default.unit_1)
+    action_option_unit_2_status: $t(default.unit_2)
+    action_option_unit_3_status: $t(default.unit_3)
+    action_option_unit_4_status: $t(default.unit_4)
+    action_option_faces_0_status: $t(tab.cutlist.write.option_faces_0)
+    action_option_faces_1_status: $t(tab.cutlist.write.option_faces_1)
+    action_option_options_anchor_status: $t(tab.cutlist.write.option_anchor_1)
+    action_option_options_smoothing_status: $t(tab.cutlist.write.option_smoothing_1)
+    action_option_options_merge_holes_status: اعزل الثقوب النافذة و ادمج العمق لكل تثقيب
+    action_option_options_include_paths_status: "تصدير الحواشي الموجودة في القِطعة و غير المرتبطة بوجه "
+    error:
+      not_part: هذا الوجه لا ينتمي إلى قِطعة (عنصر)
+      not_flat_face: هذا الوجه ليس مُسطَّحا
+      incompatible_active_path: المسار النشط لا يسمح بتصدير هذا القطعة

@@ -1,6 +1,6 @@
 module Ladb::OpenCutList
 
-  require_relative '../../helper/boundingbox_helper'
+  require_relative '../../helper/bounding_box_helper'
   require_relative '../../helper/layer_visibility_helper'
   require_relative '../../model/attributes/material_attributes'
   require_relative '../../model/attributes/definition_attributes'
@@ -9,9 +9,9 @@ module Ladb::OpenCutList
   require_relative '../../model/cutlist/face_info'
   require_relative '../../model/cutlist/instance_info'
   require_relative '../../model/cutlist/material_usage'
-  require_relative '../../model/cutlist/groupdef'
+  require_relative '../../model/cutlist/group_def'
   require_relative '../../model/cutlist/group'
-  require_relative '../../model/cutlist/partdef'
+  require_relative '../../model/cutlist/part_def'
   require_relative '../../model/cutlist/part'
   require_relative '../../utils/transformation_utils'
   require_relative '../../tool/highlight_part_tool'
@@ -151,9 +151,18 @@ module Ladb::OpenCutList
         cutlist.add_used_tags(definition_attributes.tags)
 
         # Tags filter
-        if !@tags_filter.empty? && !definition_attributes.has_tags(@tags_filter)
-          cutlist.ignored_instance_count += 1
-          next
+        unless @tags_filter.empty?
+          ok_tags = []
+          ko_tags = []
+          @tags_filter.each do |value|
+            m = /([+-])(.*)/.match(value)
+            ok_tags << m[2] if m && m[1] == '+'
+            ko_tags << m[2] if m && m[1] == '-'
+          end
+          if !ok_tags.empty? && !definition_attributes.has_tags(ok_tags) || !ko_tags.empty? && definition_attributes.has_tags(ko_tags)
+            cutlist.ignored_instance_count += 1
+            next
+          end
         end
 
         material, material_origin = _get_material(instance_info.path, @smart_material)
@@ -426,9 +435,8 @@ module Ladb::OpenCutList
           group_def.material_id = material_id
           group_def.material_name = material_name
           group_def.material_display_name = material_display_name
-          group_def.material_type = material_attributes.type
           group_def.material_color = material.color if material
-          group_def.material_grained = material_attributes.grained
+          group_def.material_attributes = material_attributes
           group_def.std_available = std_info[:available]
           group_def.std_dimension_stipped_name = std_info[:dimension_stipped_name]
           group_def.std_dimension = std_info[:dimension]
@@ -488,6 +496,7 @@ module Ladb::OpenCutList
           part_def.instance_count_by_part = definition_attributes.instance_count_by_part
           part_def.mass = definition_attributes.mass
           part_def.price = definition_attributes.price
+          part_def.url = definition_attributes.url
           part_def.thickness_layer_count = definition_attributes.thickness_layer_count
           part_def.tags = definition_attributes.tags
           part_def.orientation_locked_on_axis = definition_attributes.orientation_locked_on_axis
@@ -507,7 +516,7 @@ module Ladb::OpenCutList
           end
 
           # Compute axes alignment, final area, layers, edges and veneers
-          case group_def.material_type
+          case group_def.material_attributes.type
 
             when MaterialAttributes::TYPE_SOLID_WOOD
 
@@ -617,14 +626,10 @@ module Ladb::OpenCutList
         part_def.add_entity_name(entity.name, instance_info.named_path)
         part_def.store_instance_info(instance_info)
 
-        if group_def.material_type != MaterialAttributes::TYPE_UNKNOWN
-          if group_def.material_type == MaterialAttributes::TYPE_DIMENSIONAL
-            group_def.total_cutting_length += part_def.cutting_size.length
-          end
-          if group_def.material_type == MaterialAttributes::TYPE_SOLID_WOOD || group_def.material_type == MaterialAttributes::TYPE_SHEET_GOOD
-            group_def.total_cutting_area += part_def.cutting_size.area * definition_attributes.thickness_layer_count
-          end
-          if group_def.material_type == MaterialAttributes::TYPE_SHEET_GOOD
+        if group_def.material_attributes.type != MaterialAttributes::TYPE_UNKNOWN && group_def.material_attributes.type != MaterialAttributes::TYPE_HARDWARE
+          group_def.total_cutting_length += part_def.cutting_size.length
+          group_def.total_cutting_area += part_def.cutting_size.area * definition_attributes.thickness_layer_count
+          if group_def.material_attributes.type == MaterialAttributes::TYPE_SHEET_GOOD
             if part_def.final_area.nil?
               group_def.invalid_final_area_part_count += definition_attributes.thickness_layer_count
             else
@@ -638,7 +643,7 @@ module Ladb::OpenCutList
                   edge_cutting_length = edge_length + edge_material_attributes.l_length_increase
                   edge_group_def.total_cutting_length += edge_cutting_length
                   edge_group_def.total_cutting_area += edge_cutting_length * edge_group_def.std_width
-                  edge_group_def.total_cutting_volume += edge_cutting_length * edge_group_def.std_thickness
+                  edge_group_def.total_cutting_volume += edge_cutting_length * edge_group_def.std_width * edge_group_def.std_thickness
                   _populate_edge_part_def(part_def, edge, edge_group_def, edge_length, edge_cutting_length.to_l, edge_group_def.std_width, edge_group_def.std_thickness)
                 end
               }
@@ -649,7 +654,7 @@ module Ladb::OpenCutList
                   edge_cutting_length = edge_length + edge_material_attributes.l_length_increase
                   edge_group_def.total_cutting_length += edge_cutting_length
                   edge_group_def.total_cutting_area += edge_cutting_length * edge_group_def.std_width
-                  edge_group_def.total_cutting_volume += edge_cutting_length * edge_group_def.std_thickness
+                  edge_group_def.total_cutting_volume += edge_cutting_length * edge_group_def.std_width * edge_group_def.std_thickness
                   _populate_edge_part_def(part_def, edge, edge_group_def, edge_length, edge_cutting_length.to_l, edge_group_def.std_width, edge_group_def.std_thickness)
                 end
               }
@@ -680,14 +685,15 @@ module Ladb::OpenCutList
                   end
                   veneer_cutting_length = veneer_length + veneer_material_attributes.l_length_increase
                   veneer_cutting_width = veneer_width + veneer_material_attributes.l_width_increase
+                  veneer_group_def.total_cutting_length += veneer_cutting_length
                   veneer_group_def.total_cutting_area += veneer_cutting_length * veneer_cutting_width
-                  veneer_group_def.total_cutting_volume += veneer_cutting_length * veneer_group_def.std_thickness
+                  veneer_group_def.total_cutting_volume += veneer_cutting_length * veneer_cutting_width * veneer_group_def.std_thickness
                   _populate_veneer_part_def(part_def, veneer, veneer_group_def, veneer_length, veneer_width, veneer_cutting_length.to_l, veneer_cutting_width.to_l, veneer_group_def.std_thickness)
                 end
               }
             end
           end
-          if group_def.material_type == MaterialAttributes::TYPE_SOLID_WOOD || group_def.material_type == MaterialAttributes::TYPE_SHEET_GOOD || group_def.material_type == MaterialAttributes::TYPE_DIMENSIONAL
+          if group_def.material_attributes.type == MaterialAttributes::TYPE_SOLID_WOOD || group_def.material_attributes.type == MaterialAttributes::TYPE_SHEET_GOOD || group_def.material_attributes.type == MaterialAttributes::TYPE_DIMENSIONAL
             group_def.total_cutting_volume += part_def.cutting_size.volume * definition_attributes.thickness_layer_count
           end
         end
@@ -734,13 +740,13 @@ module Ladb::OpenCutList
       # PHASE 2
 
       # Sort material usages and add them to cutlist
-      cutlist.add_material_usages(@material_usages_cache.values.sort_by { |v| [ v.display_name.downcase ] })
+      cutlist.add_material_usages(@material_usages_cache.values.sort_by { |v| [ MaterialAttributes.type_order(v.type), v.display_name.downcase ] })
 
       part_number = cutlist.max_number ? cutlist.max_number.succ : (@part_number_with_letters ? 'A' : 1)
 
       # Sort and browse groups
 
-      @group_defs_cache.sort_by { |k, v| [ MaterialAttributes.type_order(v.material_type), v.material_name.empty? ? '~' : v.material_name.downcase, -v.std_width, -v.std_thickness ] }.each do |key, group_def|
+      @group_defs_cache.sort_by { |k, v| [ MaterialAttributes.type_order(v.material_attributes.type), v.material_name.empty? ? '~' : v.material_name.downcase, -v.std_width, -v.std_thickness ] }.each do |key, group_def|
 
         # Exclude empty groupDef
         next if group_def.part_count == 0
@@ -757,7 +763,7 @@ module Ladb::OpenCutList
           part_defs = []
           group_def.part_defs.values.sort_by { |v| [ v.size.thickness, v.size.length, v.size.width, v.tags, v.final_area.nil? ? 0 : v.final_area, v.cumulable ] }.each do |part_def|
             if !(folder_part_def = part_defs.last).nil? &&
-                ((folder_part_def.definition_id == part_def.definition_id && group_def.material_type == MaterialAttributes::TYPE_UNKNOWN) || group_def.material_type > MaterialAttributes::TYPE_UNKNOWN && group_def.material_type != MaterialAttributes::TYPE_HARDWARE) && # Part with TYPE_UNKNOWN materiel are folded only if they have the same definition | Part with TYPE_HARDWARE doesn't fold
+                ((folder_part_def.definition_id == part_def.definition_id && group_def.material_attributes.type == MaterialAttributes::TYPE_UNKNOWN) || group_def.material_attributes.type > MaterialAttributes::TYPE_UNKNOWN && group_def.material_attributes.type != MaterialAttributes::TYPE_HARDWARE) && # Part with TYPE_UNKNOWN materiel are folded only if they have the same definition | Part with TYPE_HARDWARE doesn't fold
                 folder_part_def.size == part_def.size &&
                 folder_part_def.cutting_size == part_def.cutting_size &&
                 (@hide_descriptions || folder_part_def.description == part_def.description) &&
@@ -770,7 +776,7 @@ module Ladb::OpenCutList
               if folder_part_def.children.empty?
                 first_child_part_def = part_defs.pop
 
-                folder_part_def = PartDef.new(first_child_part_def.id + '_folder')
+                folder_part_def = PartDef.new(first_child_part_def.id + '_folder', first_child_part_def.virtual)
                 folder_part_def.name = first_child_part_def.name
                 folder_part_def.description = first_child_part_def.description
                 folder_part_def.count = first_child_part_def.count
@@ -786,6 +792,7 @@ module Ladb::OpenCutList
                 folder_part_def.edge_count = first_child_part_def.edge_count
                 folder_part_def.edge_pattern = first_child_part_def.edge_pattern
                 folder_part_def.edge_material_names.merge!(first_child_part_def.edge_material_names)
+                folder_part_def.edge_material_colors.merge!(first_child_part_def.edge_material_colors)
                 folder_part_def.edge_std_dimensions.merge!(first_child_part_def.edge_std_dimensions)
                 folder_part_def.edge_group_defs.merge!(first_child_part_def.edge_group_defs)
                 folder_part_def.edge_length_decrement = first_child_part_def.edge_length_decrement
@@ -875,7 +882,7 @@ module Ladb::OpenCutList
     end
 
     def _get_instance_info(serialized_path)
-      if @instance_infos_cache.has_key? serialized_path
+      if @instance_infos_cache.has_key?(serialized_path)
         return @instance_infos_cache[serialized_path]
       end
       nil
@@ -888,7 +895,7 @@ module Ladb::OpenCutList
     end
 
     def _get_group_def(id)
-      if @group_defs_cache.has_key? id
+      if @group_defs_cache.has_key?(id)
         return @group_defs_cache[id]
       end
       nil
@@ -910,7 +917,7 @@ module Ladb::OpenCutList
     end
 
     def _get_material_usage(name)
-      if @material_usages_cache.has_key? name
+      if @material_usages_cache.has_key?(name)
         return @material_usages_cache[name]
       end
       nil
@@ -920,7 +927,7 @@ module Ladb::OpenCutList
 
     def _get_material_attributes(material)
       key = material ? material.name : '$EMPTY$'
-      unless @material_attributes_cache.has_key? key
+      unless @material_attributes_cache.has_key?(key)
         @material_attributes_cache[key] = MaterialAttributes.new(material, true)
       end
       @material_attributes_cache[key]
@@ -930,7 +937,7 @@ module Ladb::OpenCutList
 
     def _get_definition_attributes(definition)
       key = definition ? definition.name : '$EMPTY$'
-      unless @definition_attributes_cache.has_key? key
+      unless @definition_attributes_cache.has_key?(key)
         @definition_attributes_cache[key] = DefinitionAttributes.new(definition, true)
       end
       @definition_attributes_cache[key]
@@ -1231,7 +1238,7 @@ module Ladb::OpenCutList
         entities.each { |child_entity|
           child_material = _get_dominant_child_material(child_entity, level + 1, no_virtual)
           if child_material
-            unless materials.has_key? child_material.name
+            unless materials.has_key?(child_material.name)
               materials[child_material.name] = {
                   :material => child_material,
                   :count => 0
@@ -1311,8 +1318,8 @@ module Ladb::OpenCutList
         group_def.material_id = material ? material.entityID : ''
         group_def.material_name = material.name
         group_def.material_display_name = material.display_name
-        group_def.material_type = MaterialAttributes::TYPE_EDGE
         group_def.material_color = material.color if material
+        group_def.material_attributes = material_attributes
         group_def.std_available = std_info[:available]
         group_def.std_dimension_stipped_name = std_info[:dimension_stipped_name]
         group_def.std_dimension = std_info[:dimension]
@@ -1331,15 +1338,16 @@ module Ladb::OpenCutList
 
     def _populate_edge_part_def(part_def, edge, edge_group_def, length, cutting_length, width, thickness)
 
-      edge_part_id = PartDef.generate_edge_part_id(part_def.id, edge, length, width, thickness)
+      edge_part_id = PartDef.generate_edge_part_id(edge_group_def.id, part_def.id, edge, length, width, thickness)
       edge_part_def = edge_group_def.get_part_def(edge_part_id)
       unless edge_part_def
 
-        edge_part_def = PartDef.new(edge_part_id)
+        edge_part_def = PartDef.new(edge_part_id, true)
         edge_part_def.name = "#{part_def.name}#{part_def.number ? " ( #{part_def.number} ) " : ''} - #{Plugin.instance.get_i18n_string("tab.cutlist.tooltip.edge_#{edge}")}"
         edge_part_def.cutting_size = Size3d.new(cutting_length, width, thickness)
         edge_part_def.size = Size3d.new(length, width, thickness)
         edge_part_def.material_name = edge_group_def.material_name
+        part_def.edge_entity_ids[edge].each { |entity_id| edge_part_def.add_entity_id(entity_id) }
 
         edge_group_def.store_part_def(edge_part_def)
 
@@ -1381,9 +1389,8 @@ module Ladb::OpenCutList
         group_def.material_id = material ? material.entityID : ''
         group_def.material_name = material.name
         group_def.material_display_name = material.display_name
-        group_def.material_type = MaterialAttributes::TYPE_VENEER
         group_def.material_color = material.color if material
-        group_def.material_grained = material_attributes.grained
+        group_def.material_attributes = material_attributes
         group_def.std_available = std_info[:available]
         group_def.std_dimension_stipped_name = std_info[:dimension_stipped_name]
         group_def.std_dimension = std_info[:dimension]
@@ -1402,15 +1409,16 @@ module Ladb::OpenCutList
 
     def _populate_veneer_part_def(part_def, veneer, veneer_group_def, length, width, cutting_length, cutting_width, thickness)
 
-      veneer_part_id = PartDef.generate_veneer_part_id(part_def.id, veneer, length, width, thickness)
+      veneer_part_id = PartDef.generate_veneer_part_id(veneer_group_def.id, part_def.id, veneer, length, width, thickness)
       veneer_part_def = veneer_group_def.get_part_def(veneer_part_id)
       unless veneer_part_def
 
-        veneer_part_def = PartDef.new(veneer_part_id)
+        veneer_part_def = PartDef.new(veneer_part_id, true)
         veneer_part_def.name = "#{part_def.name}#{part_def.number ? " ( #{part_def.number} ) " : ''} - #{Plugin.instance.get_i18n_string("tab.cutlist.tooltip.face_#{veneer}")}"
         veneer_part_def.cutting_size = Size3d.new(cutting_length, cutting_width, thickness)
         veneer_part_def.size = Size3d.new(length, width, thickness)
         veneer_part_def.material_name = veneer_group_def.material_name
+        part_def.face_entity_ids[veneer].each { |entity_id| veneer_part_def.add_entity_id(entity_id) }
 
         veneer_group_def.store_part_def(veneer_part_def)
 
